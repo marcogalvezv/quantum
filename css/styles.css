@@ -44,13 +44,14 @@ body, html {
 }
 
 .lobby-card {
-    background: #1e293b;
-    border: 3px solid #38bdf8;
-    border-radius: 20px;
+    background: #ffffff;
+    border: 3.5px solid #0284c7;
+    border-radius: 22px;
     max-width: 580px;
     width: 100%;
     padding: 28px;
-    box-shadow: 0 20px 60px rgba(0, 229, 255, 0.2);
+    box-shadow: 0 25px 70px rgba(11, 37, 69, 0.45);
+    color: #0b2545;
 }
 
 .lobby-header {
@@ -72,13 +73,15 @@ body, html {
 
 .lobby-header h1 {
     font-size: 28px;
-    color: #38bdf8;
-    text-shadow: 0 2px 10px rgba(56, 189, 248, 0.4);
+    font-weight: 900;
+    color: #0b2545;
+    text-shadow: none;
 }
 
 .lobby-header p {
     font-size: 14px;
-    color: #94a3b8;
+    color: #0284c7;
+    font-weight: 600;
     margin-top: 4px;
 }
 
@@ -96,7 +99,7 @@ body, html {
     display: block;
     font-size: 12px;
     font-weight: 700;
-    color: #cbd5e1;
+    color: #0b2545;
     margin-bottom: 6px;
     text-transform: uppercase;
 }
@@ -105,15 +108,19 @@ body, html {
     width: 100%;
     padding: 10px 14px;
     border-radius: 10px;
-    border: 2px solid #475569;
-    background: #0f172a;
-    color: #ffffff;
+    border: 2px solid #cbd5e1;
+    background: #f8fafc;
+    color: #0b2545;
     font-size: 14px;
+    font-weight: 600;
     outline: none;
+    transition: border-color 0.15s, background 0.15s;
 }
 
 .form-group input[type="text"]:focus {
-    border-color: #38bdf8;
+    border-color: #0284c7;
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(2, 132, 199, 0.2);
 }
 
 .color-picker {
@@ -225,12 +232,13 @@ body, html {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: rgba(15, 23, 42, 0.6);
+    background: #f1f5f9;
     padding: 10px 14px;
     border-radius: 10px;
     font-size: 13px;
-    color: #cbd5e1;
+    color: #1e293b;
     margin-bottom: 18px;
+    border: 1px solid #cbd5e1;
 }
 
 .primary-action-btn {
@@ -238,16 +246,18 @@ body, html {
     padding: 14px;
     border-radius: 12px;
     border: none;
-    background: linear-gradient(135deg, #00e5ff, #10b981);
-    color: #090d16;
+    background: linear-gradient(135deg, #ea580c, #f97316);
+    color: #ffffff;
     font-size: 16px;
     font-weight: 800;
     cursor: pointer;
-    transition: transform 0.15s, filter 0.15s;
+    box-shadow: 0 10px 25px rgba(234, 88, 12, 0.35);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.5px;
 }
 
 .primary-action-btn:hover {
-    filter: brightness(1.1);
+    box-shadow: 0 14px 35px rgba(234, 88, 12, 0.6);
     transform: translateY(-2px);
 }
 
@@ -261,11 +271,12 @@ body, html {
 
 .hud-panel {
     pointer-events: auto;
-    background: rgba(15, 23, 42, 0.86);
-    backdrop-filter: blur(6px);
-    border: 2px solid #334155;
+    background: rgba(15, 37, 55, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 255, 255, 0.25);
     border-radius: 14px;
     padding: 12px 15px;
+    box-shadow: 0 12px 35px rgba(11, 37, 69, 0.35);
 }
 
 /* Top Progress & Q-BOT Narrative */
@@ -406,9 +417,9 @@ body, html {
 #minimap-canvas {
     width: 100%;
     height: 140px;
-    border-radius: 8px;
-    border: 2px solid #475569;
-    background: #090d16;
+    border-radius: 10px;
+    border: 2px solid #0284c7;
+    background: #759ea8;
 }
 
 .crew-roster {
