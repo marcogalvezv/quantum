@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Crew: Ensambladora Quantum Motors (Bolivia)</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <!-- HTML5 Canvas Principal -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- ==================== LOBBY MULTIJUGADOR ==================== -->
+    <div id="lobby-overlay" class="overlay">
+        <div class="lobby-card">
+            <div class="lobby-header">
+                <span class="bolivia-pill">🇧🇴 COCHABAMBA, BOLIVIA</span>
+                <h1>⚡ QUANTUM CREW</h1>
+                <p>Simulador Cooperativo de Ensamblaje de Vehículos Eléctricos (Hasta 6 Jugadores)</p>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="player-name-input">Nombre de Técnico Aprendiz</label>
+                    <input type="text" id="player-name-input" value="Técnico Quantum" maxlength="18">
+                </div>
+                <div class="form-group">
+                    <label for="room-code-input">Código de Sala Cooperativa</label>
+                    <input type="text" id="room-code-input" value="QM-2026" maxlength="12">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Color de Traje Dieléctrico (Estilo Among Us)</label>
+                <div id="color-picker" class="color-picker"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Rostro del Personaje (Sube tu foto o usa tu cámara)</label>
+                <div class="avatar-picker-row">
+                    <div class="avatar-preview-box" id="avatar-preview-box" title="Vista previa de tu rostro en el casco">
+                        <span id="avatar-placeholder-icon">🧑‍🔧</span>
+                        <img id="avatar-preview-img" class="hidden" alt="Tu rostro">
+                    </div>
+                    <div class="avatar-buttons-col">
+                        <label for="avatar-file-input" class="secondary-action-btn">
+                            📁 Subir Foto
+                        </label>
+                        <input type="file" id="avatar-file-input" accept="image/*" class="hidden">
+                        <button type="button" id="webcam-btn" class="secondary-action-btn">
+                            📷 Usar Cámara
+                        </button>
+                        <button type="button" id="clear-avatar-btn" class="secondary-action-btn hidden">
+                            ✕ Quitar
+                        </button>
+                    </div>
+                </div>
+                <!-- Mini visor de cámara web en vivo cuando se activa -->
+                <div id="webcam-container" class="webcam-container hidden">
+                    <video id="webcam-video" autoplay playsinline muted></video>
+                    <button type="button" id="capture-photo-btn" class="primary-action-btn" style="padding:8px 14px;font-size:13px;">
+                        📸 Capturar Rostro
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="ws-url-input">Servidor WebSocket (Sincronización en Red / Multi-Pestaña Automática)</label>
+                <input type="text" id="ws-url-input" value="ws://localhost:8080">
+            </div>
+
+            <label class="checkbox-row">
+                <input type="checkbox" id="fill-bots-checkbox" checked>
+                <span>Completar escuadrón hasta 6 jugadores con Aprendices IA cooperativos si faltan humanos</span>
+            </label>
+
+            <button id="join-game-btn" class="primary-action-btn">
+                🚀 INGRESAR A LA PLANTA QUANTUM MOTORS
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== INTERFAZ HUD EN PARTIDA ==================== -->
+    <div id="hud-layer">
+
+        <!-- Barra Superior: Progreso Colectivo y Guía Q-BOT -->
+        <div class="hud-panel top-bar-hud">
+            <div class="progress-header">
+                <span id="total-progress-text">Ensamblaje Colectivo Quantum E4: 0/6 (0%)</span>
+                <span id="team-score-val" style="color:#facc15;">0 pts</span>
+            </div>
+            <div class="progress-track">
+                <div id="total-progress-fill"></div>
+            </div>
+            <div class="qbot-banner">
+                <span>🤖</span>
+                <span id="qbot-narrative-text">Camina con WASD o Flechas por las 6 secciones de la fábrica y presiona [E] o haz clic en las estaciones.</span>
+            </div>
+        </div>
+
+        <!-- Panel Izquierdo: Lista de Tareas e Insignias -->
+        <div class="hud-panel left-hud">
+            <h3>
+                <span>📋 Misiones de Planta</span>
+                <span id="room-display" style="color:#94a3b8;font-size:11px;">Sala: QM-2026</span>
+            </h3>
+            <ul id="task-list-hud"></ul>
+
+            <h3 style="margin-top:6px;">🏅 Insignias Quantum</h3>
+            <div id="badges-hud" class="badges-row"></div>
+        </div>
+
+        <!-- Panel Derecho: Minimapa y Técnicos Conectados (Hasta 6) -->
+        <div class="hud-panel right-hud">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong style="font-size:12px;color:#38bdf8;">🗺️ MAPA DE FÁBRICA</strong>
+                <span id="net-status-badge" style="font-size:10px;color:#6ee7b7;">🟢 Online</span>
+            </div>
+            <canvas id="minimap-canvas" width="240" height="160"></canvas>
+
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;">
+                <span>👥 Escuadrón Técnico</span>
+                <span id="crew-count" style="color:#38bdf8;">1/6</span>
+            </div>
+            <div id="crew-roster" class="crew-roster"></div>
+        </div>
+
+        <!-- Panel Inferior Izquierdo: Señales Rápidas (Emojis) y Chat -->
+        <div class="hud-panel bottom-left-hud">
+            <div id="chat-messages"></div>
+            <div id="emote-bar" class="emote-bar"></div>
+            <form id="chat-form">
+                <input type="text" id="chat-input" placeholder="Enviar mensaje al equipo..." maxlength="80">
+                <button type="submit">Enviar</button>
+            </form>
+        </div>
+
+        <!-- Panel Inferior Derecho: Botón de Acción Estilo Among Us -->
+        <div class="bottom-right-hud">
+            <button id="mute-btn" class="small-util-btn">🔊 Sonido On</button>
+            <button id="hud-interact-btn" class="interact-big-btn" disabled>
+                🔧 <strong>USAR [E]</strong>
+                <small>Acércate a estación</small>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DE MINI-JUEGOS EDUCATIVOS ==================== -->
+    <div id="mission-modal" class="overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="mission-title">Estación de Trabajo</h2>
+                <button id="mission-close-btn" class="close-btn">✕</button>
+            </div>
+            <div id="mission-qbot-tip" class="qbot-tip-box"></div>
+            <div id="mission-body"></div>
+            <div id="mission-status" class="mission-status"></div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DE SEÑALÉTICA EDUCATIVA ==================== -->
+    <div id="signage-modal" class="overlay hidden">
+        <div class="modal-card" style="max-width:480px;text-align:center;">
+            <span id="signage-zone" style="color:#38bdf8;font-size:12px;font-weight:700;text-transform:uppercase;"></span>
+            <h2 id="signage-title" style="margin:10px 0;color:#facc15;"></h2>
+            <p id="signage-fact" style="font-size:15px;line-height:1.6;color:#e2e8f0;margin-bottom:20px;"></p>
+            <button id="signage-close-btn" class="primary-action-btn">¡Entendido!</button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL DE VICTORIA FINAL ==================== -->
+    <div id="victory-modal" class="overlay hidden">
+        <div class="modal-card" style="max-width:540px;text-align:center;border-color:#10b981;">
+            <div style="font-size:54px;margin-bottom:8px;">🏆🚗🇧🇴</div>
+            <h2 style="font-size:26px;color:#10b981;margin-bottom:8px;">¡VEHÍCULO QUANTUM E4 CERTIFICADO!</h2>
+            <p style="color:#cbd5e1;font-size:14.5px;line-height:1.5;margin-bottom:14px;">
+                ¡Felicidades Técnicos Aprendices! Han completado todas las etapas de seguridad, baterías de litio, soldadura de chasis, diagnóstico eléctrico, ensamblaje final y control de calidad.
+            </p>
+            <div id="victory-score" style="font-size:22px;font-weight:900;color:#facc15;margin-bottom:18px;"></div>
+            <button id="victory-continue-btn" class="primary-action-btn">
+                Seguir Explorando la Fábrica Quantum
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts Modulares (Funciona directo con doble clic en index.html o servidor web) -->
+    <script src="assets/FactoryAssets.js"></script>
+    <script src="js/audio/SoundManager.js"></script>
+    <script src="js/networking/NetworkManager.js"></script>
+    <script src="js/entities/Player.js"></script>
+    <script src="js/entities/RobotGuide.js"></script>
+    <script src="js/world/FactoryMap.js"></script>
+    <script src="js/world/Renderer.js"></script>
+    <script src="js/missions/MissionManager.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

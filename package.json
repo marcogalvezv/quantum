@@ -1,0 +1,21 @@
+{
+  "name": "quantum-motors-crew-game",
+  "version": "1.0.0",
+  "description": "Educational multiplayer game inspired by Quantum Motors (Bolivia) and Among Us",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "quantum-motors",
+    "bolivia",
+    "educational-game",
+    "among-us",
+    "websocket",
+    "html5-canvas"
+  ],
+  "license": "MIT"
+}

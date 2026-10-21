@@ -1,0 +1,20 @@
+# Logs & temporary conversation files
+conversation_transcript.jsonl
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data & dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment variables
+.env
+.env.local
