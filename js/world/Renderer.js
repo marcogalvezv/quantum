@@ -50,11 +50,11 @@ class Renderer {
         this.camera.x += (targetCamX - this.camera.x) * 0.14;
         this.camera.y += (targetCamY - this.camera.y) * 0.14;
 
-        // 1. Corporate Teal Industrial Background (matches reference image)
+        // 1. Pale Corporate Teal/Slate Industrial Background (matches reference image)
         const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-        bgGrad.addColorStop(0, '#759ea8');
-        bgGrad.addColorStop(0.45, '#8cb5c4');
-        bgGrad.addColorStop(1, '#658d9e');
+        bgGrad.addColorStop(0, '#e5edf3');
+        bgGrad.addColorStop(0.5, '#dbe7ee');
+        bgGrad.addColorStop(1, '#d2e0e8');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, w, h);
 
@@ -128,7 +128,7 @@ class Renderer {
 
     drawFloorGrid(ctx, worldW, worldH) {
         ctx.save();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.strokeStyle = 'rgba(10, 61, 86, 0.05)';
         ctx.lineWidth = 1;
         const step = 90;
         for (let x = 0; x <= worldW; x += step) {
@@ -165,8 +165,8 @@ class Renderer {
         ];
 
         // Cable shadow
-        ctx.strokeStyle = 'rgba(15, 35, 55, 0.25)';
-        ctx.lineWidth = 7;
+        ctx.strokeStyle = 'rgba(15, 35, 55, 0.12)';
+        ctx.lineWidth = 6;
         for (const cable of cables) {
             ctx.beginPath();
             ctx.moveTo(cable[0].x + 3, cable[0].y + 4);
@@ -176,7 +176,7 @@ class Renderer {
 
         // Cable outer body
         ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 4;
         for (const cable of cables) {
             ctx.beginPath();
             ctx.moveTo(cable[0].x, cable[0].y);
@@ -186,7 +186,7 @@ class Renderer {
 
         // Inner glowing core
         ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 1.8;
         for (const cable of cables) {
             ctx.beginPath();
             ctx.moveTo(cable[0].x, cable[0].y);
@@ -212,25 +212,25 @@ class Renderer {
 
     drawBrandHeader(ctx, w, h) {
         ctx.save();
-        // Modern logo in top right matching the "meinsa" style from the reference image
-        const logoX = w - 24;
-        const logoY = 28;
+        // Modern logo matching the "meinsa" style from the reference image
+        const logoX = w - 275;
+        const logoY = 34;
 
         ctx.textAlign = 'right';
-        ctx.font = '900 22px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#0b2545';
-        ctx.fillText('quantum', logoX, logoY);
+        ctx.font = '900 24px "Segoe UI", system-ui, sans-serif';
+        ctx.fillStyle = '#00687f';
+        ctx.fillText('meinsa', logoX, logoY);
 
-        // Small cyan dot/accent on top of logo
-        ctx.fillStyle = '#00a8cc';
+        // Small cyan dot/accent on top of the 'i' in meinsa
+        ctx.fillStyle = '#00b4d8';
         ctx.beginPath();
-        ctx.arc(logoX - 98, logoY - 14, 3.5, 0, Math.PI * 2);
+        ctx.arc(logoX - 44, logoY - 14, 3, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.font = '700 9.5px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#0284c7';
+        ctx.fillStyle = '#0a3d56';
         ctx.letterSpacing = '1px';
-        ctx.fillText('INDUSTRIA 4.0 • SMART FACTORY', logoX, logoY + 14);
+        ctx.fillText('QUANTUM MOTORS • SMART FACTORY 4.0', logoX, logoY + 16);
         ctx.restore();
     }
 
@@ -246,8 +246,8 @@ class Renderer {
         const zh = zone.height;
         const bevel = 14;
 
-        // 1. Deep Cast Drop Shadow on teal ground
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.28)';
+        // 1. Soft Drop Shadow on pale teal ground
+        ctx.fillStyle = 'rgba(15, 45, 65, 0.12)';
         ctx.beginPath();
         ctx.roundRect(zx + 14, zy + 16, zw, zh, 12);
         ctx.fill();
@@ -301,12 +301,12 @@ class Renderer {
         ctx.textAlign = 'left';
         // Main bold title
         ctx.font = '900 24px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#0b2545';
+        ctx.fillStyle = '#0a3d56';
         ctx.fillText(mainLabel, zx + 32, zy + 46);
 
         // Subtitle in clean corporate teal
         ctx.font = '700 12.5px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#0284c7';
+        ctx.fillStyle = '#007a99';
         ctx.fillText(subLabel, zx + 32, zy + 66);
         ctx.restore();
 
@@ -373,12 +373,40 @@ class Renderer {
             // =================================================================
             // 1. OFICINA CONTROL REMOTO:
             // Giant Wall Tablet Dashboard, Presentation Office Tables, Potted Plants
+            // Scenery Engineers matching reference illustration
             // =================================================================
             this.drawGiantTabletDashboard(ctx, zx + 440, zy + 110, 200, 240, now);
             this.drawOfficeGlassTable(ctx, zx + 80, zy + 160);
             this.drawOfficeDesksAndEngineers(ctx, zx + 80, zy + 370, now);
             this.drawPottedPlantIsometric(ctx, zx + 400, zy + 130);
             this.drawPottedPlantIsometric(ctx, zx + 630, zy + 380);
+
+            // Scenery Figure 1: Executive in dark suit pointing at giant tablet dashboard
+            this.drawVectorPerson(ctx, {
+                x: zx + 420, y: zy + 250,
+                facing: 1, shirt: '#0f2942', shirtShadow: '#091e30',
+                pants: '#1e293b', skin: '#fed7aa', hair: '#1e293b',
+                helmet: null, pose: 'point', reflectiveStripe: false,
+                scale: 1.15, now
+            });
+
+            // Scenery Figure 2: Engineer in orange polo walking towards stairs with briefcase
+            this.drawVectorPerson(ctx, {
+                x: zx + 360, y: zy + 460,
+                facing: 1, shirt: '#ea580c', pants: '#1e293b',
+                skin: '#fed7aa', hair: '#334155', helmet: null,
+                pose: 'briefcase', reflectiveStripe: false,
+                scale: 1.15, now
+            });
+
+            // Scenery Figure 3: Woman standing on left holding open laptop
+            this.drawVectorPerson(ctx, {
+                x: zx + 60, y: zy + 210,
+                facing: 1, shirt: '#ffffff', pants: '#1e293b',
+                skin: '#fbcfe8', hair: '#451a03', helmet: null,
+                pose: 'laptop', reflectiveStripe: false,
+                scale: 1.15, now
+            });
 
         } else if (zone.id === 'baterias') {
             // =================================================================
@@ -392,16 +420,34 @@ class Renderer {
             this.drawOrangeRoboticArm(ctx, zx + 380, zy + 390, 1.1, 0.3, true, now);
             this.drawDigitalInspectionBoard(ctx, zx + 540, zy + 130, 'LITIO 60V • TELEMETRÍA IOT', now);
 
+            // Scenery Technician pointing at digital inspection board
+            this.drawVectorPerson(ctx, {
+                x: zx + 510, y: zy + 195,
+                facing: 1, shirt: '#ea580c', pants: '#1e293b',
+                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
+                pose: 'point', reflectiveStripe: true,
+                scale: 1.2, now
+            });
+
+            // Scenery Technician standing near conveyor inspecting with tablet
+            this.drawVectorPerson(ctx, {
+                x: zx + 470, y: zy + 440,
+                facing: -1, shirt: '#0284c7', pants: '#1e293b',
+                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
+                pose: 'tablet', reflectiveStripe: true,
+                scale: 1.2, now
+            });
+
         } else if (zone.id === 'chasis') {
             // =================================================================
             // 3. PLANTA FÁBRICA: ROBÓTICA DE CHASIS
             // Orange Robotic Arms Welding Tubular Frame, Laser Cutter, Blueprint
             // =================================================================
+            this.drawOrangeIndustrialGantry(ctx, zx + 160, zy + 150, 260, 180, now);
             this.drawConveyorBelt(ctx, zx + 70, zy + 250, 480, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 190, zy + 180, 1.25, 0.4, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 360, zy + 180, 1.25, -0.3, true, now);
-            this.drawTubularChassisFrame(ctx, zx + 240, zy + 245, completedTasks.has('task_chassis'), now);
-            this.drawOrangeIndustrialGantry(ctx, zx + 60, zy + 380, 260, 160, now);
+            this.drawOrangeRoboticArm(ctx, zx + 190, zy + 190, 1.25, 0.4, true, now);
+            this.drawOrangeRoboticArm(ctx, zx + 360, zy + 190, 1.25, -0.3, true, now);
+            this.drawTubularChassisFrame(ctx, zx + 270, zy + 250, completedTasks.has('task_chassis'), now);
             this.drawDesignTabletStand(ctx, zx + 440, zy + 420);
 
         } else if (zone.id === 'deposito') {
@@ -414,6 +460,15 @@ class Renderer {
             this.drawComponentShelves(ctx, zx + 380, zy + 120);
             this.drawCardboardPalletStack(ctx, zx + 120, zy + 460);
             this.drawModernElectricForklift(ctx, zx + 460, zy + 450, now);
+
+            // Scenery Logistics Technician checking inventory near pallets
+            this.drawVectorPerson(ctx, {
+                x: zx + 230, y: zy + 470,
+                facing: 1, shirt: '#0284c7', pants: '#1e293b',
+                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
+                pose: 'tablet', reflectiveStripe: true,
+                scale: 1.2, now
+            });
 
         } else if (zone.id === 'ensamblaje') {
             // =================================================================
@@ -437,6 +492,24 @@ class Renderer {
             this.drawDynamometerRollers(ctx, zx + 110, zy + 260, completedTasks.has('task_qa'), now);
             this.drawRainTestArch(ctx, zx + 110, zy + 130, now);
             this.drawTelemetryTower(ctx, zx + 520, zy + 440, completedTasks.has('task_qa'));
+
+            // Scenery Operator sitting in swivel chair facing curved screens
+            this.drawVectorPerson(ctx, {
+                x: zx + 440, y: zy + 208,
+                facing: 1, shirt: '#0284c7', pants: '#1e293b',
+                skin: '#fed7aa', hair: '#1e293b', helmet: null,
+                pose: 'sit', reflectiveStripe: false,
+                scale: 1.15, now
+            });
+
+            // Scenery Technician with hard hat standing near server rack
+            this.drawVectorPerson(ctx, {
+                x: zx + 550, y: zy + 220,
+                facing: -1, shirt: '#0284c7', pants: '#1e293b',
+                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
+                pose: 'tablet', reflectiveStripe: true,
+                scale: 1.2, now
+            });
 
         } else if (zone.id === 'reuniones') {
             // =================================================================
@@ -1218,6 +1291,21 @@ class Renderer {
         ctx.arc(115, 35, 6, 0, Math.PI * 2);
         ctx.fill();
 
+        // Two sitting engineers collaborating around gears (from reference image)
+        this.drawVectorPerson(ctx, {
+            x: 20, y: 55, facing: 1, shirt: '#ffffff',
+            pants: '#1e293b', skin: '#fed7aa', hair: '#1e293b',
+            helmet: null, pose: 'sit', reflectiveStripe: false,
+            scale: 1.05, now
+        });
+
+        this.drawVectorPerson(ctx, {
+            x: 150, y: 55, facing: -1, shirt: '#ea580c',
+            pants: '#1e293b', skin: '#fed7aa', hair: '#451a03',
+            helmet: null, pose: 'sit', reflectiveStripe: false,
+            scale: 1.05, now
+        });
+
         ctx.restore();
     }
 
@@ -1665,156 +1753,538 @@ class Renderer {
         return img;
     }
 
-    drawIndustryTechnician(ctx, player, isLocal, now) {
-        const colors = window.QuantumGame.FactoryAssets.PLAYER_COLORS;
-        const palette = colors.find(c => c.id === player.colorId) || colors[0];
-
-        const x = player.x;
-        const y = player.y;
-        const facing = player.facing || 1;
-        const isMoving = player.isMoving;
-        const bob = isMoving ? Math.abs(Math.sin(now * 0.015)) * 5 : 0;
-        const legSwing = isMoving ? Math.sin(now * 0.02) * 8 : 0;
-        const charScale = 1.35;
+    /**
+     * drawVectorPerson - Renders a stylized isometric human figure
+     * Completely eliminates any Among Us bean or capsule shapes:
+     * - Anatomical human proportions (slender legs, hips, waist, torso, shoulders, neck, head)
+     * - Stylized hair or yellow safety hard hat with front brim
+     * - Collared polo shirt or suit jacket with high-vis safety vest
+     * - Slender dark trousers and work shoes with clean soles
+     * - Digital diagnostic tablet with glowing cyan telemetry screen
+     * - Natural walking stride animation (alternating leg swing, knee flex, arm swing, torso bob)
+     */
+    drawVectorPerson(ctx, opts) {
+        const {
+            x = 0,
+            y = 0,
+            facing = 1,
+            shirt = '#0284c7',
+            shirtShadow = null,
+            pants = '#1e293b',
+            shoes = '#0f172a',
+            skin = '#fed7aa',
+            hair = '#1e293b',
+            helmet = null,
+            helmetBrim = '#ca8a04',
+            pose = 'tablet',
+            isMoving = false,
+            now = performance.now(),
+            avatarImg = null,
+            scale = 1.25,
+            name = null,
+            isLocal = false,
+            emote = null,
+            reflectiveStripe = true
+        } = opts;
 
         ctx.save();
         ctx.translate(x, y);
 
-        // Soft floor shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.3)';
+        // 1. Soft Floor Shadow on Ground
+        ctx.fillStyle = 'rgba(15, 35, 55, 0.22)';
         ctx.beginPath();
-        ctx.ellipse(0, 32, 24, 9, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 16 * scale, 6 * scale, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Local player highlight circle
+        // 2. Local Player Proximity / Target Indicator
         if (isLocal) {
-            ctx.strokeStyle = 'rgba(2, 132, 199, 0.85)';
-            ctx.lineWidth = 2.5;
+            ctx.strokeStyle = '#00e5ff';
+            ctx.lineWidth = 2;
             ctx.beginPath();
-            ctx.ellipse(0, 32, 32, 12, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 0, 22 * scale, 8 * scale, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Subtle pulsing outer halo
+            const haloPulse = (Math.sin(now * 0.005) + 1) * 0.5;
+            ctx.strokeStyle = `rgba(0, 229, 255, ${0.15 + haloPulse * 0.25})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, (26 + haloPulse * 4) * scale, (10 + haloPulse * 2) * scale, 0, 0, Math.PI * 2);
             ctx.stroke();
         }
 
         ctx.save();
-        ctx.scale(facing * charScale, charScale);
-        ctx.translate(0, -bob);
+        // Facing flips the character horizontally
+        ctx.scale(facing * scale, scale);
 
-        // 1. Dark Work Trousers & Safety Boots
-        ctx.fillStyle = '#1e293b';
-        // Left Leg
-        ctx.beginPath();
-        ctx.roundRect(-11 + legSwing * 0.5, 12, 9, 14, 3);
-        ctx.fill();
-        // Right Leg
-        ctx.beginPath();
-        ctx.roundRect(2 - legSwing * 0.5, 12, 9, 14, 3);
-        ctx.fill();
+        // 3. Movement & Walking Animation Dynamics
+        const walkSpeed = 0.016;
+        const walkPhase = isMoving ? (now * walkSpeed) : 0;
+        const stride = isMoving ? Math.sin(walkPhase) * 7.5 : 0;
+        const kneeLift = isMoving ? Math.max(0, -Math.cos(walkPhase)) * 3.5 : 0;
+        const torsoBob = isMoving ? Math.abs(Math.sin(walkPhase * 2)) * 2 : (Math.sin(now * 0.003) * 0.6);
+        const armSwing = isMoving ? Math.cos(walkPhase) * 6 : 0;
 
-        // Steel-toe Safety Boots
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(-13 + legSwing * 0.5, 22, 12, 5);
-        ctx.fillRect(0 - legSwing * 0.5, 22, 12, 5);
+        // 4. Legs & Slender Trousers (Two distinct human legs with seam gap)
+        ctx.fillStyle = pants;
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 0.8;
 
-        // 2. High-Visibility Technician Vest / Polo Shirt in Player's Color
-        ctx.fillStyle = palette.body;
-        ctx.strokeStyle = '#0f2942';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(-16, -26, 32, 40, 10);
-        ctx.fill();
-        ctx.stroke();
+        if (pose === 'sit') {
+            // Sitting on chair: upper legs horizontal, lower legs vertical
+            // Left thigh
+            ctx.fillRect(-6, -24, 14, 6);
+            // Left calf down
+            ctx.fillRect(4, -18, 5, 16);
+            // Right thigh
+            ctx.fillRect(-4, -22, 14, 6);
+            // Right calf down
+            ctx.fillRect(7, -16, 5, 16);
 
-        // High-vis reflective safety stripes on torso
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(-15, -4, 30, 4);
-
-        // 3. Digital Diagnostic Tablet held in hand (Exact detail from reference image!)
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.roundRect(4, -8, 14, 18, 2);
-        ctx.fill();
-        // Glowing cyan screen on tablet
-        ctx.fillStyle = '#00e5ff';
-        ctx.fillRect(6, -6, 10, 14);
-
-        // 4. Head / Visor with Custom Photo Avatar OR Clean Technician Visor
-        const avatarImg = player.avatar ? this.getAvatarImage(player.avatar) : null;
-        if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
-            const vx = -9;
-            const vy = -24;
-            const vw = 26;
-            const vh = 24;
-
+            // Shoes
+            ctx.fillStyle = shoes;
+            ctx.fillRect(4, -3, 8, 4);
+            ctx.fillRect(7, -1, 8, 4);
+        } else {
+            // Standing or Walking
+            // --- Back / Left Leg ---
             ctx.save();
             ctx.beginPath();
-            ctx.roundRect(vx, vy, vw, vh, 8);
-            ctx.clip();
-            ctx.drawImage(avatarImg, vx, vy, vw, vh);
+            const leftHipX = -3.5;
+            const leftHipY = -27 - torsoBob;
+            const leftKneeX = -4.5 + stride * 0.5;
+            const leftKneeY = -14 - kneeLift - torsoBob * 0.5;
+            const leftFootX = -5 + stride;
+            const leftFootY = -2;
+
+            // Leg path
+            ctx.moveTo(leftHipX - 2.5, leftHipY);
+            ctx.lineTo(leftKneeX - 2.2, leftKneeY);
+            ctx.lineTo(leftFootX - 2, leftFootY);
+            ctx.lineTo(leftFootX + 2, leftFootY);
+            ctx.lineTo(leftKneeX + 2.2, leftKneeY);
+            ctx.lineTo(leftHipX + 1.5, leftHipY);
+            ctx.closePath();
+            ctx.fillStyle = pants;
+            ctx.fill();
+            ctx.stroke();
+
+            // Left shoe / work boot
+            ctx.fillStyle = shoes;
+            ctx.beginPath();
+            ctx.roundRect(leftFootX - 4, leftFootY - 1, 9, 4, 1.5);
+            ctx.fill();
+            // Sole
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(leftFootX - 4, leftFootY + 2, 9, 1);
             ctx.restore();
 
-            ctx.strokeStyle = '#0f2942';
-            ctx.lineWidth = 2.5;
+            // --- Front / Right Leg ---
+            ctx.save();
             ctx.beginPath();
-            ctx.roundRect(vx, vy, vw, vh, 8);
-            ctx.stroke();
-        } else {
-            // Smart technician face / visor
-            ctx.fillStyle = '#e0f2fe';
-            ctx.beginPath();
-            ctx.roundRect(-3, -20, 20, 14, 6);
+            const rightHipX = 3.5;
+            const rightHipY = -27 - torsoBob;
+            const rightKneeX = 4.5 - stride * 0.5;
+            const rightKneeY = -14 - torsoBob * 0.5;
+            const rightFootX = 5 - stride;
+            const rightFootY = -2;
+
+            // Leg path
+            ctx.moveTo(rightHipX - 1.5, rightHipY);
+            ctx.lineTo(rightKneeX - 2.2, rightKneeY);
+            ctx.lineTo(rightFootX - 2, rightFootY);
+            ctx.lineTo(rightFootX + 2, rightFootY);
+            ctx.lineTo(rightKneeX + 2.2, rightKneeY);
+            ctx.lineTo(rightHipX + 2.5, rightHipY);
+            ctx.closePath();
+            ctx.fillStyle = pants;
             ctx.fill();
-            ctx.strokeStyle = '#0f2942';
-            ctx.lineWidth = 2;
             ctx.stroke();
+
+            // Right shoe / work boot
+            ctx.fillStyle = shoes;
+            ctx.beginPath();
+            ctx.roundRect(rightFootX - 4, rightFootY - 1, 9, 4, 1.5);
+            ctx.fill();
+            // Sole
+            ctx.fillStyle = '#cbd5e1';
+            ctx.fillRect(rightFootX - 4, rightFootY + 2, 9, 1);
+            ctx.restore();
         }
 
-        // 5. Industry Safety Hard Hat on Top (Amber/Yellow with Reflective Band)
-        ctx.fillStyle = '#facc15';
-        ctx.strokeStyle = '#854d0e';
-        ctx.lineWidth = 2.5;
+        // 5. Waist, Belt & Buckle
+        const waistY = -28 - torsoBob;
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(-6.5, waistY - 2, 13, 3);
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(-1.5, waistY - 2, 3, 3);
+
+        // 6. Torso: Tapered Human Shape with Shoulders
+        const shoulderY = -44 - torsoBob;
         ctx.beginPath();
-        ctx.arc(-1, -26, 14, Math.PI, 0);
+        ctx.moveTo(-6.5, waistY - 1);
+        ctx.lineTo(-9.5, shoulderY);
+        ctx.lineTo(9.5, shoulderY);
+        ctx.lineTo(6.5, waistY - 1);
+        ctx.closePath();
+        ctx.fillStyle = shirt;
         ctx.fill();
+        ctx.strokeStyle = shirtShadow || '#0b2545';
+        ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Hard hat brim
+        // Right side depth shading on torso
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
         ctx.beginPath();
-        ctx.roundRect(-16, -27, 32, 4, 2);
+        ctx.moveTo(1, shoulderY);
+        ctx.lineTo(9.5, shoulderY);
+        ctx.lineTo(6.5, waistY - 1);
+        ctx.lineTo(0.5, waistY - 1);
+        ctx.closePath();
         ctx.fill();
-        ctx.stroke();
 
-        ctx.restore();
-
-        // 6. Modern Clean Name Tag above character
-        ctx.font = 'bold 12px "Segoe UI", system-ui, sans-serif';
-        ctx.textAlign = 'center';
-        const nameW = ctx.measureText(player.name).width + 16;
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = isLocal ? '#0284c7' : '#94a3b8';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(-nameW / 2, -68, nameW, 20, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#0f2942';
-        ctx.fillText(player.name, 0, -54);
-
-        // Floating Emote
-        if (player.emote) {
+        // High-vis reflective safety stripe on torso
+        if (reflectiveStripe) {
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(-8.5, waistY - 9, 17, 3);
             ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-8.5, waistY - 8, 17, 1);
+        }
+
+        // Collared polo / shirt neck trim
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.moveTo(-3, shoulderY);
+        ctx.lineTo(0, shoulderY + 4);
+        ctx.lineTo(3, shoulderY);
+        ctx.lineTo(0, shoulderY + 1);
+        ctx.closePath();
+        ctx.fill();
+
+        // 7. Security ID Badge Lanyard on Chest
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-3, shoulderY + 2);
+        ctx.lineTo(0, shoulderY + 7);
+        ctx.lineTo(3, shoulderY + 2);
+        ctx.stroke();
+
+        // Miniature ID Badge on Chest
+        const badgeX = -2.5;
+        const badgeY = shoulderY + 6;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#0f2942';
+        ctx.lineWidth = 0.8;
+        ctx.fillRect(badgeX, badgeY, 5, 7);
+        ctx.strokeRect(badgeX, badgeY, 5, 7);
+
+        // Show player avatar photo inside the lanyard badge if uploaded!
+        if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
+            try {
+                ctx.drawImage(avatarImg, badgeX + 0.5, badgeY + 0.5, 4, 4);
+            } catch (e) {
+                ctx.fillStyle = '#0284c7';
+                ctx.fillRect(badgeX + 1, badgeY + 1, 3, 3);
+            }
+        } else {
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(badgeX + 1, badgeY + 1, 3, 3);
+        }
+
+        // 8. Arms, Hands & Props (Diagnostic Tablet, Laptop, Pointer, Briefcase)
+        if (pose === 'point') {
+            // Right arm pointing forward
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
             ctx.beginPath();
-            ctx.arc(0, -96, 18, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#0284c7';
-            ctx.lineWidth = 2;
+            ctx.moveTo(8, shoulderY + 2);
+            ctx.lineTo(16, shoulderY - 2);
+            ctx.lineTo(24, shoulderY - 6);
             ctx.stroke();
-            ctx.font = '20px sans-serif';
-            ctx.fillText(player.emote, 0, -89);
+
+            // Pointing hand & index finger
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(24, shoulderY - 6, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillRect(24, shoulderY - 7.5, 5, 2);
+
+            // Left arm resting on hip
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(-8, shoulderY + 2);
+            ctx.lineTo(-12, waistY - 3);
+            ctx.lineTo(-6, waistY);
+            ctx.stroke();
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(-6, waistY, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+
+        } else if (pose === 'laptop') {
+            // Holding open laptop in front
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            // Left arm bent
+            ctx.beginPath();
+            ctx.moveTo(-8, shoulderY + 2);
+            ctx.lineTo(-6, waistY - 5);
+            ctx.lineTo(2, waistY - 5);
+            ctx.stroke();
+            // Right arm bent
+            ctx.beginPath();
+            ctx.moveTo(8, shoulderY + 2);
+            ctx.lineTo(8, waistY - 5);
+            ctx.lineTo(4, waistY - 5);
+            ctx.stroke();
+
+            // Open laptop
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(2, waistY - 6, 12, 2); // base
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(10, waistY - 14, 2, 9); // screen back
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(9, waistY - 14, 1.5, 8); // glowing screen
+
+        } else if (pose === 'briefcase') {
+            // Holding briefcase at right side
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(8, shoulderY + 2);
+            ctx.lineTo(10, waistY - 2);
+            ctx.lineTo(9, waistY + 6);
+            ctx.stroke();
+
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(9, waistY + 6, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Leather Briefcase
+            ctx.fillStyle = '#78350f';
+            ctx.strokeStyle = '#451a03';
+            ctx.lineWidth = 1;
+            ctx.fillRect(5, waistY + 5, 11, 8);
+            ctx.strokeRect(5, waistY + 5, 11, 8);
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(9.5, waistY + 7, 2, 2);
+
+            // Left arm swinging naturally
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(-8, shoulderY + 2);
+            ctx.lineTo(-10, waistY - 2);
+            ctx.stroke();
+
+        } else if (pose === 'sit') {
+            // Sitting arms resting on desk or keyboard
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(7, shoulderY + 2);
+            ctx.lineTo(11, waistY - 4);
+            ctx.lineTo(14, waistY - 4);
+            ctx.stroke();
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(14, waistY - 4, 2.2, 0, Math.PI * 2);
+            ctx.fill();
+
+        } else {
+            // Default: 'tablet' (Holding digital diagnostic tablet, matching reference image)
+            // Left / Back Arm
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(-7.5, shoulderY + 2);
+            ctx.lineTo(-9.5, waistY - 6 - armSwing * 0.3);
+            ctx.lineTo(0, waistY - 6);
+            ctx.stroke();
+
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(0, waistY - 6, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right / Front Arm
+            ctx.strokeStyle = shirt;
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.moveTo(7.5, shoulderY + 2);
+            ctx.lineTo(9.5, waistY - 5 + armSwing * 0.3);
+            ctx.lineTo(6, waistY - 5);
+            ctx.stroke();
+
+            ctx.fillStyle = skin;
+            ctx.beginPath();
+            ctx.arc(6, waistY - 5, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Digital Diagnostic Tablet (Signature Industry 4.0 tool)
+            const tabX = 1;
+            const tabY = waistY - 13;
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(tabX, tabY, 11, 14, 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Glowing Cyan Screen
+            ctx.fillStyle = '#00e5ff';
+            ctx.fillRect(tabX + 1.5, tabY + 1.5, 8, 11);
+
+            // Miniature Screen Telemetry Pulse Lines
+            ctx.fillStyle = '#0369a1';
+            ctx.fillRect(tabX + 2.5, tabY + 3, 6, 1.5);
+            ctx.fillRect(tabX + 2.5, tabY + 6, 4, 1.5);
+            ctx.fillRect(tabX + 2.5, tabY + 9, 5, 1.5);
+        }
+
+        // 9. Neck
+        const neckY = shoulderY - 1;
+        ctx.fillStyle = skin;
+        ctx.fillRect(-2.5, neckY - 4, 5, 5);
+
+        // 10. Head & Face
+        const headCenterY = neckY - 8;
+        ctx.fillStyle = skin;
+        ctx.beginPath();
+        ctx.ellipse(0, headCenterY, 6.5, 7.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Clean Stylized Eye & Ear
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(3.2, headCenterY - 0.5, 1.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Ear
+        ctx.fillStyle = skin;
+        ctx.strokeStyle = '#ea580c';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.arc(-4.5, headCenterY, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // 11. Hair or Industry Safety Helmet (Hard Hat)
+        if (helmet) {
+            // Safety Helmet (Industry 4.0 Hard Hat from reference image)
+            // Hair trim visible under helmet at back of neck
+            ctx.fillStyle = hair;
+            ctx.beginPath();
+            ctx.arc(-2, headCenterY + 2, 4.5, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.fill();
+
+            // Rounded Helmet Dome
+            ctx.fillStyle = helmet;
+            ctx.strokeStyle = helmetBrim || '#ca8a04';
+            ctx.lineWidth = 1.2;
+            ctx.beginPath();
+            ctx.arc(0, headCenterY - 2, 7.5, Math.PI, 0);
+            ctx.fill();
+            ctx.stroke();
+
+            // Protective Front Brim Shade (over forehead)
+            ctx.beginPath();
+            ctx.roundRect(-7.5, headCenterY - 2.5, 17, 3, 1.2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Helmet Top Ventilation Ridge / Crest
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(-1.5, headCenterY - 9.5, 3, 7.5);
+
+        } else {
+            // Office Stylized Hair (for office staff / executives)
+            ctx.fillStyle = hair;
+            ctx.beginPath();
+            ctx.arc(0, headCenterY - 2, 7.2, Math.PI * 0.9, Math.PI * 2.1);
+            ctx.lineTo(-4, headCenterY + 2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        ctx.restore(); // Undo facing scale
+
+        // 12. Modern Floating Name Tag Above Character
+        if (name) {
+            ctx.font = 'bold 11px "Segoe UI", system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            const nameWidth = ctx.measureText(name).width + 16;
+            const tagY = -74 - torsoBob;
+
+            // Shadow
+            ctx.fillStyle = 'rgba(15, 35, 55, 0.18)';
+            ctx.beginPath();
+            ctx.roundRect(-nameWidth / 2 + 1, tagY + 2, nameWidth, 18, 5);
+            ctx.fill();
+
+            // Tag Box (White with teal border)
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = isLocal ? '#0284c7' : '#cbd5e1';
+            ctx.lineWidth = isLocal ? 2 : 1.2;
+            ctx.beginPath();
+            ctx.roundRect(-nameWidth / 2, tagY, nameWidth, 18, 5);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#0b2545';
+            ctx.fillText(name, 0, tagY + 13);
+        }
+
+        // 13. Floating Emote Bubble
+        if (emote) {
+            const emoteY = -102 - torsoBob;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#0284c7';
+            ctx.lineWidth = 1.8;
+            ctx.beginPath();
+            ctx.arc(0, emoteY, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.font = '18px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(emote, 0, emoteY + 6);
         }
 
         ctx.restore();
+    }
+
+    drawIndustryTechnician(ctx, player, isLocal, now) {
+        const colors = window.QuantumGame.FactoryAssets.PLAYER_COLORS;
+        const palette = colors.find(c => c.id === player.colorId) || colors[0];
+        const avatarImg = player.avatar ? this.getAvatarImage(player.avatar) : null;
+
+        this.drawVectorPerson(ctx, {
+            x: player.x,
+            y: player.y,
+            facing: player.facing || 1,
+            shirt: palette.body,
+            shirtShadow: palette.shadow,
+            pants: '#1e293b',
+            shoes: '#0f172a',
+            skin: '#fed7aa',
+            hair: '#1e293b',
+            helmet: '#facc15',
+            helmetBrim: '#ca8a04',
+            pose: player.isMoving ? 'walk' : 'tablet',
+            isMoving: Boolean(player.isMoving),
+            now: now,
+            avatarImg: avatarImg,
+            scale: 1.25,
+            name: player.name,
+            isLocal: isLocal,
+            emote: player.emote,
+            reflectiveStripe: true
+        });
     }
 
     drawQBotDrone(ctx, qbot, now) {
@@ -1870,8 +2340,8 @@ class Renderer {
 
         mCtx.clearRect(0, 0, mw, mh);
 
-        // Corporate teal background on minimap
-        mCtx.fillStyle = '#759ea8';
+        // Pale corporate teal background on minimap
+        mCtx.fillStyle = '#e5edf3';
         mCtx.fillRect(0, 0, mw, mh);
 
         // Elevated white platforms on minimap
