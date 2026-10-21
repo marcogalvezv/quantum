@@ -98,6 +98,35 @@ class SoundManager {
         this.playTone(200, 'sawtooth', 0.22, 0.12, 130);
     }
 
+    playEmergencyAlarm() {
+        if (this.muted) return;
+        this.resume();
+        if (!this.ctx) return;
+
+        // Heavy introductory gong / impact
+        this.playTone(130, 'triangle', 0.6, 0.25, 45);
+
+        // Dramatic two-tone emergency klaxon pulses (Among Us style siren)
+        const klaxonPairs = [
+            { t: 80, f: 580, s: 780 },
+            { t: 420, f: 780, s: 540 },
+            { t: 800, f: 580, s: 780 },
+            { t: 1150, f: 780, s: 540 },
+            { t: 1520, f: 620, s: 840 },
+            { t: 1880, f: 840, s: 520 }
+        ];
+
+        klaxonPairs.forEach(p => {
+            setTimeout(() => {
+                this.playTone(p.f, 'sawtooth', 0.28, 0.16, p.s);
+            }, p.t);
+        });
+    }
+
+    playVoteSound() {
+        this.playTone(740, 'sine', 0.09, 0.12, 1050);
+    }
+
     playTaskComplete() {
         // Cheerful chord fanfare
         const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6

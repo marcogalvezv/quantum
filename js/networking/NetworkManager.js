@@ -298,6 +298,39 @@ class NetworkManager {
         });
     }
 
+    broadcastEmergencyMeeting(callerName, callerColor, callerAvatar, reason) {
+        this.sendPacket({
+            type: 'emergency_meeting',
+            callerName,
+            callerColor,
+            callerAvatar,
+            reason
+        });
+    }
+
+    broadcastMeetingVote(voterId, stationId) {
+        this.sendPacket({
+            type: 'meeting_vote',
+            voterId,
+            stationId
+        });
+    }
+
+    broadcastMeetingChat(senderName, senderColor, text) {
+        this.sendPacket({
+            type: 'meeting_chat',
+            senderName,
+            senderColor,
+            text
+        });
+    }
+
+    broadcastMeetingEnded() {
+        this.sendPacket({
+            type: 'meeting_ended'
+        });
+    }
+
     handlePacket(data, source) {
         if (!data || data.senderId === this.localId) return;
         if (data.room && data.room !== this.roomCode) return;
@@ -344,6 +377,30 @@ class NetworkManager {
             case 'chat': {
                 if (this.callbacks.onRemoteChat) {
                     this.callbacks.onRemoteChat(data);
+                }
+                break;
+            }
+            case 'emergency_meeting': {
+                if (this.callbacks.onEmergencyMeeting) {
+                    this.callbacks.onEmergencyMeeting(data);
+                }
+                break;
+            }
+            case 'meeting_vote': {
+                if (this.callbacks.onMeetingVote) {
+                    this.callbacks.onMeetingVote(data);
+                }
+                break;
+            }
+            case 'meeting_chat': {
+                if (this.callbacks.onMeetingChat) {
+                    this.callbacks.onMeetingChat(data);
+                }
+                break;
+            }
+            case 'meeting_ended': {
+                if (this.callbacks.onMeetingEnded) {
+                    this.callbacks.onMeetingEnded(data);
                 }
                 break;
             }
