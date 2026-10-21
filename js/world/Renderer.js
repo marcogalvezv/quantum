@@ -2213,12 +2213,13 @@ class Renderer {
 
         ctx.restore(); // Undo facing scale
 
-        // 12. Modern Floating Name Tag Above Character
+        // 12. Modern Floating Name Tag Above Character (Cleanly above helmet)
         if (name) {
             ctx.font = 'bold 11px "Segoe UI", system-ui, sans-serif';
             ctx.textAlign = 'center';
             const nameWidth = ctx.measureText(name).width + 16;
-            const tagY = -74 - torsoBob;
+            // Position cleanly above helmet (top of helmet reaches approx -64 * scale)
+            const tagY = -88 * scale - (torsoBob * scale);
 
             // Shadow
             ctx.fillStyle = 'rgba(15, 35, 55, 0.18)';
@@ -2241,7 +2242,7 @@ class Renderer {
 
         // 13. Floating Emote Bubble
         if (emote) {
-            const emoteY = -102 - torsoBob;
+            const emoteY = (-88 * scale - (torsoBob * scale)) - 26;
             ctx.fillStyle = '#ffffff';
             ctx.strokeStyle = '#0284c7';
             ctx.lineWidth = 1.8;
