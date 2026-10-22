@@ -464,7 +464,8 @@ class QuantumMotorsGame {
         const nameInput = document.getElementById('player-name-input').value.trim();
         const roomInput = document.getElementById('room-code-input').value.trim() || 'PIL-2026';
         const wsInput = document.getElementById('ws-url-input').value.trim() || 'ws://localhost:8080';
-        const fillBots = document.getElementById('fill-bots-checkbox').checked;
+        const fillBotsCheckbox = document.getElementById('fill-bots-checkbox');
+        const fillBots = (fillBotsCheckbox && fillBotsCheckbox.checked) ? true : false;
 
         if (this.webcamStream) {
             this.webcamStream.getTracks().forEach(t => t.stop());
