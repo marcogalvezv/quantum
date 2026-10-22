@@ -200,21 +200,21 @@
             </p>
             <div class="form-group" style="text-align:left;margin-bottom:10px;">
                 <label for="call-vote-topic-input" style="font-size:12px;font-weight:700;color:#38bdf8;">Pregunta o Asunto a Votar:</label>
-                <input type="text" id="call-vote-topic-input" class="styled-select" style="width:100%;margin-top:4px;padding:9px;background:#0f172a;border:1.5px solid #38bdf8;border-radius:8px;color:#fff;font-size:13px;font-weight:700;" value="¿Qué prioridad debe resolver el Comité de Inocuidad PIL?">
+                <input type="text" id="call-vote-topic-input" class="styled-select" style="width:100%;margin-top:4px;padding:9px;background:#0f172a;border:1.5px solid #38bdf8;border-radius:8px;color:#fff;font-size:13px;font-weight:700;" value="¿Cómo cumplimos con el pedido?">
             </div>
             <div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
                 <label style="font-size:12px;font-weight:700;color:#facc15;">3 Opciones para que el equipo vote (1 voto por persona):</label>
                 <div class="option-input-wrapper">
                     <span class="opt-num-tag">1</span>
-                    <input type="text" id="call-vote-opt1-input" class="styled-vote-input" placeholder="Opción 1..." value="Priorizar Pasteurización HTST a 72°C">
+                    <input type="text" id="call-vote-opt1-input" class="styled-vote-input" placeholder="Opción 1..." value="Reparar">
                 </div>
                 <div class="option-input-wrapper">
                     <span class="opt-num-tag">2</span>
-                    <input type="text" id="call-vote-opt2-input" class="styled-vote-input" placeholder="Opción 2..." value="Línea de Envasado Leche Bolsa Azul">
+                    <input type="text" id="call-vote-opt2-input" class="styled-vote-input" placeholder="Opción 2..." value="Alquilar una máquina compatible">
                 </div>
                 <div class="option-input-wrapper">
                     <span class="opt-num-tag">3</span>
-                    <input type="text" id="call-vote-opt3-input" class="styled-vote-input" placeholder="Opción 3..." value="Auditar Cadena de Frío y Fermentación Yogur">
+                    <input type="text" id="call-vote-opt3-input" class="styled-vote-input" placeholder="Opción 3..." value="Contratar producción externa">
                 </div>
             </div>
             <div style="display:flex;gap:10px;margin-top:16px;">
@@ -293,6 +293,9 @@
                 <button type="button" id="conclude-custom-vote-btn" class="secondary-action-btn danger-btn hidden" style="background:#dc2626;border-color:#b91c1c;padding:9px 16px;font-weight:700;font-size:13px;">
                     🏁 Concluir Votación y Declarar Ganador
                 </button>
+                <span id="meeting-wait-moderator-text" class="hidden" style="color:#cbd5e1;font-size:13px;font-style:italic;background:rgba(15,23,42,0.8);padding:9px 16px;border-radius:10px;border:1.5px solid #334155;">
+                    ⏳ Esperando que el convocante de la reunión reanude las labores...
+                </span>
                 <button type="button" id="end-meeting-btn" class="primary-action-btn resume-work-btn">
                     🥛 Reanudar Labores / Volver a la Planta
                 </button>

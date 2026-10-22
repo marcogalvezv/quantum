@@ -20,6 +20,10 @@ class FactoryMap {
         this.envasadoraBroken = true;
     }
 
+    repairEnvasadora() {
+        this.envasadoraBroken = false;
+    }
+
     isWalkable(x, y, radius = 20) {
         const margin = radius * 0.55;
         // Check if circle center +/- margin lies inside any zone or corridor (with generous doorway overlap)

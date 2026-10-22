@@ -165,10 +165,10 @@ class QuantumMotorsGame {
                 const opt2Input = document.getElementById('call-vote-opt2-input');
                 const opt3Input = document.getElementById('call-vote-opt3-input');
 
-                const topic = (topicInput && topicInput.value.trim()) || '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?';
-                const opt1 = (opt1Input && opt1Input.value.trim()) || 'Priorizar Pasteurización HTST a 72°C';
-                const opt2 = (opt2Input && opt2Input.value.trim()) || 'Línea de Envasado Leche Bolsa Azul';
-                const opt3 = (opt3Input && opt3Input.value.trim()) || 'Auditar Cadena de Frío y Fermentación Yogur';
+                const topic = (topicInput && topicInput.value.trim()) || '¿Cómo cumplimos con el pedido?';
+                const opt1 = (opt1Input && opt1Input.value.trim()) || 'Reparar';
+                const opt2 = (opt2Input && opt2Input.value.trim()) || 'Alquilar una máquina compatible';
+                const opt3 = (opt3Input && opt3Input.value.trim()) || 'Contratar producción externa';
 
                 document.getElementById('call-meeting-modal').classList.add('hidden');
                 this.triggerEmergencyMeeting(this.localPlayer.name, this.localPlayer.colorId, this.localPlayer.avatar, topic, true, [opt1, opt2, opt3]);
@@ -396,6 +396,9 @@ class QuantumMotorsGame {
             },
             onEnvasadoraExplosion: (data) => {
                 this.handleRemoteEnvasadoraExplosion(data.x, data.y, data.culpritName);
+            },
+            onEnvasadoraRepaired: (data) => {
+                this.handleRemoteEnvasadoraRepaired(data.mechanicName);
             }
         });
     }
@@ -414,6 +417,14 @@ class QuantumMotorsGame {
 
                 if (isNearEnvasado || isInEnvasadoZone) {
                     this.triggerEasterEggEnvasadoFailure();
+                    return;
+                }
+            }
+
+            // REPARAR ENVASADORA: Con la tecla 'F', reparar la máquina envasadora si está rota
+            if (e.code === 'KeyF' && this.isRunning) {
+                if (this.factoryMap.envasadoraBroken) {
+                    this.repairEnvasadora();
                     return;
                 }
             }
@@ -623,6 +634,103 @@ class QuantumMotorsGame {
         }, 6500);
     }
 
+    repairEnvasadora() {
+        if (!this.factoryMap.envasadoraBroken) return;
+
+        this.factoryMap.repairEnvasadora();
+
+        // Sound effect
+        if (this.sound.playMachineRepaired) {
+            this.sound.playMachineRepaired();
+        } else {
+            this.sound.playTaskComplete();
+        }
+
+        // Close broken machine or easter egg modals if open
+        const brokenModal = document.getElementById('broken-machine-modal');
+        if (brokenModal) brokenModal.classList.add('hidden');
+        const easterModal = document.getElementById('easter-egg-modal');
+        if (easterModal) easterModal.classList.add('hidden');
+
+        // Emote on player
+        this.localPlayer.setEmote('🔧', 4.0);
+
+        // Chat announcements
+        this.addChatMessage('PIL-BOT', 'lime', `🔧 ¡ENVASADORA REPARADA! ${this.localPlayer.name} reparó la máquina envasadora aséptica con la tecla [F]. ¡La línea de Bolsa Azul vuelve a operar!`);
+
+        // Global HUD Alert Banner
+        this.showRepairedGlobalAlert(this.localPlayer.name || 'Técnico PIL');
+
+        // Broadcast to all other players across network
+        if (this.network && this.network.broadcastEnvasadoraRepaired) {
+            this.network.broadcastEnvasadoraRepaired(this.localPlayer.name || 'Técnico PIL');
+        }
+
+        if (this.network && this.network.ws && this.network.ws.readyState === WebSocket.OPEN) {
+            this.network.ws.send(JSON.stringify({
+                type: 'chat',
+                room: this.network.roomId,
+                playerName: 'MANTENIMIENTO PIL',
+                colorId: 'lime',
+                text: `🔧 ¡ENVASADORA REPARADA! ${this.localPlayer.name} arregló la máquina con [F]. Operatividad al 100%.`
+            }));
+        }
+    }
+
+    handleRemoteEnvasadoraRepaired(mechanicName = 'Un Técnico') {
+        this.factoryMap.repairEnvasadora();
+
+        const brokenModal = document.getElementById('broken-machine-modal');
+        if (brokenModal) brokenModal.classList.add('hidden');
+        const easterModal = document.getElementById('easter-egg-modal');
+        if (easterModal) easterModal.classList.add('hidden');
+
+        if (this.sound.playMachineRepaired) {
+            this.sound.playMachineRepaired();
+        } else {
+            this.sound.playTaskComplete();
+        }
+
+        this.showRepairedGlobalAlert(mechanicName);
+        this.addChatMessage('PIL-BOT', 'lime', `🔧 ¡ENVASADORA REPARADA! ${mechanicName} arregló la envasadora aséptica con la tecla [F]. ¡Vuelve a estar operativa!`);
+    }
+
+    showRepairedGlobalAlert(mechanicName = 'Un Técnico') {
+        let banner = document.getElementById('explosion-global-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'explosion-global-banner';
+            banner.className = 'explosion-global-banner';
+            document.body.appendChild(banner);
+        }
+
+        banner.style.background = 'linear-gradient(135deg, rgba(16, 185, 129, 0.96), rgba(5, 150, 105, 0.98))';
+        banner.style.borderColor = '#6ee7b7';
+        banner.style.boxShadow = '0 0 50px rgba(16, 185, 129, 0.75), 0 12px 30px rgba(0, 0, 0, 0.7)';
+
+        banner.innerHTML = `
+            <div class="explosion-banner-icon">🔧</div>
+            <div class="explosion-banner-text">
+                <h3 style="color:#d1fae5;margin:0;font-size:20px;font-weight:900;">🔧 ¡ENVASADORA REPARADA CON ÉXITO! 🔧</h3>
+                <p style="color:#ffffff;margin:4px 0 0 0;font-size:14px;font-weight:700;">${mechanicName} reparó la máquina con la tecla [F]. ¡La producción de Bolsa Azul continúa!</p>
+            </div>
+        `;
+
+        banner.classList.add('visible');
+
+        if (this._explosionAlertTimeout) {
+            clearTimeout(this._explosionAlertTimeout);
+        }
+        this._explosionAlertTimeout = setTimeout(() => {
+            banner.classList.remove('visible');
+            setTimeout(() => {
+                banner.style.background = '';
+                banner.style.borderColor = '';
+                banner.style.boxShadow = '';
+            }, 500);
+        }, 5500);
+    }
+
     showEasterEggModal() {
         let modal = document.getElementById('easter-egg-modal');
         if (!modal) {
@@ -634,17 +742,26 @@ class QuantumMotorsGame {
                     <div style="font-size:48px;margin-bottom:8px;">💥🥚🥛</div>
                     <span class="bolivia-pill" style="background:#ef4444;color:#fff;">EASTER EGG ACTIVADO</span>
                     <h2 style="color:#f87171;margin:12px 0 6px 0;font-size:22px;">¡ENVASADORA PIL INUTILIZABLE!</h2>
-                    <p style="color:#e2e8f0;font-size:14px;line-height:1.6;margin-bottom:18px;">
+                    <p style="color:#e2e8f0;font-size:14px;line-height:1.6;margin-bottom:14px;">
                         Presionaste la tecla secreta <strong>[B]</strong> en lugar de [E] en la línea de envasado.<br>
                         ¡La bobina tricapa se atascó violentamente, los selladores térmicos colapsaron y se derramaron litros de leche por todo el piso!<br>
                         <span style="color:#fca5a5;font-weight:700;">⚠️ La máquina envasadora ha quedado completamente fuera de servicio e inutilizable.</span>
                     </p>
-                    <button id="close-easter-egg-btn" class="btn btn-primary" style="background:#ef4444;border-color:#b91c1c;width:100%;">¡Entendido, qué desastre!</button>
+                    <p style="color:#6ee7b7;font-size:13.5px;font-weight:700;margin-bottom:18px;">
+                        💡 <em>Tip: Presiona la tecla <strong>[F]</strong> para repararla y volver a ponerla en marcha.</em>
+                    </p>
+                    <div style="display:flex;gap:10px;">
+                        <button id="repair-easter-egg-btn" class="primary-action-btn" style="background:#10b981;border-color:#059669;flex:1;">🔧 Reparar [F]</button>
+                        <button id="close-easter-egg-btn" class="btn btn-primary" style="background:#ef4444;border-color:#b91c1c;flex:1;">¡Entendido!</button>
+                    </div>
                 </div>
             `;
             document.body.appendChild(modal);
             document.getElementById('close-easter-egg-btn').addEventListener('click', () => {
                 modal.classList.add('hidden');
+            });
+            document.getElementById('repair-easter-egg-btn').addEventListener('click', () => {
+                this.repairEnvasadora();
             });
         }
         modal.classList.remove('hidden');
@@ -662,17 +779,24 @@ class QuantumMotorsGame {
                 <div class="lobby-card" style="border-color:#f97316;text-align:center;max-width:480px;box-shadow:0 0 40px rgba(249,115,22,0.4);">
                     <div style="font-size:42px;margin-bottom:6px;">⚠️🛠️🛑</div>
                     <h3 style="color:#fb923c;margin-bottom:8px;font-size:20px;">MÁQUINA ENVASADORA INUTILIZABLE</h3>
-                    <p style="color:#cbd5e1;font-size:14px;line-height:1.5;margin-bottom:18px;">
+                    <p style="color:#cbd5e1;font-size:14px;line-height:1.5;margin-bottom:14px;">
                         Esta máquina sufrió una falla destructiva por el atasco con la tecla <strong>[B]</strong>.<br>
                         No se puede operar ni procesar bolsas de leche PIL.<br>
                         <em>Estado: Inutilizable / Fuera de Servicio</em>
                     </p>
+                    <p style="color:#6ee7b7;font-size:13.5px;font-weight:700;margin-bottom:16px;">
+                        💡 Presiona la tecla <strong>[F]</strong> en cualquier momento para repararla.
+                    </p>
+                    <button id="repair-broken-btn" class="primary-action-btn" style="background:#10b981;border-color:#059669;width:100%;margin-bottom:10px;font-size:14px;">🔧 REPARAR ENVASADORA [F]</button>
                     <button id="close-broken-btn" class="btn btn-secondary" style="width:100%;">Cerrar</button>
                 </div>
             `;
             document.body.appendChild(modal);
             document.getElementById('close-broken-btn').addEventListener('click', () => {
                 modal.classList.add('hidden');
+            });
+            document.getElementById('repair-broken-btn').addEventListener('click', () => {
+                this.repairEnvasadora();
             });
         }
         modal.classList.remove('hidden');
@@ -913,11 +1037,11 @@ class QuantumMotorsGame {
         document.getElementById('call-meeting-modal').classList.add('hidden');
 
         const voteOptions = (Array.isArray(initialOptions) && initialOptions.length >= 3) ? initialOptions : [
-            'Priorizar Pasteurización HTST a 72°C',
-            'Línea de Envasado Leche Bolsa Azul',
-            'Auditar Cadena de Frío y Fermentación Yogur'
+            'Reparar',
+            'Alquilar una máquina compatible',
+            'Contratar producción externa'
         ];
-        const voteTopic = reason || '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?';
+        const voteTopic = reason || '¿Cómo cumplimos con el pedido?';
 
         // Broadcast to network if local caller
         if (isInitiator) {
@@ -1140,6 +1264,8 @@ class QuantumMotorsGame {
     setupMeetingModeratorPanel() {
         const modNameEl = document.getElementById('meeting-moderator-display-name');
         const concludeBtn = document.getElementById('conclude-custom-vote-btn');
+        const endMeetingBtn = document.getElementById('end-meeting-btn');
+        const waitModeratorText = document.getElementById('meeting-wait-moderator-text');
         const winnerBanner = document.getElementById('vote-winner-banner');
 
         if (winnerBanner) winnerBanner.classList.add('hidden');
@@ -1148,11 +1274,16 @@ class QuantumMotorsGame {
             modNameEl.textContent = this.meetingModeratorName || (this.isMeetingModerator ? this.localPlayer.name : 'el Convocante');
         }
 
-        if (concludeBtn) {
-            if (this.isMeetingModerator) {
-                concludeBtn.classList.remove('hidden');
-            } else {
-                concludeBtn.classList.add('hidden');
+        if (this.isMeetingModerator) {
+            if (concludeBtn) concludeBtn.classList.remove('hidden');
+            if (endMeetingBtn) endMeetingBtn.classList.remove('hidden');
+            if (waitModeratorText) waitModeratorText.classList.add('hidden');
+        } else {
+            if (concludeBtn) concludeBtn.classList.add('hidden');
+            if (endMeetingBtn) endMeetingBtn.classList.add('hidden');
+            if (waitModeratorText) {
+                waitModeratorText.textContent = `⏳ Esperando que ${this.meetingModeratorName || 'el convocante'} reanude las labores...`;
+                waitModeratorText.classList.remove('hidden');
             }
         }
     }
@@ -1164,10 +1295,10 @@ class QuantumMotorsGame {
         const opt2Input = document.getElementById('custom-vote-opt2-input');
         const opt3Input = document.getElementById('custom-vote-opt3-input');
 
-        const topic = (topicInput && topicInput.value.trim()) || '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?';
-        const opt1 = (opt1Input && opt1Input.value.trim()) || 'Priorizar Pasteurización HTST a 72°C';
-        const opt2 = (opt2Input && opt2Input.value.trim()) || 'Línea de Envasado Leche Bolsa Azul';
-        const opt3 = (opt3Input && opt3Input.value.trim()) || 'Auditar Cadena de Frío y Fermentación Yogur';
+        const topic = (topicInput && topicInput.value.trim()) || '¿Cómo cumplimos con el pedido?';
+        const opt1 = (opt1Input && opt1Input.value.trim()) || 'Reparar';
+        const opt2 = (opt2Input && opt2Input.value.trim()) || 'Alquilar una máquina compatible';
+        const opt3 = (opt3Input && opt3Input.value.trim()) || 'Contratar producción externa';
 
         this.meetingCustomVote = {
             topic,
@@ -1412,10 +1543,10 @@ class QuantumMotorsGame {
         const bots = Array.from(this.network.bots.values());
 
         const botLines = [
-            '¡Apoyo la Opción 1 para asegurar la pasteurización!',
-            '¡Mi voto va para la Opción 2, la línea de Bolsa Azul!',
-            '¡La Opción 3 es fundamental para la inocuidad del yogur!',
-            '¡Excelente planteamiento del moderador!'
+            '¡Yo voto por Reparar de inmediato la envasadora!',
+            '¡Alquilar una máquina compatible nos permitirá seguir envasando sin demoras!',
+            '¡Contratar producción externa garantiza las bolsas azules del pedido!',
+            '¡Buen debate de planta! Voto por la solución más rápida y segura.'
         ];
 
         bots.forEach((bot, idx) => {
@@ -1439,6 +1570,7 @@ class QuantumMotorsGame {
 
     endEmergencyMeeting(isInitiator = true) {
         if (!this.meetingInProgress) return;
+        if (isInitiator && !this.isMeetingModerator) return;
         this.meetingInProgress = false;
         this.meetingCooldown = 20;
 

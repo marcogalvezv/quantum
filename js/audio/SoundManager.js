@@ -98,6 +98,15 @@ class SoundManager {
         this.playTone(200, 'sawtooth', 0.22, 0.12, 130);
     }
 
+    playMachineRepaired() {
+        if (this.muted) return;
+        this.resume();
+        this.playMechanicalRatchet();
+        setTimeout(() => this.playTone(440, 'triangle', 0.15, 0.18, 550), 120);
+        setTimeout(() => this.playTone(554, 'triangle', 0.15, 0.18, 660), 240);
+        setTimeout(() => this.playTone(659, 'sine', 0.25, 0.2, 880), 360);
+    }
+
     playMachineFailure() {
         if (this.muted) return;
         this.resume();

@@ -368,6 +368,13 @@ class NetworkManager {
         });
     }
 
+    broadcastEnvasadoraRepaired(mechanicName = 'Técnico PIL') {
+        this.sendPacket({
+            type: 'envasadora_repaired',
+            mechanicName
+        });
+    }
+
     handlePacket(data, source) {
         if (!data || data.senderId === this.localId) return;
         if (data.room && data.room !== this.roomCode) return;
@@ -462,6 +469,12 @@ class NetworkManager {
             case 'envasadora_explosion': {
                 if (this.callbacks.onEnvasadoraExplosion) {
                     this.callbacks.onEnvasadoraExplosion(data);
+                }
+                break;
+            }
+            case 'envasadora_repaired': {
+                if (this.callbacks.onEnvasadoraRepaired) {
+                    this.callbacks.onEnvasadoraRepaired(data);
                 }
                 break;
             }
