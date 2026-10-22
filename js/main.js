@@ -366,6 +366,19 @@ class QuantumMotorsGame {
             if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
             this.keys[e.code] = true;
 
+            // EASTER EGG: En el área de envasado, si se aprieta 'B' en lugar de 'E', ¡provoca una falla destructiva en la envasadora!
+            if (e.code === 'KeyB' && this.isRunning) {
+                const isNearEnvasado = (this.nearestStation && this.nearestStation.id === 'task_assembly') ||
+                                       (this.missionManager && this.missionManager.activeStation && this.missionManager.activeStation.id === 'task_assembly');
+                const currentZone = this.factoryMap.getZoneAt(this.localPlayer.x, this.localPlayer.y);
+                const isInEnvasadoZone = currentZone && currentZone.id === 'ensamblaje';
+
+                if (isNearEnvasado || isInEnvasadoZone) {
+                    this.triggerEasterEggEnvasadoFailure();
+                    return;
+                }
+            }
+
             if ((e.code === 'KeyE' || e.code === 'Space') && this.isRunning) {
                 if (this.missionManager.activeStation || this.meetingInProgress) return;
                 this.interactWithNearest();
@@ -384,6 +397,10 @@ class QuantumMotorsGame {
             // Check if user clicked directly on a nearby station
             const clickedStation = this.factoryMap.getNearestStation(worldPos.x, worldPos.y, 65);
             if (clickedStation && Math.hypot(clickedStation.x - this.localPlayer.x, clickedStation.y - this.localPlayer.y) < 130) {
+                if (clickedStation.id === 'task_assembly' && this.factoryMap.envasadoraBroken) {
+                    this.showBrokenEnvasadoraAlert();
+                    return;
+                }
                 if (clickedStation.id === 'task_meeting') {
                     this.promptCallMeeting();
                     return;
@@ -446,6 +463,10 @@ class QuantumMotorsGame {
 
     interactWithNearest() {
         if (this.nearestStation) {
+            if (this.nearestStation.id === 'task_assembly' && this.factoryMap.envasadoraBroken) {
+                this.showBrokenEnvasadoraAlert();
+                return;
+            }
             if (this.nearestStation.id === 'task_meeting') {
                 this.promptCallMeeting();
                 return;
@@ -454,6 +475,104 @@ class QuantumMotorsGame {
         } else if (this.nearestSignage) {
             this.openSignageModal(this.nearestSignage);
         }
+    }
+
+    triggerEasterEggEnvasadoFailure() {
+        if (this.factoryMap.envasadoraBroken) {
+            this.showBrokenEnvasadoraAlert();
+            return;
+        }
+
+        // Set broken state in factory map
+        this.factoryMap.breakEnvasadora();
+
+        // Close mission modal if active
+        if (this.missionManager && this.missionManager.activeStation) {
+            this.missionManager.closeModal();
+        }
+
+        // Sound effect
+        if (this.sound.playMachineFailure) {
+            this.sound.playMachineFailure();
+        } else {
+            this.sound.playError();
+        }
+
+        // Emote on player
+        this.localPlayer.setEmote('💥', 5.0);
+
+        // Chat announcements
+        this.addChatMessage('SISTEMA', 'red', '🥚 ¡EASTER EGG ACTIVADO! Has presionado [B] en la línea de envasado...');
+        this.addChatMessage('PIL-BOT', 'orange', '🚨 ¡DESASTRE LÁCTEO! ¡La envasadora sufrió un atasco destructivo de film tricapa por pulsar [B], derramó leche y quedó totalmente INUTILIZABLE!');
+
+        // Broadcast over network if available
+        if (this.network && this.network.ws && this.network.ws.readyState === WebSocket.OPEN) {
+            this.network.ws.send(JSON.stringify({
+                type: 'chat',
+                room: this.network.roomId,
+                playerName: 'ALERTA PLANTA',
+                colorId: 'orange',
+                text: '💥 ¡FALLA CRÍTICA EN ENVASADO! La envasadora de Bolsa Azul colapsó por sobredosis [B]. Máquina INUTILIZABLE.'
+            }));
+        }
+
+        // Show Easter Egg Discovery Modal
+        this.showEasterEggModal();
+    }
+
+    showEasterEggModal() {
+        let modal = document.getElementById('easter-egg-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'easter-egg-modal';
+            modal.className = 'overlay';
+            modal.innerHTML = `
+                <div class="lobby-card" style="border-color:#ef4444;text-align:center;box-shadow:0 0 50px rgba(239,68,68,0.55);max-width:520px;">
+                    <div style="font-size:48px;margin-bottom:8px;">💥🥚🥛</div>
+                    <span class="bolivia-pill" style="background:#ef4444;color:#fff;">EASTER EGG ACTIVADO</span>
+                    <h2 style="color:#f87171;margin:12px 0 6px 0;font-size:22px;">¡ENVASADORA PIL INUTILIZABLE!</h2>
+                    <p style="color:#e2e8f0;font-size:14px;line-height:1.6;margin-bottom:18px;">
+                        Presionaste la tecla secreta <strong>[B]</strong> en lugar de [E] en la línea de envasado.<br>
+                        ¡La bobina tricapa se atascó violentamente, los selladores térmicos colapsaron y se derramaron litros de leche por todo el piso!<br>
+                        <span style="color:#fca5a5;font-weight:700;">⚠️ La máquina envasadora ha quedado completamente fuera de servicio e inutilizable.</span>
+                    </p>
+                    <button id="close-easter-egg-btn" class="btn btn-primary" style="background:#ef4444;border-color:#b91c1c;width:100%;">¡Entendido, qué desastre!</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('close-easter-egg-btn').addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        modal.classList.remove('hidden');
+    }
+
+    showBrokenEnvasadoraAlert() {
+        this.sound.playError();
+        this.localPlayer.setEmote('⚠️', 3.0);
+        let modal = document.getElementById('broken-machine-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'broken-machine-modal';
+            modal.className = 'overlay';
+            modal.innerHTML = `
+                <div class="lobby-card" style="border-color:#f97316;text-align:center;max-width:480px;box-shadow:0 0 40px rgba(249,115,22,0.4);">
+                    <div style="font-size:42px;margin-bottom:6px;">⚠️🛠️🛑</div>
+                    <h3 style="color:#fb923c;margin-bottom:8px;font-size:20px;">MÁQUINA ENVASADORA INUTILIZABLE</h3>
+                    <p style="color:#cbd5e1;font-size:14px;line-height:1.5;margin-bottom:18px;">
+                        Esta máquina sufrió una falla destructiva por el atasco con la tecla <strong>[B]</strong>.<br>
+                        No se puede operar ni procesar bolsas de leche PIL.<br>
+                        <em>Estado: Inutilizable / Fuera de Servicio</em>
+                    </p>
+                    <button id="close-broken-btn" class="btn btn-secondary" style="width:100%;">Cerrar</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            document.getElementById('close-broken-btn').addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        modal.classList.remove('hidden');
     }
 
     openSignageModal(signage) {

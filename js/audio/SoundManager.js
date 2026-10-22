@@ -98,6 +98,18 @@ class SoundManager {
         this.playTone(200, 'sawtooth', 0.22, 0.12, 130);
     }
 
+    playMachineFailure() {
+        if (this.muted) return;
+        this.resume();
+        // Heavy impact crunch
+        this.playTone(90, 'sawtooth', 0.55, 0.3, 30);
+        // Electrical sparks and fault buzzes
+        setTimeout(() => this.playTone(450, 'sawtooth', 0.22, 0.18, 120), 70);
+        setTimeout(() => this.playTone(280, 'square', 0.26, 0.2, 90), 200);
+        setTimeout(() => this.playTone(650, 'sawtooth', 0.18, 0.16, 180), 360);
+        setTimeout(() => this.playTone(160, 'sawtooth', 0.65, 0.25, 45), 500);
+    }
+
     playEmergencyAlarm() {
         if (this.muted) return;
         this.resume();

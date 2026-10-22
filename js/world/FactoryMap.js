@@ -13,6 +13,11 @@ class FactoryMap {
         this.stations = assets.STATIONS;
         this.completedTasks = new Set();
         this.taskAnimations = new Map(); // stationId -> animation progress timer
+        this.envasadoraBroken = false; // Easter egg broken state
+    }
+
+    breakEnvasadora() {
+        this.envasadoraBroken = true;
     }
 
     isWalkable(x, y, radius = 20) {

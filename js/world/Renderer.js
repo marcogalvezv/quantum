@@ -46,6 +46,9 @@ class Renderer {
         ctx.fillStyle = '#070b12';
         ctx.fillRect(0, 0, w, h);
 
+        // Store currentFactoryMap for visual checks (e.g. easter eggs)
+        this.currentFactoryMap = factoryMap;
+
         ctx.save();
         ctx.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
         ctx.lineJoin = 'round';
@@ -1588,27 +1591,67 @@ class Renderer {
     // --- ZONE 4 HELPERS (ENVASADO DE LECHE PIL EN BOLSA AZUL 946 ML) ---
     drawBolsaAzulPackagingLine(ctx, cx, cy, zoneWidth, completedTasks, now) {
         ctx.save();
+        const isBroken = this.currentFactoryMap && this.currentFactoryMap.envasadoraBroken;
+
+        // If broken: White spilled milk puddles all around the floor!
+        if (isBroken) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            ctx.beginPath();
+            ctx.ellipse(cx - 40, cy + 55, 120, 38, -0.08, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(cx + 85, cy - 25, 90, 32, 0.15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(cx - 130, cy - 18, 75, 24, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Flashing red zone alarm strobe
+            if (Math.sin(now * 0.015) > 0) {
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.22)';
+                ctx.fillRect(cx - zoneWidth / 2 + 15, cy - 180, zoneWidth - 30, 360);
+            }
+        }
 
         // Industrial Conveyor Track
-        ctx.fillStyle = '#111827';
-        ctx.strokeStyle = '#090d16';
+        ctx.fillStyle = isBroken ? '#1e1b1b' : '#111827';
+        ctx.strokeStyle = isBroken ? '#ef4444' : '#090d16';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.roundRect(cx - zoneWidth / 2 + 45, cy - 86, zoneWidth - 90, 172, 16);
         ctx.fill();
         ctx.stroke();
 
-        // Moving Rollers
+        // Rollers (stopped if broken)
         for (let rx = cx - zoneWidth / 2 + 68; rx < cx + zoneWidth / 2 - 68; rx += 32) {
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = isBroken ? '#331e1e' : '#1e293b';
             ctx.fillRect(rx - 5, cy - 80, 10, 160);
         }
 
-        // Animated Moving Sachets / Pouches of Leche PIL en Bolsa Azul!
-        const beltOffset = (now * 0.08) % 64;
-        for (let bx = cx - zoneWidth / 2 + 75 + beltOffset; bx < cx + zoneWidth / 2 - 80; bx += 64) {
-            this.drawSingleBolsaAzul(ctx, bx, cy - 42);
-            this.drawSingleBolsaAzul(ctx, bx - 32, cy + 32);
+        // Sachets / Pouches on belt
+        if (!isBroken) {
+            const beltOffset = (now * 0.08) % 64;
+            for (let bx = cx - zoneWidth / 2 + 75 + beltOffset; bx < cx + zoneWidth / 2 - 80; bx += 64) {
+                this.drawSingleBolsaAzul(ctx, bx, cy - 42);
+                this.drawSingleBolsaAzul(ctx, bx - 32, cy + 32);
+            }
+        } else {
+            // Stopped, jammed sachets
+            for (let bx = cx - zoneWidth / 2 + 80; bx < cx - 130; bx += 68) {
+                this.drawSingleBolsaAzul(ctx, bx, cy - 40);
+            }
+            // Tangled, crumpled leaking sachets near the jammed tower
+            ctx.save();
+            ctx.translate(cx - 48, cy + 18);
+            ctx.rotate(0.35);
+            this.drawSingleBolsaAzul(ctx, 0, 0);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(cx + 36, cy - 22);
+            ctx.rotate(-0.4);
+            this.drawSingleBolsaAzul(ctx, 0, 0);
+            ctx.restore();
         }
 
         // Central Vertical Form-Fill-Seal Packaging Tower (Envasadora Aséptica)
@@ -1618,20 +1661,27 @@ class Renderer {
         ctx.fill();
 
         const towerGrad = ctx.createLinearGradient(cx - 100, 0, cx + 100, 0);
-        towerGrad.addColorStop(0, '#334155');
-        towerGrad.addColorStop(0.3, '#f8fafc');
-        towerGrad.addColorStop(0.7, '#cbd5e1');
-        towerGrad.addColorStop(1, '#1e293b');
+        if (isBroken) {
+            towerGrad.addColorStop(0, '#451a1a');
+            towerGrad.addColorStop(0.3, '#7f1d1d');
+            towerGrad.addColorStop(0.7, '#450a0a');
+            towerGrad.addColorStop(1, '#180808');
+        } else {
+            towerGrad.addColorStop(0, '#334155');
+            towerGrad.addColorStop(0.3, '#f8fafc');
+            towerGrad.addColorStop(0.7, '#cbd5e1');
+            towerGrad.addColorStop(1, '#1e293b');
+        }
         ctx.fillStyle = towerGrad;
-        ctx.strokeStyle = '#0284c7';
+        ctx.strokeStyle = isBroken ? '#ef4444' : '#0284c7';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.roundRect(cx - 100, cy - 78, 200, 156, 16);
         ctx.fill();
         ctx.stroke();
 
-        // Roll of Blue Polyethylene Film (Bobina Tricapa Azul) on top
-        ctx.fillStyle = '#0284c7';
+        // Roll of Film on top (torn/snapped if broken)
+        ctx.fillStyle = isBroken ? '#991b1b' : '#0284c7';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -1639,33 +1689,84 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // UV Sterilization Window with glowing ultraviolet light
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(cx - 65, cy - 18, 130, 26);
-        ctx.fillStyle = 'rgba(192, 132, 252, 0.45)';
-        ctx.fillRect(cx - 65, cy - 18, 130, 26);
+        // UV Window (flickering red error if broken)
+        if (isBroken) {
+            ctx.fillStyle = (Math.sin(now * 0.02) > 0) ? '#ef4444' : '#450a0a';
+            ctx.fillRect(cx - 65, cy - 18, 130, 26);
+        } else {
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(cx - 65, cy - 18, 130, 26);
+            ctx.fillStyle = 'rgba(192, 132, 252, 0.45)';
+            ctx.fillRect(cx - 65, cy - 18, 130, 26);
+        }
 
-        // Sealing Jaws (Mordazas térmicas)
-        const jawClamp = Math.abs(Math.sin(now * 0.006)) * 4;
-        ctx.fillStyle = '#facc15';
+        // Sealing Jaws
+        const jawClamp = isBroken ? 0 : Math.abs(Math.sin(now * 0.006)) * 4;
+        ctx.fillStyle = isBroken ? '#ef4444' : '#facc15';
         ctx.fillRect(cx - 40, cy + 18 - jawClamp, 80, 8);
         ctx.fillRect(cx - 40, cy + 32 + jawClamp, 80, 8);
 
         // Tower label
-        ctx.fillStyle = '#0284c7';
-        ctx.font = 'bold 12px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('ENVASADORA ASÉPTICA PIL', cx, cy - 56);
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('BOLSA AZUL 946 ml', cx, cy + 62);
+        if (isBroken) {
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('💥 ¡MÁQUINA INUTILIZABLE! 💥', cx, cy - 56);
+            ctx.fillStyle = '#fca5a5';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('ATASCO CRÍTICO [B] - FUERA DE SERVICIO', cx, cy + 62);
 
-        // Articulated robotic picker packing sachets into crates
-        const swing = Math.sin(now * 0.004) * 0.3;
+            // Billowing thick dark smoke clouds
+            for (let i = 0; i < 6; i++) {
+                const smokeAge = (now * 0.0028 + i * 0.75) % 2.5;
+                const sy = cy - 70 - smokeAge * 45;
+                const sx = cx + Math.sin(now * 0.006 + i * 1.8) * 32 + (i % 2 === 0 ? -18 : 18);
+                const sRadius = 14 + smokeAge * 15;
+                ctx.fillStyle = `rgba(30, 30, 38, ${Math.max(0, 0.8 - smokeAge * 0.3)})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, sRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Electrical sparks
+            for (let s = 0; s < 5; s++) {
+                const spPhase = (now * 0.02 + s * 1.2) % 2;
+                if (spPhase < 0.75) {
+                    ctx.strokeStyle = (s % 2 === 0) ? '#facc15' : '#ef4444';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    const spX = cx + Math.cos(s * 2.3) * 36;
+                    const spY = cy - 10 + Math.sin(s * 1.9) * 28;
+                    ctx.moveTo(spX, spY);
+                    ctx.lineTo(spX + (Math.random() - 0.5) * 24, spY + (Math.random() - 0.5) * 24);
+                    ctx.stroke();
+                }
+            }
+
+            // Flashing Red Emergency Beacon on top
+            ctx.fillStyle = (Math.sin(now * 0.022) > 0) ? '#ef4444' : '#7f1d1d';
+            ctx.beginPath();
+            ctx.arc(cx, cy - 92, 14, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#fee2e2';
+            ctx.lineWidth = 2.5;
+            ctx.stroke();
+        } else {
+            ctx.fillStyle = '#0284c7';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('ENVASADORA ASÉPTICA PIL', cx, cy - 56);
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 10px sans-serif';
+            ctx.fillText('BOLSA AZUL 946 ml', cx, cy + 62);
+        }
+
+        // Articulated robotic picker packing sachets into crates (frozen if broken)
+        const swing = isBroken ? 0.4 : Math.sin(now * 0.004) * 0.3;
         for (let dir of [-1, 1]) {
             ctx.save();
             ctx.translate(cx + dir * 165, cy);
-            ctx.fillStyle = '#0284c7';
+            ctx.fillStyle = isBroken ? '#475569' : '#0284c7';
             ctx.strokeStyle = '#090d16';
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -1674,7 +1775,7 @@ class Renderer {
             ctx.stroke();
 
             ctx.rotate(dir * swing);
-            ctx.fillStyle = '#facc15';
+            ctx.fillStyle = isBroken ? '#94a3b8' : '#facc15';
             ctx.fillRect(dir > 0 ? -48 : 0, -7, 48, 14);
             ctx.strokeRect(dir > 0 ? -48 : 0, -7, 48, 14);
             ctx.restore();
@@ -1988,21 +2089,25 @@ class Renderer {
         ctx.save();
         ctx.translate(x, y);
 
+        const isBroken = (station.id === 'task_assembly' && this.currentFactoryMap && this.currentFactoryMap.envasadoraBroken);
+
         // Outer glowing interactive floor pad
         ctx.beginPath();
         ctx.arc(0, 0, 46 + (isNear ? 6 : 0) + (isCompleted ? 0 : pulse * 0.5), 0, Math.PI * 2);
-        ctx.fillStyle = isCompleted
-            ? 'rgba(16, 185, 129, 0.25)'
-            : (isNear ? 'rgba(250, 204, 21, 0.35)' : 'rgba(56, 189, 248, 0.18)');
+        ctx.fillStyle = isBroken
+            ? 'rgba(239, 68, 68, 0.35)'
+            : (isCompleted
+                ? 'rgba(16, 185, 129, 0.25)'
+                : (isNear ? 'rgba(250, 204, 21, 0.35)' : 'rgba(56, 189, 248, 0.18)'));
         ctx.fill();
 
         ctx.lineWidth = isNear ? 4 : 2.5;
-        ctx.strokeStyle = isCompleted ? '#10b981' : (isNear ? '#facc15' : '#38bdf8');
+        ctx.strokeStyle = isBroken ? '#ef4444' : (isCompleted ? '#10b981' : (isNear ? '#facc15' : '#38bdf8'));
         ctx.stroke();
 
         // Illustrated Octagonal Computer Kiosk / Workstation Base
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#090d16';
+        ctx.fillStyle = isBroken ? '#291414' : '#1e293b';
+        ctx.strokeStyle = isBroken ? '#ef4444' : '#090d16';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.roundRect(-28, -26, 56, 52, 14);
@@ -2011,7 +2116,7 @@ class Renderer {
 
         // Angled glowing terminal screen inside kiosk
         ctx.fillStyle = '#090d16';
-        ctx.strokeStyle = isCompleted ? '#10b981' : '#38bdf8';
+        ctx.strokeStyle = isBroken ? '#ef4444' : (isCompleted ? '#10b981' : '#38bdf8');
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(-20, -18, 40, 28, 7);
@@ -2032,27 +2137,29 @@ class Renderer {
         ctx.font = '21px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(isCompleted ? '✅' : icon, 0, -3);
+        ctx.fillText(isBroken ? '💥' : (isCompleted ? '✅' : icon), 0, -3);
 
         // Rounded Station Pill Label
         ctx.textBaseline = 'alphabetic';
         ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
-        ctx.strokeStyle = isCompleted ? '#10b981' : '#475569';
+        ctx.strokeStyle = isBroken ? '#ef4444' : (isCompleted ? '#10b981' : '#475569');
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.roundRect(-76, 32, 152, 24, 8);
+        ctx.roundRect(-86, 32, 172, 24, 8);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = isCompleted ? '#6ee7b7' : '#ffffff';
+        ctx.fillStyle = isBroken ? '#f87171' : (isCompleted ? '#6ee7b7' : '#ffffff');
         ctx.font = 'bold 12px sans-serif';
-        ctx.fillText(shortName, 0, 48);
+        ctx.fillText(isBroken ? '⚠️ INUTILIZABLE' : shortName, 0, 48);
 
         // Interaction Prompt when nearby
         if (isNear) {
-            ctx.fillStyle = '#facc15';
+            ctx.fillStyle = isBroken ? '#f87171' : '#facc15';
             ctx.font = 'bold 13px sans-serif';
-            ctx.fillText(isCompleted ? '¡Misión Completada! [E] Repetir' : '⚡ Presiona [E] o Haz Clic', 0, -52);
+            ctx.fillText(isBroken
+                ? '⚠️ ¡MÁQUINA INUTILIZABLE! (Atasco [B])'
+                : (isCompleted ? '¡Misión Completada! [E] Repetir' : '⚡ Presiona [E] o Haz Clic'), 0, -52);
         }
 
         // Celebratory expanding ring when recently completed
