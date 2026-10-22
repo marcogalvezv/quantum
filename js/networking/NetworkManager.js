@@ -359,6 +359,15 @@ class NetworkManager {
         });
     }
 
+    broadcastEnvasadoraExplosion(x = 1200, y = 1155, culpritName = 'Técnico PIL') {
+        this.sendPacket({
+            type: 'envasadora_explosion',
+            x,
+            y,
+            culpritName
+        });
+    }
+
     handlePacket(data, source) {
         if (!data || data.senderId === this.localId) return;
         if (data.room && data.room !== this.roomCode) return;
@@ -447,6 +456,12 @@ class NetworkManager {
             case 'meeting_ended': {
                 if (this.callbacks.onMeetingEnded) {
                     this.callbacks.onMeetingEnded(data);
+                }
+                break;
+            }
+            case 'envasadora_explosion': {
+                if (this.callbacks.onEnvasadoraExplosion) {
+                    this.callbacks.onEnvasadoraExplosion(data);
                 }
                 break;
             }

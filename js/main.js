@@ -393,6 +393,9 @@ class QuantumMotorsGame {
             },
             onMeetingEnded: () => {
                 this.endEmergencyMeeting(false);
+            },
+            onEnvasadoraExplosion: (data) => {
+                this.handleRemoteEnvasadoraExplosion(data.x, data.y, data.culpritName);
             }
         });
     }
@@ -527,11 +530,26 @@ class QuantumMotorsGame {
             this.missionManager.closeModal();
         }
 
-        // Sound effect
-        if (this.sound.playMachineFailure) {
+        // Trigger massive visual explosion, fireballs, milk splash, and violent camera shake
+        if (this.renderer && this.renderer.triggerExplosion) {
+            this.renderer.triggerExplosion(1200, 1155);
+        }
+
+        // Play catastrophic explosion sound boom & klaxon
+        if (this.sound && this.sound.playCatastrophicExplosion) {
+            this.sound.playCatastrophicExplosion();
+        } else if (this.sound && this.sound.playMachineFailure) {
             this.sound.playMachineFailure();
         } else {
             this.sound.playError();
+        }
+
+        // Display dramatic global alert banner for all players
+        this.showExplosionGlobalAlert(this.localPlayer.name || 'Técnico PIL');
+
+        // Broadcast to ALL players across network (WebSocket and local channel)
+        if (this.network && this.network.broadcastEnvasadoraExplosion) {
+            this.network.broadcastEnvasadoraExplosion(1200, 1155, this.localPlayer.name || 'Técnico PIL');
         }
 
         // Emote on player
@@ -541,7 +559,7 @@ class QuantumMotorsGame {
         this.addChatMessage('SISTEMA', 'red', '🥚 ¡EASTER EGG ACTIVADO! Has presionado [B] en la línea de envasado...');
         this.addChatMessage('PIL-BOT', 'orange', '🚨 ¡DESASTRE LÁCTEO! ¡La envasadora sufrió un atasco destructivo de film tricapa por pulsar [B], derramó leche y quedó totalmente INUTILIZABLE!');
 
-        // Broadcast over network if available
+        // Broadcast chat over network if available
         if (this.network && this.network.ws && this.network.ws.readyState === WebSocket.OPEN) {
             this.network.ws.send(JSON.stringify({
                 type: 'chat',
@@ -554,6 +572,54 @@ class QuantumMotorsGame {
 
         // Show Easter Egg Discovery Modal
         this.showEasterEggModal();
+    }
+
+    handleRemoteEnvasadoraExplosion(x = 1200, y = 1155, culpritName = 'Un Técnico') {
+        if (!this.factoryMap.envasadoraBroken) {
+            this.factoryMap.breakEnvasadora();
+        }
+        if (this.missionManager && this.missionManager.activeStation && this.missionManager.activeStation.id === 'task_assembly') {
+            this.missionManager.closeModal();
+        }
+        if (this.renderer && this.renderer.triggerExplosion) {
+            this.renderer.triggerExplosion(x, y);
+        }
+        if (this.sound && this.sound.playCatastrophicExplosion) {
+            this.sound.playCatastrophicExplosion();
+        }
+        this.showExplosionGlobalAlert(culpritName);
+        this.addChatMessage('PIL-BOT', 'orange', `🚨 ¡DESASTRE LÁCTEO! ¡${culpritName} provocó una explosión en la envasadora PIL! ¡Máquina INUTILIZABLE!`);
+    }
+
+    showExplosionGlobalAlert(culpritName = 'Un Técnico') {
+        let banner = document.getElementById('explosion-global-banner');
+        if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'explosion-global-banner';
+            banner.className = 'explosion-global-banner';
+            banner.innerHTML = `
+                <div class="explosion-banner-icon">💥</div>
+                <div class="explosion-banner-text">
+                    <h3 id="explosion-banner-title">¡ALERTA ROJA: EXPLOSIÓN EN ENVASADORA PIL!</h3>
+                    <p id="explosion-banner-desc">La envasadora aséptica colapsó violentamente y quedó INUTILIZABLE.</p>
+                </div>
+            `;
+            document.body.appendChild(banner);
+        }
+
+        const titleEl = document.getElementById('explosion-banner-title');
+        const descEl = document.getElementById('explosion-banner-desc');
+        if (titleEl) titleEl.textContent = '💥 ¡ALERTA ROJA: EXPLOSIÓN EN ENVASADORA PIL! 💥';
+        if (descEl) descEl.textContent = `La envasadora colapsó por sobredosis de film [B] (Causado por ${culpritName}). ¡Máquina fuera de servicio!`;
+
+        banner.classList.add('visible');
+
+        if (this._explosionAlertTimeout) {
+            clearTimeout(this._explosionAlertTimeout);
+        }
+        this._explosionAlertTimeout = setTimeout(() => {
+            banner.classList.remove('visible');
+        }, 6500);
     }
 
     showEasterEggModal() {

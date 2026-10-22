@@ -1558,3 +1558,53 @@ body, html {
     transform: scale(1.03) !important;
 }
 
+/* ==================== ALERTA GLOBAL DE EXPLOSIÓN ENVASADORA ==================== */
+.explosion-global-banner {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-140%);
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.96), rgba(153, 27, 27, 0.98));
+    border: 3.5px solid #fbbf24;
+    border-radius: 18px;
+    padding: 14px 30px;
+    color: #ffffff;
+    box-shadow: 0 0 60px rgba(239, 68, 68, 0.85), 0 15px 35px rgba(0, 0, 0, 0.8);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    pointer-events: none;
+    transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+    max-width: 90vw;
+}
+
+.explosion-global-banner.visible {
+    transform: translateX(-50%) translateY(0);
+}
+
+.explosion-banner-icon {
+    font-size: 40px;
+    animation: blastIconBounce 0.45s infinite alternate ease-in-out;
+}
+
+@keyframes blastIconBounce {
+    0% { transform: scale(1) rotate(-10deg); }
+    100% { transform: scale(1.3) rotate(10deg); }
+}
+
+.explosion-banner-text h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fef08a;
+    letter-spacing: 0.8px;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.explosion-banner-text p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: #fee2e2;
+    font-weight: 700;
+}

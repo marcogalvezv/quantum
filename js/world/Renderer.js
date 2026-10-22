@@ -13,6 +13,16 @@ class Renderer {
         this.minimapCtx = minimapCanvas ? minimapCanvas.getContext('2d') : null;
         this.camera = { x: 0, y: 0 };
         this.avatarCache = new Map();
+
+        // Dynamic Camera Shake & Screen Flash Trauma FX
+        this.shakeTimer = 0;
+        this.shakeDuration = 0;
+        this.shakeIntensity = 0;
+        this.flashTimer = 0;
+        this.flashDuration = 0;
+        this.activeExplosions = [];
+        this.lastTime = 0;
+
         this.resize();
         window.addEventListener('resize', () => this.resize());
     }
@@ -29,6 +39,245 @@ class Renderer {
         };
     }
 
+    shakeCamera(intensity = 28, duration = 1600) {
+        this.shakeIntensity = intensity;
+        this.shakeDuration = duration;
+        this.shakeTimer = duration;
+    }
+
+    flashScreen(duration = 1300) {
+        this.flashDuration = duration;
+        this.flashTimer = duration;
+    }
+
+    triggerExplosion(x = 1200, y = 1155) {
+        this.shakeCamera(32, 1700);
+        this.flashScreen(1350);
+
+        const particles = [];
+
+        // 1. Expanding shockwaves
+        for (let s = 0; s < 4; s++) {
+            particles.push({
+                type: 'shockwave',
+                x,
+                y,
+                radius: 12 + s * 22,
+                maxRadius: 380 + s * 70,
+                speed: 360 + s * 80,
+                alpha: 1.0,
+                color: s % 2 === 0 ? 'rgba(255, 255, 255,' : 'rgba(251, 146, 60,'
+            });
+        }
+
+        // 2. Fireballs & Plasma bursts
+        for (let i = 0; i < 50; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 70 + Math.random() * 290;
+            particles.push({
+                type: 'fireball',
+                x,
+                y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 45,
+                size: 22 + Math.random() * 38,
+                maxLife: 900 + Math.random() * 700,
+                life: 900 + Math.random() * 700,
+                hue: 15 + Math.random() * 35
+            });
+        }
+
+        // 3. Milk geysers / splash droplets
+        for (let i = 0; i < 45; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 100 + Math.random() * 330;
+            particles.push({
+                type: 'milk',
+                x,
+                y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 90,
+                size: 6 + Math.random() * 16,
+                gravity: 300,
+                maxLife: 1300 + Math.random() * 800,
+                life: 1300 + Math.random() * 800
+            });
+        }
+
+        // 4. Flying Shrapnel & Twisted Metal
+        for (let i = 0; i < 30; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 120 + Math.random() * 340;
+            particles.push({
+                type: 'shrapnel',
+                x,
+                y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                rotation: Math.random() * Math.PI * 2,
+                vRot: (Math.random() - 0.5) * 20,
+                size: 10 + Math.random() * 14,
+                gravity: 360,
+                color: Math.random() > 0.5 ? '#64748b' : '#1e293b',
+                maxLife: 1600 + Math.random() * 700,
+                life: 1600 + Math.random() * 700
+            });
+        }
+
+        // 5. Flying Bolsa Azul Film Strips
+        for (let i = 0; i < 25; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 60 + Math.random() * 220;
+            particles.push({
+                type: 'film',
+                x,
+                y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed - 50,
+                rotation: Math.random() * Math.PI * 2,
+                vRot: (Math.random() - 0.5) * 9,
+                w: 14 + Math.random() * 18,
+                h: 22 + Math.random() * 30,
+                gravity: 140,
+                maxLife: 1800 + Math.random() * 800,
+                life: 1800 + Math.random() * 800
+            });
+        }
+
+        this.activeExplosions.push({
+            x,
+            y,
+            startTime: performance.now(),
+            particles
+        });
+    }
+
+    drawExplosions(ctx, now, dt) {
+        if (!this.activeExplosions.length) return;
+
+        for (let expIdx = this.activeExplosions.length - 1; expIdx >= 0; expIdx--) {
+            const exp = this.activeExplosions[expIdx];
+            let allDead = true;
+
+            for (const p of exp.particles) {
+                if (p.type === 'shockwave') {
+                    p.radius += p.speed * dt;
+                    p.alpha = Math.max(0, 1 - (p.radius / p.maxRadius));
+                    if (p.alpha > 0.01) {
+                        allDead = false;
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.strokeStyle = `${p.color} ${p.alpha})`;
+                        ctx.lineWidth = 14 * p.alpha + 2;
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                    continue;
+                }
+
+                p.life -= dt * 1000;
+                if (p.life <= 0) continue;
+                allDead = false;
+
+                const lifeRatio = Math.max(0, p.life / p.maxLife);
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                if (p.gravity) p.vy += p.gravity * dt;
+                if (p.vRot) p.rotation += p.vRot * dt;
+
+                ctx.save();
+                if (p.type === 'fireball') {
+                    const currentRadius = p.size * (1 + (1 - lifeRatio) * 1.5);
+                    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentRadius);
+                    grad.addColorStop(0, `hsla(${p.hue + 25}, 100%, 75%, ${lifeRatio})`);
+                    grad.addColorStop(0.4, `hsla(${p.hue}, 100%, 55%, ${lifeRatio * 0.9})`);
+                    grad.addColorStop(1, `hsla(0, 100%, 40%, 0)`);
+                    ctx.fillStyle = grad;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (p.type === 'milk') {
+                    ctx.fillStyle = `rgba(255, 255, 255, ${lifeRatio * 0.95})`;
+                    ctx.strokeStyle = `rgba(186, 230, 253, ${lifeRatio * 0.8})`;
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size * lifeRatio, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                } else if (p.type === 'shrapnel') {
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation);
+                    ctx.fillStyle = p.color;
+                    ctx.strokeStyle = '#090d16';
+                    ctx.lineWidth = 2;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                } else if (p.type === 'film') {
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rotation);
+                    ctx.fillStyle = `rgba(2, 132, 199, ${lifeRatio * 0.9})`;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 1.5;
+                    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                    ctx.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                }
+                ctx.restore();
+            }
+
+            if (allDead) {
+                this.activeExplosions.splice(expIdx, 1);
+            }
+        }
+    }
+
+    drawExplosionDirectionalIndicator(ctx, w, h, now) {
+        const targetX = 1200;
+        const targetY = 1155;
+        const screenX = targetX - this.camera.x;
+        const screenY = targetY - this.camera.y;
+
+        const margin = 70;
+        const isOffScreen = screenX < margin || screenX > w - margin || screenY < margin || screenY > h - margin;
+        if (!isOffScreen) return;
+
+        const centerX = w / 2;
+        const centerY = h / 2;
+        const angle = Math.atan2(screenY - centerY, screenX - centerX);
+
+        const padding = 65;
+        const edgeX = Math.max(padding, Math.min(w - padding, centerX + Math.cos(angle) * (w / 2 - padding)));
+        const edgeY = Math.max(padding, Math.min(h - padding, centerY + Math.sin(angle) * (h / 2 - padding)));
+
+        const pulse = (Math.sin(now * 0.012) + 1) * 0.5;
+        ctx.save();
+        ctx.translate(edgeX, edgeY);
+
+        // Halo
+        ctx.fillStyle = `rgba(239, 68, 68, ${0.45 + pulse * 0.45})`;
+        ctx.beginPath();
+        ctx.arc(0, 0, 36 + pulse * 10, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Chip background
+        ctx.fillStyle = '#7f1d1d';
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-85, -22, 170, 44, 14);
+        ctx.fill();
+        ctx.stroke();
+
+        // Text & Icon
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('💥 ENVASADORA PIL 💥', 0, 0);
+
+        ctx.restore();
+    }
+
     render(state) {
         const { factoryMap, localPlayer, remotePlayers, robotGuide, nearestStation, nearestSignage } = state;
         const ctx = this.ctx;
@@ -42,6 +291,20 @@ class Renderer {
         this.camera.x += (targetCamX - this.camera.x) * 0.14;
         this.camera.y += (targetCamY - this.camera.y) * 0.14;
 
+        // Camera trauma shake calculation
+        let shakeX = 0;
+        let shakeY = 0;
+        const dt = this.lastTime ? Math.min(0.1, (now - this.lastTime) / 1000) : 0.016;
+        this.lastTime = now;
+
+        if (this.shakeTimer > 0) {
+            const shakeRatio = this.shakeTimer / this.shakeDuration;
+            const currentShake = this.shakeIntensity * (shakeRatio * shakeRatio);
+            shakeX = (Math.random() - 0.5) * 2 * currentShake;
+            shakeY = (Math.random() - 0.5) * 2 * currentShake;
+            this.shakeTimer = Math.max(0, this.shakeTimer - dt * 1000);
+        }
+
         // Clear background
         ctx.fillStyle = '#070b12';
         ctx.fillRect(0, 0, w, h);
@@ -50,7 +313,7 @@ class Renderer {
         this.currentFactoryMap = factoryMap;
 
         ctx.save();
-        ctx.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
+        ctx.translate(-Math.round(this.camera.x + shakeX), -Math.round(this.camera.y + shakeY));
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
@@ -96,13 +359,40 @@ class Renderer {
             }
         }
 
+        // 6b. Active World-Space Explosions (shockwaves, fireballs, milk splashes, shrapnel)
+        this.drawExplosions(ctx, now, dt);
+
         ctx.restore();
+
+        // Screen-Space Explosive Flash & Hazard Vignette (seen by all players)
+        if (this.flashTimer > 0) {
+            const ratio = this.flashTimer / this.flashDuration;
+            if (ratio > 0.8) {
+                const whiteAlpha = ((ratio - 0.8) / 0.2) * 0.95;
+                ctx.fillStyle = `rgba(255, 255, 255, ${whiteAlpha})`;
+                ctx.fillRect(0, 0, w, h);
+            }
+            ctx.fillStyle = `rgba(239, 68, 68, ${ratio * 0.42})`;
+            ctx.fillRect(0, 0, w, h);
+
+            ctx.strokeStyle = `rgba(239, 68, 68, ${ratio * 0.9})`;
+            ctx.lineWidth = 14 * ratio + 4;
+            ctx.strokeRect(0, 0, w, h);
+
+            this.flashTimer = Math.max(0, this.flashTimer - dt * 1000);
+        }
+
+        // Directional Off-screen indicator if envasadora is broken and off-camera
+        if (factoryMap && factoryMap.envasadoraBroken) {
+            this.drawExplosionDirectionalIndicator(ctx, w, h, now);
+        }
 
         // 7. Render Minimap
         if (this.minimapCtx) {
             this.renderMinimap(factoryMap, localPlayer, remotePlayers);
         }
     }
+
 
     drawExteriorGrid(ctx, worldW, worldH) {
         ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
@@ -1593,23 +1883,61 @@ class Renderer {
         ctx.save();
         const isBroken = this.currentFactoryMap && this.currentFactoryMap.envasadoraBroken;
 
-        // If broken: White spilled milk puddles all around the floor!
+        // If broken: Massive Scorched Blast Crater, Radial Cracks, and Spilled Milk Lake!
         if (isBroken) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+            // 1. Massive Scorched Black Blast Crater
+            const craterGrad = ctx.createRadialGradient(cx, cy, 20, cx, cy, 260);
+            craterGrad.addColorStop(0, '#020202');
+            craterGrad.addColorStop(0.35, '#170e0e');
+            craterGrad.addColorStop(0.7, '#2b1414');
+            craterGrad.addColorStop(1, 'rgba(43, 20, 20, 0)');
+            ctx.fillStyle = craterGrad;
             ctx.beginPath();
-            ctx.ellipse(cx - 40, cy + 55, 120, 38, -0.08, 0, Math.PI * 2);
+            ctx.ellipse(cx, cy, 270, 160, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Radial blast fracture cracks
+            ctx.strokeStyle = '#050202';
+            ctx.lineWidth = 3.5;
+            for (let a = 0; a < 8; a++) {
+                const crackAng = a * (Math.PI / 4) + 0.2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                const midX = cx + Math.cos(crackAng) * 90 + (a % 2 === 0 ? 15 : -15);
+                const midY = cy + Math.sin(crackAng) * 60 + (a % 2 === 0 ? -12 : 12);
+                const endX = cx + Math.cos(crackAng) * 210;
+                const endY = cy + Math.sin(crackAng) * 120;
+                ctx.lineTo(midX, midY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+            }
+
+            // 2. Giant White Milk Lake Spill
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+            ctx.beginPath();
+            ctx.ellipse(cx - 50, cy + 65, 170, 52, -0.06, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.ellipse(cx + 85, cy - 25, 90, 32, 0.15, 0, Math.PI * 2);
+            ctx.ellipse(cx + 95, cy - 30, 130, 44, 0.12, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.ellipse(cx - 130, cy - 18, 75, 24, -0.2, 0, Math.PI * 2);
+            ctx.ellipse(cx - 150, cy - 25, 110, 36, -0.18, 0, Math.PI * 2);
             ctx.fill();
+
+            // Frothy milk bubbles
+            ctx.fillStyle = 'rgba(241, 245, 249, 0.9)';
+            for (let b = 0; b < 12; b++) {
+                const bx = cx - 120 + ((b * 37) % 240);
+                const by = cy + 30 + ((b * 23) % 45);
+                ctx.beginPath();
+                ctx.arc(bx, by, 4 + (b % 4) * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             // Flashing red zone alarm strobe
             if (Math.sin(now * 0.015) > 0) {
-                ctx.fillStyle = 'rgba(239, 68, 68, 0.22)';
-                ctx.fillRect(cx - zoneWidth / 2 + 15, cy - 180, zoneWidth - 30, 360);
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.26)';
+                ctx.fillRect(cx - zoneWidth / 2 + 15, cy - 190, zoneWidth - 30, 380);
             }
         }
 
@@ -1706,50 +2034,85 @@ class Renderer {
         ctx.fillRect(cx - 40, cy + 18 - jawClamp, 80, 8);
         ctx.fillRect(cx - 40, cy + 32 + jawClamp, 80, 8);
 
-        // Tower label
+        // Tower label & status
         if (isBroken) {
             ctx.fillStyle = '#ef4444';
-            ctx.font = 'bold 12px sans-serif';
+            ctx.font = '900 14px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('💥 ¡MÁQUINA INUTILIZABLE! 💥', cx, cy - 56);
+            ctx.fillText('💥 ¡ENVASADORA DESTRUIDA! 💥', cx, cy - 60);
             ctx.fillStyle = '#fca5a5';
             ctx.font = 'bold 10px sans-serif';
-            ctx.fillText('ATASCO CRÍTICO [B] - FUERA DE SERVICIO', cx, cy + 62);
+            ctx.fillText('ATASCO CRÍTICO [B] - EXPLOSIÓN TOTAL', cx, cy + 64);
+
+            // Dancing flames on wreckage
+            for (let f = 0; f < 8; f++) {
+                const flameAge = now * 0.01 + f * 1.3;
+                const fx = cx - 70 + f * 20;
+                const fy = cy - 20 + Math.sin(f * 2.1) * 16;
+                const flameH = 22 + Math.sin(flameAge) * 14;
+
+                const fGrad = ctx.createLinearGradient(fx, fy, fx, fy - flameH);
+                fGrad.addColorStop(0, '#facc15');
+                fGrad.addColorStop(0.45, '#f97316');
+                fGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                ctx.fillStyle = fGrad;
+                ctx.beginPath();
+                ctx.moveTo(fx - 8, fy);
+                ctx.quadraticCurveTo(fx + (Math.sin(flameAge * 1.5) * 6), fy - flameH * 0.6, fx, fy - flameH);
+                ctx.quadraticCurveTo(fx + 8, fy - flameH * 0.6, fx + 8, fy);
+                ctx.closePath();
+                ctx.fill();
+            }
 
             // Billowing thick dark smoke clouds
-            for (let i = 0; i < 6; i++) {
-                const smokeAge = (now * 0.0028 + i * 0.75) % 2.5;
-                const sy = cy - 70 - smokeAge * 45;
-                const sx = cx + Math.sin(now * 0.006 + i * 1.8) * 32 + (i % 2 === 0 ? -18 : 18);
-                const sRadius = 14 + smokeAge * 15;
-                ctx.fillStyle = `rgba(30, 30, 38, ${Math.max(0, 0.8 - smokeAge * 0.3)})`;
+            for (let i = 0; i < 8; i++) {
+                const smokeAge = (now * 0.0024 + i * 0.65) % 2.5;
+                const sy = cy - 75 - smokeAge * 58;
+                const sx = cx + Math.sin(now * 0.005 + i * 1.7) * 40 + (i % 2 === 0 ? -22 : 22);
+                const sRadius = 16 + smokeAge * 20;
+                ctx.fillStyle = `rgba(24, 24, 32, ${Math.max(0, 0.85 - smokeAge * 0.32)})`;
                 ctx.beginPath();
                 ctx.arc(sx, sy, sRadius, 0, Math.PI * 2);
                 ctx.fill();
             }
 
             // Electrical sparks
-            for (let s = 0; s < 5; s++) {
-                const spPhase = (now * 0.02 + s * 1.2) % 2;
-                if (spPhase < 0.75) {
-                    ctx.strokeStyle = (s % 2 === 0) ? '#facc15' : '#ef4444';
+            for (let s = 0; s < 7; s++) {
+                const spPhase = (now * 0.024 + s * 1.3) % 2;
+                if (spPhase < 0.8) {
+                    ctx.strokeStyle = (s % 2 === 0) ? '#fef08a' : '#38bdf8';
                     ctx.lineWidth = 2.5;
                     ctx.beginPath();
-                    const spX = cx + Math.cos(s * 2.3) * 36;
-                    const spY = cy - 10 + Math.sin(s * 1.9) * 28;
+                    const spX = cx + Math.cos(s * 2.4) * 44;
+                    const spY = cy - 10 + Math.sin(s * 1.8) * 32;
                     ctx.moveTo(spX, spY);
-                    ctx.lineTo(spX + (Math.random() - 0.5) * 24, spY + (Math.random() - 0.5) * 24);
+                    ctx.lineTo(spX + (Math.random() - 0.5) * 30, spY + (Math.random() - 0.5) * 30);
                     ctx.stroke();
                 }
             }
 
+            // Blown-off access panel on floor
+            ctx.save();
+            ctx.translate(cx + 85, cy + 38);
+            ctx.rotate(0.45);
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
+            ctx.fillRect(-20, -14, 40, 28);
+            ctx.strokeRect(-20, -14, 40, 28);
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 9px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚡ PELIGRO', 0, 4);
+            ctx.restore();
+
             // Flashing Red Emergency Beacon on top
             ctx.fillStyle = (Math.sin(now * 0.022) > 0) ? '#ef4444' : '#7f1d1d';
             ctx.beginPath();
-            ctx.arc(cx, cy - 92, 14, 0, Math.PI * 2);
+            ctx.arc(cx, cy - 92, 15, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = '#fee2e2';
-            ctx.lineWidth = 2.5;
+            ctx.lineWidth = 3;
             ctx.stroke();
         } else {
             ctx.fillStyle = '#0284c7';
@@ -2453,6 +2816,28 @@ class Renderer {
         mCtx.strokeStyle = '#ffffff';
         mCtx.lineWidth = 1.5;
         mCtx.stroke();
+
+        // Flashing disaster explosion marker on minimap
+        if (factoryMap.envasadoraBroken) {
+            const expMx = 1200 * scaleX;
+            const expMy = 1155 * scaleY;
+            const mPulse = (Math.sin(performance.now() * 0.015) + 1) * 0.5;
+            mCtx.strokeStyle = 'rgba(239, 68, 68, 0.9)';
+            mCtx.lineWidth = 2.5;
+            mCtx.beginPath();
+            mCtx.arc(expMx, expMy, 6 + mPulse * 12, 0, Math.PI * 2);
+            mCtx.stroke();
+
+            mCtx.fillStyle = '#ef4444';
+            mCtx.beginPath();
+            mCtx.arc(expMx, expMy, 5, 0, Math.PI * 2);
+            mCtx.fill();
+
+            mCtx.font = 'bold 11px sans-serif';
+            mCtx.textAlign = 'center';
+            mCtx.textBaseline = 'middle';
+            mCtx.fillText('💥', expMx, expMy - 9);
+        }
     }
 }
 

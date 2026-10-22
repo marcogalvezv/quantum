@@ -110,6 +110,27 @@ class SoundManager {
         setTimeout(() => this.playTone(160, 'sawtooth', 0.65, 0.25, 45), 500);
     }
 
+    playCatastrophicExplosion() {
+        if (this.muted) return;
+        this.resume();
+        if (!this.ctx) return;
+
+        // 1. Massive Sub-bass Shockwave Detonation
+        this.playTone(65, 'sawtooth', 0.85, 0.5, 20);
+        this.playTone(110, 'triangle', 0.75, 0.45, 30);
+
+        // 2. Secondary crunching blasts and metallic tearing
+        setTimeout(() => this.playTone(320, 'sawtooth', 0.45, 0.25, 60), 60);
+        setTimeout(() => this.playTone(480, 'square', 0.35, 0.2, 90), 140);
+        setTimeout(() => this.playTone(180, 'sawtooth', 0.65, 0.35, 40), 220);
+        setTimeout(() => this.playTone(720, 'sawtooth', 0.28, 0.18, 150), 380);
+
+        // 3. Urgent klaxon siren pulses right after the explosion
+        setTimeout(() => {
+            if (this.playEmergencyAlarm) this.playEmergencyAlarm();
+        }, 550);
+    }
+
     playEmergencyAlarm() {
         if (this.muted) return;
         this.resume();
