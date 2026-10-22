@@ -399,6 +399,31 @@ class QuantumMotorsGame {
             },
             onEnvasadoraRepaired: (data) => {
                 this.handleRemoteEnvasadoraRepaired(data.mechanicName);
+            },
+            onSyncEnvasadoraBroken: (isBroken) => {
+                if (isBroken && !this.factoryMap.envasadoraBroken) {
+                    this.factoryMap.breakEnvasadora();
+                }
+            },
+            onPeerJoinedForSync: () => {
+                if (this.network && this.network.broadcastFactorySync) {
+                    this.network.broadcastFactorySync(
+                        this.factoryMap.envasadoraBroken,
+                        this.factoryMap.completedTasks
+                    );
+                }
+            },
+            onSyncCompletedTasks: (tasks) => {
+                let updated = false;
+                tasks.forEach(taskId => {
+                    if (!this.factoryMap.completedTasks.has(taskId)) {
+                        this.factoryMap.markTaskCompleted(taskId);
+                        updated = true;
+                    }
+                });
+                if (updated) {
+                    this.renderTaskChecklistHUD();
+                }
             }
         });
     }
@@ -994,7 +1019,9 @@ class QuantumMotorsGame {
         this.netSyncTimer += dt;
         if (this.netSyncTimer >= 0.065 && !this.meetingInProgress) {
             this.netSyncTimer = 0;
-            this.network.broadcastState(this.localPlayer);
+            this.network.broadcastState(this.localPlayer, {
+                envasadoraBroken: Boolean(this.factoryMap.envasadoraBroken)
+            });
         }
 
         // 7. Render World & Minimap

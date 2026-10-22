@@ -257,12 +257,13 @@ class NetworkManager {
         }
     }
 
-    broadcastState(playerState) {
+    broadcastState(playerState, extra = {}) {
         this.stateCounter = (this.stateCounter || 0) + 1;
         // Include avatar every 20th state packet (~1.3s) so late-joining players receive it without bloating every frame
         const includeAvatar = (this.stateCounter % 20 === 1);
         this.sendPacket({
             type: 'state',
+            envasadoraBroken: Boolean(extra.envasadoraBroken),
             player: {
                 id: this.localId,
                 name: playerState.name,
@@ -275,6 +276,14 @@ class NetworkManager {
                 emote: playerState.emote,
                 ...(includeAvatar && playerState.avatar ? { avatar: playerState.avatar } : {})
             }
+        });
+    }
+
+    broadcastFactorySync(envasadoraBroken, completedTasks) {
+        this.sendPacket({
+            type: 'sync_factory_state',
+            envasadoraBroken: Boolean(envasadoraBroken),
+            completedTasks: Array.from(completedTasks || [])
         });
     }
 
@@ -380,8 +389,16 @@ class NetworkManager {
         if (data.room && data.room !== this.roomCode) return;
 
         switch (data.type) {
-            case 'join':
+            case 'join': {
+                if (this.callbacks.onPeerJoinedForSync) {
+                    this.callbacks.onPeerJoinedForSync(data.senderId);
+                }
+                // Fall-through to also register player state
+            }
             case 'state': {
+                if (data.envasadoraBroken === true && this.callbacks.onSyncEnvasadoraBroken) {
+                    this.callbacks.onSyncEnvasadoraBroken(true);
+                }
                 if (data.player) {
                     const existing = this.remotePlayers.get(data.senderId);
                     const isNew = !existing;
@@ -409,6 +426,15 @@ class NetworkManager {
                     } else if (hadNoAvatar && this.callbacks.onPlayersUpdated) {
                         this.callbacks.onPlayersUpdated(this.getAllRemoteAndBotPlayers());
                     }
+                }
+                break;
+            }
+            case 'sync_factory_state': {
+                if (data.envasadoraBroken === true && this.callbacks.onSyncEnvasadoraBroken) {
+                    this.callbacks.onSyncEnvasadoraBroken(true);
+                }
+                if (Array.isArray(data.completedTasks) && this.callbacks.onSyncCompletedTasks) {
+                    this.callbacks.onSyncCompletedTasks(data.completedTasks);
                 }
                 break;
             }
