@@ -74,6 +74,7 @@ class Renderer {
         for (let i = 0; i < 50; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 70 + Math.random() * 290;
+            const lifeDuration = 900 + Math.random() * 700;
             particles.push({
                 type: 'fireball',
                 x,
@@ -81,8 +82,8 @@ class Renderer {
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed - 45,
                 size: 22 + Math.random() * 38,
-                maxLife: 900 + Math.random() * 700,
-                life: 900 + Math.random() * 700,
+                maxLife: lifeDuration,
+                life: lifeDuration,
                 hue: 15 + Math.random() * 35
             });
         }
@@ -91,6 +92,7 @@ class Renderer {
         for (let i = 0; i < 45; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 100 + Math.random() * 330;
+            const lifeDuration = 1300 + Math.random() * 800;
             particles.push({
                 type: 'milk',
                 x,
@@ -99,8 +101,8 @@ class Renderer {
                 vy: Math.sin(angle) * speed - 90,
                 size: 6 + Math.random() * 16,
                 gravity: 300,
-                maxLife: 1300 + Math.random() * 800,
-                life: 1300 + Math.random() * 800
+                maxLife: lifeDuration,
+                life: lifeDuration
             });
         }
 
@@ -108,6 +110,7 @@ class Renderer {
         for (let i = 0; i < 30; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 120 + Math.random() * 340;
+            const lifeDuration = 1600 + Math.random() * 700;
             particles.push({
                 type: 'shrapnel',
                 x,
@@ -119,8 +122,8 @@ class Renderer {
                 size: 10 + Math.random() * 14,
                 gravity: 360,
                 color: Math.random() > 0.5 ? '#64748b' : '#1e293b',
-                maxLife: 1600 + Math.random() * 700,
-                life: 1600 + Math.random() * 700
+                maxLife: lifeDuration,
+                life: lifeDuration
             });
         }
 
@@ -128,6 +131,7 @@ class Renderer {
         for (let i = 0; i < 25; i++) {
             const angle = Math.random() * Math.PI * 2;
             const speed = 60 + Math.random() * 220;
+            const lifeDuration = 1800 + Math.random() * 800;
             particles.push({
                 type: 'film',
                 x,
@@ -139,8 +143,8 @@ class Renderer {
                 w: 14 + Math.random() * 18,
                 h: 22 + Math.random() * 30,
                 gravity: 140,
-                maxLife: 1800 + Math.random() * 800,
-                life: 1800 + Math.random() * 800
+                maxLife: lifeDuration,
+                life: lifeDuration
             });
         }
 
@@ -161,7 +165,7 @@ class Renderer {
 
             for (const p of exp.particles) {
                 if (p.type === 'shockwave') {
-                    p.radius += p.speed * dt;
+                    p.radius = Math.max(1, p.radius + p.speed * dt);
                     p.alpha = Math.max(0, 1 - (p.radius / p.maxRadius));
                     if (p.alpha > 0.01) {
                         allDead = false;
@@ -180,47 +184,54 @@ class Renderer {
                 if (p.life <= 0) continue;
                 allDead = false;
 
-                const lifeRatio = Math.max(0, p.life / p.maxLife);
+                const lifeRatio = Math.max(0, Math.min(1, p.life / p.maxLife));
                 p.x += p.vx * dt;
                 p.y += p.vy * dt;
                 if (p.gravity) p.vy += p.gravity * dt;
                 if (p.vRot) p.rotation += p.vRot * dt;
 
                 ctx.save();
-                if (p.type === 'fireball') {
-                    const currentRadius = p.size * (1 + (1 - lifeRatio) * 1.5);
-                    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentRadius);
-                    grad.addColorStop(0, `hsla(${p.hue + 25}, 100%, 75%, ${lifeRatio})`);
-                    grad.addColorStop(0.4, `hsla(${p.hue}, 100%, 55%, ${lifeRatio * 0.9})`);
-                    grad.addColorStop(1, `hsla(0, 100%, 40%, 0)`);
-                    ctx.fillStyle = grad;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (p.type === 'milk') {
-                    ctx.fillStyle = `rgba(255, 255, 255, ${lifeRatio * 0.95})`;
-                    ctx.strokeStyle = `rgba(186, 230, 253, ${lifeRatio * 0.8})`;
-                    ctx.lineWidth = 1.5;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size * lifeRatio, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                } else if (p.type === 'shrapnel') {
-                    ctx.translate(p.x, p.y);
-                    ctx.rotate(p.rotation);
-                    ctx.fillStyle = p.color;
-                    ctx.strokeStyle = '#090d16';
-                    ctx.lineWidth = 2;
-                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                    ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size);
-                } else if (p.type === 'film') {
-                    ctx.translate(p.x, p.y);
-                    ctx.rotate(p.rotation);
-                    ctx.fillStyle = `rgba(2, 132, 199, ${lifeRatio * 0.9})`;
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.lineWidth = 1.5;
-                    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-                    ctx.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                try {
+                    if (p.type === 'fireball') {
+                        const currentRadius = Math.max(1, p.size * (1 + (1 - lifeRatio) * 1.5));
+                        if (isFinite(currentRadius) && currentRadius > 0) {
+                            const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, currentRadius);
+                            grad.addColorStop(0, `hsla(${p.hue + 25}, 100%, 75%, ${lifeRatio})`);
+                            grad.addColorStop(0.4, `hsla(${p.hue}, 100%, 55%, ${lifeRatio * 0.9})`);
+                            grad.addColorStop(1, `hsla(0, 100%, 40%, 0)`);
+                            ctx.fillStyle = grad;
+                            ctx.beginPath();
+                            ctx.arc(p.x, p.y, currentRadius, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    } else if (p.type === 'milk') {
+                        const currentMilkRadius = Math.max(0.5, p.size * lifeRatio);
+                        ctx.fillStyle = `rgba(255, 255, 255, ${lifeRatio * 0.95})`;
+                        ctx.strokeStyle = `rgba(186, 230, 253, ${lifeRatio * 0.8})`;
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, currentMilkRadius, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    } else if (p.type === 'shrapnel') {
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rotation);
+                        ctx.fillStyle = p.color;
+                        ctx.strokeStyle = '#090d16';
+                        ctx.lineWidth = 2;
+                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                        ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    } else if (p.type === 'film') {
+                        ctx.translate(p.x, p.y);
+                        ctx.rotate(p.rotation);
+                        ctx.fillStyle = `rgba(2, 132, 199, ${lifeRatio * 0.9})`;
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 1.5;
+                        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                        ctx.strokeRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                    }
+                } catch (err) {
+                    console.warn('Particle render safety guard:', err);
                 }
                 ctx.restore();
             }
