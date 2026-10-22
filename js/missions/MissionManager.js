@@ -1,6 +1,6 @@
 /**
  * MissionManager.js - Interactive Educational Challenges & Mini-Games
- * Implements the 6 interactive mini-games for Quantum Motors apprentices
+ * Implements the 7 interactive mini-games for PIL Andina dairy technicians
  */
 window.QuantumGame = window.QuantumGame || {};
 
@@ -26,7 +26,7 @@ class MissionManager {
         this.activeStation = station;
         this.sound.playClick();
         this.titleEl.textContent = `${station.icon} ${station.title}`;
-        this.tipEl.textContent = `🤖 Q-BOT: "${station.qbotTip}"`;
+        this.tipEl.textContent = `🤖 PIL-BOT: "${station.qbotTip}"`;
         this.statusEl.textContent = 'Completa el reto técnico para registrar el avance del equipo.';
         this.statusEl.className = 'mission-status';
         this.bodyEl.innerHTML = '';
@@ -79,15 +79,15 @@ class MissionManager {
         }, 1100);
     }
 
-    // 1. RECEPCIÓN: Selección de EPP Dieléctrico
+    // 1. RECEPCIÓN: Inducción BPM e Indumentaria Sanitaria Estéril
     renderEppMission() {
         const items = [
-            { id: 'gloves', icon: '🧤', name: 'Guantes Dieléctricos Clase 0', valid: true, info: 'Aíslan hasta 1000V DC' },
-            { id: 'helmet', icon: '⛑️', name: 'Casco Industrial Aislante', valid: true, info: 'Protección contra impactos y arco' },
-            { id: 'ring', icon: '💍', name: 'Anillos y Reloj Metálico', valid: false, info: '¡Peligro! Conducen electricidad y causan cortocircuito' },
-            { id: 'boots', icon: '🥾', name: 'Botas Dieléctricas sin Clavos', valid: true, info: 'Suela aislante antideslizante' },
-            { id: 'glasses', icon: '🥽', name: 'Gafas de Policarbonato', valid: true, info: 'Protección ocular en soldadura y chispas' },
-            { id: 'soda', icon: '🥤', name: 'Bebida Abierta en Banco Eléctrico', valid: false, info: '¡Peligro de derrame en celdas de litio!' }
+            { id: 'hairnet', icon: '🧢', name: 'Cofia Sanitaria de Cabeza', valid: true, info: 'Evita caída de cabello en tanques y circuitos de leche' },
+            { id: 'mask', icon: '😷', name: 'Barbijo Sanitario Aséptico', valid: true, info: 'Barrera microbiológica obligatoria en salas blancas' },
+            { id: 'watch', icon: '⌚', name: 'Reloj y Pulseras Metálicas', valid: false, info: '¡Prohibido por BPM! Acumulan bacterias y suciedad' },
+            { id: 'coat', icon: '🥼', name: 'Mandil Blanco de Grado Lácteo', valid: true, info: 'Vestimenta higiénica lavable sin bolsillos superiores' },
+            { id: 'boots', icon: '🥾', name: 'Botas Blancas Sanitarias', valid: true, info: 'Suela antideslizante desinfectable en pediluvio' },
+            { id: 'phone', icon: '📱', name: 'Teléfono Móvil Personal', valid: false, info: '¡Peligro! Es un vector crítico de contaminación cruzada' }
         ];
 
         const selected = new Set();
@@ -106,7 +106,7 @@ class MissionManager {
                 if (!item.valid) {
                     this.sound.playError();
                     card.classList.add('card-error');
-                    this.statusEl.textContent = `⚠️ Incorrecto: ${item.info}`;
+                    this.statusEl.textContent = `⚠️ Infracción BPM: ${item.info}`;
                     this.statusEl.className = 'mission-status error';
                     setTimeout(() => card.classList.remove('card-error'), 700);
                     return;
@@ -115,7 +115,7 @@ class MissionManager {
                     selected.add(item.id);
                     card.classList.add('card-selected');
                     this.sound.playWireZap();
-                    this.statusEl.textContent = `Equipos seguros equipados: ${selected.size} / 4`;
+                    this.statusEl.textContent = `Indumentaria BPM colocada: ${selected.size} / 4`;
                     if (selected.size === 4) {
                         this.completeCurrentMission();
                     }
@@ -127,43 +127,43 @@ class MissionManager {
         this.bodyEl.appendChild(grid);
     }
 
-    // 2. BATERÍAS: Selección de 6 Celdas LiFePO4 Saludables
+    // 2. CONTROL DE LECHE CRUDA: 6 Muestras Óptimas de Cisternas
     renderBatteryMission() {
-        const cells = [
-            { id: 1, voltage: '3.25V', temp: '24°C', healthy: true },
-            { id: 2, voltage: '3.28V', temp: '25°C', healthy: true },
-            { id: 3, voltage: '1.80V', temp: '49°C', healthy: false, reason: 'Celda degradada con bajo voltaje y sobrecalentamiento' },
-            { id: 4, voltage: '3.22V', temp: '23°C', healthy: true },
-            { id: 5, voltage: '3.26V', temp: '24°C', healthy: true },
-            { id: 6, voltage: '0.95V', temp: '52°C', healthy: false, reason: 'Celda en cortocircuito interno' },
-            { id: 7, voltage: '3.24V', temp: '25°C', healthy: true },
-            { id: 8, voltage: '3.27V', temp: '24°C', healthy: true },
-            { id: 9, voltage: '4.45V', temp: '46°C', healthy: false, reason: 'Celda sobrecargada fuera de rango LiFePO4' }
+        const samples = [
+            { id: 1, region: 'Cochabamba (Valle Central)', acidity: '16.0°D', temp: '4.1°C', healthy: true },
+            { id: 2, region: 'Achacachi (Altiplano)', acidity: '15.5°D', temp: '3.8°C', healthy: true },
+            { id: 3, region: 'Cisterna #03', acidity: '24.5°D', temp: '14.0°C', healthy: false, reason: 'Leche agria o con mastitis por encima de 18°D Dornic' },
+            { id: 4, region: 'Punata (Valle Alto)', acidity: '16.2°D', temp: '4.2°C', healthy: true },
+            { id: 5, region: 'Montero (Santa Cruz)', acidity: '17.0°D', temp: '4.5°C', healthy: true },
+            { id: 6, region: 'Cisterna #06', acidity: '11.0°D', temp: '5.2°C', healthy: false, reason: 'Densidad alterada: leche aguada (diluida con agua)' },
+            { id: 7, region: 'Tarata (Cochabamba)', acidity: '16.5°D', temp: '3.9°C', healthy: true },
+            { id: 8, region: 'Batallas (La Paz)', acidity: '15.8°D', temp: '4.0°C', healthy: true },
+            { id: 9, region: 'Cisterna #09', acidity: '22.0°D', temp: '12.8°C', healthy: false, reason: 'Cadena de frío rota en transporte: temperatura > 10°C' }
         ];
 
         let count = 0;
         const meter = document.createElement('div');
         meter.className = 'battery-meter-bar';
-        meter.innerHTML = `<span>Voltaje del Módulo Pack Quantum: <strong id="pack-v">0V / 60V Nominal</strong></span>`;
+        meter.innerHTML = `<span>Volumen de Leche Cruda Aprobada: <strong id="pack-v">0 L / 60.000 L en Silo</strong></span>`;
         this.bodyEl.appendChild(meter);
 
         const grid = document.createElement('div');
         grid.className = 'minigame-grid-3';
 
-        cells.forEach(c => {
+        samples.forEach(s => {
             const btn = document.createElement('button');
             btn.className = 'minigame-card';
             btn.innerHTML = `
-                <div class="card-icon">🔋</div>
-                <div class="card-title">Celda #0${c.id} (${c.voltage})</div>
-                <div class="card-sub">Temp: ${c.temp}</div>
+                <div class="card-icon">🥛</div>
+                <div class="card-title">${s.region}</div>
+                <div class="card-sub">Acidez: ${s.acidity} | Temp: ${s.temp}</div>
             `;
             btn.addEventListener('click', () => {
                 if (btn.classList.contains('card-selected')) return;
-                if (!c.healthy) {
+                if (!s.healthy) {
                     this.sound.playError();
                     btn.classList.add('card-error');
-                    this.statusEl.textContent = `⚠️ BMS Alerta: ${c.reason}. Selecciona celdas entre 3.2V y 3.3V.`;
+                    this.statusEl.textContent = `⚠️ Rechazo SENASAG: ${s.reason}. Se acepta solo acidez entre 14°D y 18°D Dornic.`;
                     this.statusEl.className = 'mission-status error';
                     setTimeout(() => btn.classList.remove('card-error'), 700);
                     return;
@@ -171,9 +171,9 @@ class MissionManager {
                 btn.classList.add('card-selected');
                 count++;
                 this.sound.playWireZap();
-                const currentV = count * 10;
-                document.getElementById('pack-v').textContent = `${currentV}V / 60V Nominal`;
-                this.statusEl.textContent = `Celdas LiFePO4 balanceadas: ${count} / 6`;
+                const currentL = count * 10000;
+                document.getElementById('pack-v').textContent = `${currentL.toLocaleString()} L / 60.000 L en Silo`;
+                this.statusEl.textContent = `Cisternas certificadas: ${count} / 6`;
                 this.statusEl.className = 'mission-status';
 
                 if (count === 6) {
@@ -186,14 +186,14 @@ class MissionManager {
         this.bodyEl.appendChild(grid);
     }
 
-    // 3. CHASIS: Secuencia Estructural en Orden
+    // 3. PASTEURIZACIÓN HTST: Secuencia del Proceso en Orden
     renderChassisMission() {
         const correctOrder = [
-            { step: 1, icon: '📏', name: '1. Plataforma Base de Acero Tubular', desc: 'Soporta el peso estructural inferior' },
-            { step: 2, icon: '🗄️', name: '2. Cuna Acorazada de Baterías', desc: 'Mantiene el centro de gravedad bajo y estable' },
-            { step: 3, icon: '⚙️', name: '3. Ejes y Suspensión McPherson Reforzada', desc: 'Amortiguación para calles y pendientes andinas' },
-            { step: 4, icon: '🏗️', name: '4. Jaula Habitáculo Antivuelco', desc: 'Protección integral para los pasajeros' },
-            { step: 5, icon: '🛡️', name: '5. Defensas de Absorción de Impacto', desc: 'Seguridad frontal y trasera completada' }
+            { step: 1, icon: '🌪️', name: '1. Desaireación y Clarificación Centrífuga', desc: 'Elimina micropartículas e impurezas del ordeño' },
+            { step: 2, icon: '🔥', name: '2. Precalentamiento Regenerativo a 55°C', desc: 'Aprovecha el calor saliente para eficiencia energética' },
+            { step: 3, icon: '⚙️', name: '3. Homogeneización a Alta Presión (180 Bar)', desc: 'Pulveriza los glóbulos grasos para textura suave y uniforme' },
+            { step: 4, icon: '🌡️', name: '4. Pasteurización HTST (72°C por 15 Segundos)', desc: 'Elimina patógenos conservando nutrientes y vitaminas' },
+            { step: 5, icon: '❄️', name: '5. Choque Térmico Aséptico y Enfriado a 4°C', desc: 'Inmoviliza bacterias y envía al silo pulmón de envasado' }
         ];
 
         // Shuffled display
@@ -220,7 +220,7 @@ class MissionManager {
                     btn.classList.add('card-selected');
                     this.sound.playMechanicalRatchet();
                     expectedStep++;
-                    this.statusEl.textContent = `Pieza soldada correctamente (${expectedStep - 1} / 5)`;
+                    this.statusEl.textContent = `Etapa HTST completada (${expectedStep - 1} / 5)`;
                     this.statusEl.className = 'mission-status';
                     if (expectedStep > 5) {
                         this.completeCurrentMission();
@@ -228,7 +228,7 @@ class MissionManager {
                 } else {
                     this.sound.playError();
                     btn.classList.add('card-error');
-                    this.statusEl.textContent = `⚠️ Orden incorrecto: Debes colocar primero el Paso #${expectedStep}.`;
+                    this.statusEl.textContent = `⚠️ Secuencia termodinámica incorrecta: Ejecuta primero el Paso #${expectedStep}.`;
                     this.statusEl.className = 'mission-status error';
                     setTimeout(() => btn.classList.remove('card-error'), 650);
                 }
@@ -239,7 +239,7 @@ class MissionManager {
         this.bodyEl.appendChild(list);
     }
 
-    // 4. DEPÓSITO: Resolución de Fallas (Cables y Tornillos)
+    // 4. MANTENIMIENTO: Tuberías Clamp y Válvulas Sanitarias
     renderFaultRepairMission() {
         let wiresFixed = 0;
         let boltsFixed = 0;
@@ -248,15 +248,15 @@ class MissionManager {
         const container = document.createElement('div');
         container.className = 'repair-container';
 
-        // Left: Wire matching
+        // Left: Sanitary line matching
         const wireBox = document.createElement('div');
         wireBox.className = 'repair-panel';
-        wireBox.innerHTML = `<h4>⚡ 1. Conecta el Arnés Eléctrico (Haz clic en Origen y luego Destino)</h4>`;
+        wireBox.innerHTML = `<h4>🔧 1. Conecta las Líneas Sanitarias Inoxidables</h4>`;
 
         const wires = [
-            { id: 'red', label: 'Cable ROJO (+60V DC)', color: '#ef4444', targetLabel: 'Terminal Positivo Inversor (+)' },
-            { id: 'black', label: 'Cable NEGRO (GND Tierra)', color: '#64748b', targetLabel: 'Chasis / Masa Negativa (-)' },
-            { id: 'blue', label: 'Cable AZUL (Datos CAN-Bus)', color: '#3b82f6', targetLabel: 'Puerto Telemetría BMS' }
+            { id: 'blue', label: 'Línea AZUL (Leche Fría a 4°C)', color: '#3b82f6', targetLabel: 'Entrada Pasteurizador de Placas' },
+            { id: 'red', label: 'Línea ROJA (Vapor Térmico a 72°C)', color: '#ef4444', targetLabel: 'Circuito Térmico del Intercambiador' },
+            { id: 'green', label: 'Línea VERDE (Retorno CIP Sanitario)', color: '#10b981', targetLabel: 'Tanque de Lavado y Recirculación' }
         ];
 
         const wireRow = document.createElement('div');
@@ -269,13 +269,13 @@ class MissionManager {
             const srcBtn = document.createElement('button');
             srcBtn.className = 'wire-btn';
             srcBtn.style.borderColor = w.color;
-            srcBtn.textContent = `🔌 ${w.label}`;
+            srcBtn.textContent = `🥛 ${w.label}`;
             srcBtn.dataset.wire = w.id;
             srcBtn.addEventListener('click', () => {
                 if (srcBtn.disabled) return;
                 selectedWireColor = w.id;
                 this.sound.playClick();
-                this.statusEl.textContent = `Seleccionado ${w.label}. Ahora haz clic en su terminal correspondiente.`;
+                this.statusEl.textContent = `Seleccionada ${w.label}. Haz clic en su puerto sanitario.`;
             });
             leftCol.appendChild(srcBtn);
         });
@@ -300,7 +300,7 @@ class MissionManager {
                     checkAllFixed();
                 } else {
                     this.sound.playError();
-                    this.statusEl.textContent = '⚠️ ¡Cuidado! Ese terminal no corresponde al cable seleccionado.';
+                    this.statusEl.textContent = '⚠️ ¡Error! El fluido no corresponde a este puerto sanitario.';
                     this.statusEl.className = 'mission-status error';
                 }
             });
@@ -311,10 +311,10 @@ class MissionManager {
         wireRow.appendChild(rightCol);
         wireBox.appendChild(wireRow);
 
-        // Right: Loose bolts tightening
+        // Right: Clamp Tri-Clover sanitarios
         const boltBox = document.createElement('div');
         boltBox.className = 'repair-panel';
-        boltBox.innerHTML = `<h4>🔩 2. Ajusta los 4 Pernos Sueltos del Soporte Motor</h4>`;
+        boltBox.innerHTML = `<h4>🔩 2. Ajusta las 4 Abrazaderas Clamp Tri-Clover</h4>`;
 
         const boltGrid = document.createElement('div');
         boltGrid.className = 'bolt-grid';
@@ -322,12 +322,12 @@ class MissionManager {
         for (let i = 1; i <= 4; i++) {
             const boltBtn = document.createElement('button');
             boltBtn.className = 'bolt-btn';
-            boltBtn.innerHTML = `🔩 Perno M10 #${i}<br><small>Estado: FLOJO</small>`;
+            boltBtn.innerHTML = `⚙️ Abrazadera Clamp #${i}<br><small>Estado: FLOJA (Riesgo fuga)</small>`;
             boltBtn.addEventListener('click', () => {
                 if (boltBtn.disabled) return;
                 boltBtn.disabled = true;
                 boltBtn.classList.add('card-selected');
-                boltBtn.innerHTML = `✅ Perno M10 #${i}<br><small>Torque: 45 Nm OK</small>`;
+                boltBtn.innerHTML = `✅ Abrazadera Clamp #${i}<br><small>Sellado Inox Grado Alimenticio</small>`;
                 boltsFixed++;
                 this.sound.playMechanicalRatchet();
                 checkAllFixed();
@@ -341,7 +341,7 @@ class MissionManager {
         this.bodyEl.appendChild(container);
 
         const checkAllFixed = () => {
-            this.statusEl.textContent = `Cables: ${wiresFixed}/3 | Pernos ajustados: ${boltsFixed}/4`;
+            this.statusEl.textContent = `Líneas conectadas: ${wiresFixed}/3 | Abrazaderas aseguradas: ${boltsFixed}/4`;
             this.statusEl.className = 'mission-status';
             if (wiresFixed === 3 && boltsFixed === 4) {
                 this.completeCurrentMission();
@@ -349,13 +349,13 @@ class MissionManager {
         };
     }
 
-    // 5. ENSAMBLAJE FINAL: Integración Guiada del Quantum E4
+    // 5. ENVASADO FINAL: Línea Continua de Leche PIL en Bolsa Azul
     renderCarAssemblyMission() {
         const steps = [
-            { icon: '⚙️', title: 'Paso 1: Instalar Motor Eléctrico Brushless (4000W)', detail: 'Acoplar al diferencial trasero sin emisiones.' },
-            { icon: '🔋', title: 'Paso 2: Conectar Banco de Litio 60V y Controlador Sinusoidal', detail: 'Fijar conectores de alta corriente y fusible principal.' },
-            { icon: '🚗', title: 'Paso 3: Montar Carrocería Compacta y Parabrisas', detail: 'Sellado hermético para lluvia y granizo.' },
-            { icon: '🖥️', title: 'Paso 4: Encender Tablero Digital e Indicador de Carga', detail: 'Verificar cámaras de retroceso y luces LED.' }
+            { icon: '🎞️', title: 'Paso 1: Bobina de Película Tricapa Azul PIL', detail: 'Cargar film de polietileno con barrera contra rayos ultravioleta y luz.' },
+            { icon: '💡', title: 'Paso 2: Esterilización UV en Cámara Aséptica', detail: 'Túnel germicida de alta potencia para esterilizar el plástico antes del llenado.' },
+            { icon: '🥛', title: 'Paso 3: Dosificación Volumétrica Exacta (946 ml)', detail: 'Inyección continua aséptica sin contacto manual ni espuma.' },
+            { icon: '📦', title: 'Paso 4: Termosellado Hermético y Encajonado PIL', detail: 'Sellado por mordaza térmica y empaque en canastillas amarillas oficiales.' }
         ];
 
         let currentIdx = 0;
@@ -364,7 +364,7 @@ class MissionManager {
 
         const preview = document.createElement('div');
         preview.className = 'assembly-preview';
-        preview.innerHTML = `<div class="car-stage-label" id="car-stage-text">🏗️ Chasis en Plataforma Elevadora (0% completado)</div>`;
+        preview.innerHTML = `<div class="car-stage-label" id="car-stage-text">🥛 Envasadora Aséptica PIL (0% de producción del lote)</div>`;
         wrapper.appendChild(preview);
 
         const list = document.createElement('div');
@@ -383,7 +383,7 @@ class MissionManager {
             btn.addEventListener('click', () => {
                 if (idx !== currentIdx) {
                     this.sound.playError();
-                    this.statusEl.textContent = `⚠️ Sigue el procedimiento guiado: ejecuta primero el Paso ${currentIdx + 1}.`;
+                    this.statusEl.textContent = `⚠️ Sigue el protocolo aséptico: ejecuta primero el Paso ${currentIdx + 1}.`;
                     this.statusEl.className = 'mission-status error';
                     return;
                 }
@@ -392,8 +392,8 @@ class MissionManager {
                 currentIdx++;
                 this.sound.playMechanicalRatchet();
                 const pct = currentIdx * 25;
-                document.getElementById('car-stage-text').textContent = `🚗 Quantum E4 Integrado al ${pct}%`;
-                this.statusEl.textContent = `Etapa ${currentIdx}/4 completada con éxito.`;
+                document.getElementById('car-stage-text').textContent = `🥛 Leche PIL Bolsa Azul: Envasado al ${pct}%`;
+                this.statusEl.textContent = `Etapa de envasado ${currentIdx}/4 completada con éxito.`;
                 this.statusEl.className = 'mission-status';
 
                 if (currentIdx === steps.length) {
@@ -407,12 +407,12 @@ class MissionManager {
         this.bodyEl.appendChild(wrapper);
     }
 
-    // 6. PRUEBAS DE CALIDAD (QA): Calibración en Dinamómetro
+    // 6. PRUEBAS DE CALIDAD: Cadena de Frío, pH de Yogur y Fosfatasa
     renderQualityTestMission() {
         const tests = [
-            { id: 'regen', name: 'Freno Regenerativo (Recuperación de Energía)', targetMin: 75, targetMax: 90, unit: '%', initial: 40 },
-            { id: 'iso', name: 'Aislamiento Dieléctrico de Seguridad', targetMin: 80, targetMax: 100, unit: 'MΩ', initial: 45 },
-            { id: 'speed', name: 'Velocidad Máxima Urbana Regulada', targetMin: 50, targetMax: 60, unit: 'km/h', initial: 30 }
+            { id: 'cold', name: 'Temperatura de Cámara Frigorífica PIL', targetMin: 2, targetMax: 4, unit: '°C', initial: 9 },
+            { id: 'ph', name: 'pH de Fermentación de Yogur PIL (Frutilla/Durazno)', targetMin: 44, targetMax: 46, unit: 'x10 pH', initial: 58 },
+            { id: 'fosfatasa', name: 'Nivel de Fosfatasa Residual (Inactivación bacteriana)', targetMin: 0, targetMax: 2, unit: '%', initial: 15 }
         ];
 
         const container = document.createElement('div');
@@ -423,12 +423,14 @@ class MissionManager {
         tests.forEach(t => {
             const row = document.createElement('div');
             row.className = 'qa-row';
+            const displayVal = t.id === 'ph' ? (t.initial / 10).toFixed(1) : t.initial;
+            const targetDisplay = t.id === 'ph' ? `${(t.targetMin / 10).toFixed(1)} - ${(t.targetMax / 10).toFixed(1)}` : `${t.targetMin} - ${t.targetMax}`;
             row.innerHTML = `
                 <div class="qa-header">
                     <strong>${t.name}</strong>
-                    <span class="qa-badge" id="val-${t.id}">${t.initial} ${t.unit} (Meta: ${t.targetMin}-${t.targetMax} ${t.unit})</span>
+                    <span class="qa-badge" id="val-${t.id}">${displayVal} ${t.id === 'ph' ? 'pH' : t.unit} (Meta: ${targetDisplay})</span>
                 </div>
-                <input type="range" min="20" max="100" value="${t.initial}" class="qa-slider" id="slider-${t.id}">
+                <input type="range" min="0" max="${t.id === 'ph' ? 70 : (t.id === 'cold' ? 12 : 30)}" value="${t.initial}" class="qa-slider" id="slider-${t.id}">
             `;
             container.appendChild(row);
 
@@ -439,14 +441,15 @@ class MissionManager {
             slider.addEventListener('input', () => {
                 const v = parseInt(slider.value, 10);
                 const ok = v >= t.targetMin && v <= t.targetMax;
-                badge.textContent = `${v} ${t.unit} ${ok ? '✅ ÓPTIMO' : `(Meta: ${t.targetMin}-${t.targetMax} ${t.unit})`}`;
+                const txt = t.id === 'ph' ? (v / 10).toFixed(1) + ' pH' : `${v} ${t.unit}`;
+                badge.textContent = `${txt} ${ok ? '✅ ÓPTIMO SENASAG' : `(Meta: ${targetDisplay})`}`;
                 badge.style.color = ok ? '#10b981' : '#facc15';
             });
         });
 
         const verifyBtn = document.createElement('button');
         verifyBtn.className = 'primary-action-btn';
-        verifyBtn.textContent = '🚀 Ejecutar Prueba en Dinamómetro y Certificar Vehículo';
+        verifyBtn.textContent = '🥛 Certificar Lote de Productos Lácteos PIL';
         verifyBtn.addEventListener('click', () => {
             let allOk = true;
             for (const key in sliders) {
@@ -460,7 +463,7 @@ class MissionManager {
                 this.completeCurrentMission();
             } else {
                 this.sound.playError();
-                this.statusEl.textContent = '⚠️ Ajusta los 3 controles deslizantes dentro del rango verde (ÓPTIMO) antes de certificar.';
+                this.statusEl.textContent = '⚠️ Ajusta los 3 parámetros de inocuidad en el rango verde (ÓPTIMO) antes de certificar.';
                 this.statusEl.className = 'mission-status error';
             }
         });
@@ -469,15 +472,15 @@ class MissionManager {
         this.bodyEl.appendChild(container);
     }
 
-    // 7. SALA DE REUNIONES: Junta Estratégica de Ingeniería Quantum
+    // 7. SALA DE REUNIONES: Comité de Inocuidad Alimentaria HACCP PIL
     renderMeetingMission() {
         const proposals = [
-            { id: 'plug220', icon: '🔌', name: 'Carga Doméstica a 220V', valid: true, info: 'Recarga en cualquier enchufe estándar sin electrolinera especial' },
-            { id: 'climb', icon: '⛰️', name: 'Relación de Transmisión Andina', valid: true, info: 'Torque optimizado para subir pendientes de La Paz y Cochabamba' },
-            { id: 'diesel', icon: '🛢️', name: 'Motor Auxiliar a Diésel', valid: false, info: '¡Propuesta rechazada! Quantum fabrica vehículos 100% cero emisiones' },
-            { id: 'lithium_local', icon: '🔋', name: 'Integración de Baterías de Litio', valid: true, info: 'Impulso al valor agregado y talento técnico en Bolivia' },
-            { id: 'recycle', icon: '♻️', name: 'Economía Circular de Celdas', valid: true, info: 'Segunda vida útil de baterías para almacenamiento solar' },
-            { id: 'lead', icon: '⚓', name: 'Chasis Pesado de Hierro Fundido', valid: false, info: '¡Propuesta rechazada! El exceso de peso reduce la autonomía a la mitad' }
+            { id: 'cold_chain', icon: '❄️', name: 'Cadena de Frío Ininterrumpida a 4°C', valid: true, info: 'Distribución en camiones frigoríficos a tiendas y mercados de Bolivia' },
+            { id: 'senasag', icon: '📋', name: 'Certificación Sanitaria SENASAG', valid: true, info: 'Auditoría permanente en Buenas Prácticas Ganaderas y de Manufactura' },
+            { id: 'off_cold', icon: '⚡', name: 'Apagar Refrigeración Nocturna', valid: false, info: '¡Propuesta rechazada! La proliferación bacteriana arruinaría el lote' },
+            { id: 'traceability', icon: '🏷️', name: 'Trazabilidad por Código de Lote', valid: true, info: 'Identificación exacta de la fecha, hora y silo de envasado' },
+            { id: 'recycle_film', icon: '♻️', name: 'Envases 100% Reciclables y Seguros', valid: true, info: 'Economía circular y reducción de huella plástica en Bolivia' },
+            { id: 'antibiotics', icon: '💊', name: 'Aceptar Leche con Antibióticos', valid: false, info: '¡Propuesta rechazada! Tóxico para el consumidor e impide fermentar yogur' }
         ];
 
         const approved = new Set();
@@ -496,7 +499,7 @@ class MissionManager {
                 if (!prop.valid) {
                     this.sound.playError();
                     card.classList.add('card-error');
-                    this.statusEl.textContent = `⚠️ ${prop.info}`;
+                    this.statusEl.textContent = `⚠️ Infracción HACCP: ${prop.info}`;
                     this.statusEl.className = 'mission-status error';
                     setTimeout(() => card.classList.remove('card-error'), 750);
                     return;
@@ -505,7 +508,7 @@ class MissionManager {
                     approved.add(prop.id);
                     card.classList.add('card-selected');
                     this.sound.playWireZap();
-                    this.statusEl.textContent = `Metas estratégicas aprobadas por el directorio: ${approved.size} / 4`;
+                    this.statusEl.textContent = `Resoluciones de calidad aprobadas: ${approved.size} / 4`;
                     this.statusEl.className = 'mission-status';
                     if (approved.size === 4) {
                         this.completeCurrentMission();
@@ -520,3 +523,4 @@ class MissionManager {
 }
 
 window.QuantumGame.MissionManager = MissionManager;
+

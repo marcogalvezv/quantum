@@ -1,17 +1,17 @@
 /**
- * RobotGuide.js - "Q-BOT" Educational Robot Companion
- * Follows the apprentice around the factory at a polite distance and explains each Quantum Motors section
+ * RobotGuide.js - "PIL-BOT" Educational Robot Companion
+ * Follows the technician around the dairy plant at a polite distance and explains each PIL Andina section
  */
 window.QuantumGame = window.QuantumGame || {};
 
 class RobotGuide {
     constructor() {
-        this.name = 'Q-BOT Guía';
+        this.name = 'PIL-BOT Guía';
         this.x = 420;
         this.y = 330;
         this.hoverOffset = 0;
         this.currentZoneId = null;
-        this.currentMessage = '¡Hola Técnico Aprendiz! Soy Q-BOT. Explora las 6 zonas de la planta Quantum Motors usando WASD o las flechas y presiona [E] o haz clic en las estaciones brillantes.';
+        this.currentMessage = '¡Hola Técnico Lácteo! Soy PIL-BOT. Explora las secciones de la planta industrial PIL Andina con WASD o flechas y presiona [E] o haz clic en las estaciones.';
         this.visitedZones = new Set();
     }
 
@@ -44,3 +44,4 @@ class RobotGuide {
 }
 
 window.QuantumGame.RobotGuide = RobotGuide;
+

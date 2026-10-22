@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Crew: Ensambladora Quantum Motors (Bolivia)</title>
+    <title>PIL Crew: Planta Láctea PIL Andina (Bolivia)</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -15,32 +15,32 @@
     <div id="lobby-overlay" class="overlay">
         <div class="lobby-card">
             <div class="lobby-header">
-                <span class="bolivia-pill">🇧🇴 COCHABAMBA, BOLIVIA</span>
-                <h1>⚡ QUANTUM CREW</h1>
-                <p>Simulador Cooperativo de Ensamblaje de Vehículos Eléctricos (Hasta 6 Jugadores)</p>
+                <span class="bolivia-pill">🇧🇴 COCHABAMBA • LA PAZ • SANTA CRUZ</span>
+                <h1>🥛 PIL CREW • PLANTA LÁCTEA</h1>
+                <p>Simulador Cooperativo de Producción e Inocuidad Láctea PIL Andina (Hasta 6 Jugadores)</p>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="player-name-input">Nombre de Técnico Aprendiz</label>
-                    <input type="text" id="player-name-input" value="Técnico Quantum" maxlength="18">
+                    <label for="player-name-input">Nombre de Técnico Lácteo</label>
+                    <input type="text" id="player-name-input" value="Técnico PIL" maxlength="18">
                 </div>
                 <div class="form-group">
                     <label for="room-code-input">Código de Sala Cooperativa</label>
-                    <input type="text" id="room-code-input" value="QM-2026" maxlength="12">
+                    <input type="text" id="room-code-input" value="PIL-2026" maxlength="12">
                 </div>
             </div>
 
             <div class="form-group">
-                <label>Color de Traje Dieléctrico (Estilo Among Us)</label>
+                <label>Color de Indumentaria Sanitaria (Estilo Among Us)</label>
                 <div id="color-picker" class="color-picker"></div>
             </div>
 
             <div class="form-group">
                 <label>Rostro del Personaje (Sube tu foto o usa tu cámara)</label>
                 <div class="avatar-picker-row">
-                    <div class="avatar-preview-box" id="avatar-preview-box" title="Vista previa de tu rostro en el casco">
-                        <span id="avatar-placeholder-icon">🧑‍🔧</span>
+                    <div class="avatar-preview-box" id="avatar-preview-box" title="Vista previa de tu rostro en el traje sanitario">
+                        <span id="avatar-placeholder-icon">🧑‍🔬</span>
                         <img id="avatar-preview-img" class="hidden" alt="Tu rostro">
                     </div>
                     <div class="avatar-buttons-col">
@@ -76,7 +76,7 @@
             </label>
 
             <button id="join-game-btn" class="primary-action-btn">
-                🚀 INGRESAR A LA PLANTA QUANTUM MOTORS
+                🥛 INGRESAR A LA PLANTA PIL ANDINA
             </button>
         </div>
     </div>
@@ -84,10 +84,10 @@
     <!-- ==================== INTERFAZ HUD EN PARTIDA ==================== -->
     <div id="hud-layer">
 
-        <!-- Barra Superior: Progreso Colectivo y Guía Q-BOT -->
+        <!-- Barra Superior: Progreso Colectivo y Guía PIL-BOT -->
         <div class="hud-panel top-bar-hud">
             <div class="progress-header">
-                <span id="total-progress-text">Ensamblaje Colectivo Quantum E4: 0/6 (0%)</span>
+                <span id="total-progress-text">Procesamiento Colectivo PIL: 0/6 (0%)</span>
                 <span id="team-score-val" style="color:#facc15;">0 pts</span>
             </div>
             <div class="progress-track">
@@ -95,7 +95,7 @@
             </div>
             <div class="qbot-banner">
                 <span>🤖</span>
-                <span id="qbot-narrative-text">Camina con WASD o Flechas por las 6 secciones de la fábrica y presiona [E] o haz clic en las estaciones.</span>
+                <span id="qbot-narrative-text">Camina con WASD o Flechas por las 6 secciones de la planta láctea y presiona [E] o haz clic en las estaciones.</span>
             </div>
         </div>
 
@@ -103,24 +103,24 @@
         <div class="hud-panel left-hud">
             <h3>
                 <span>📋 Misiones de Planta</span>
-                <span id="room-display" style="color:#94a3b8;font-size:11px;">Sala: QM-2026</span>
+                <span id="room-display" style="color:#94a3b8;font-size:11px;">Sala: PIL-2026</span>
             </h3>
             <ul id="task-list-hud"></ul>
 
-            <h3 style="margin-top:6px;">🏅 Insignias Quantum</h3>
+            <h3 style="margin-top:6px;">🏅 Insignias de Inocuidad PIL</h3>
             <div id="badges-hud" class="badges-row"></div>
         </div>
 
         <!-- Panel Derecho: Minimapa y Técnicos Conectados (Hasta 6) -->
         <div class="hud-panel right-hud">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-                <strong style="font-size:12px;color:#38bdf8;">🗺️ MAPA DE FÁBRICA</strong>
+                <strong style="font-size:12px;color:#38bdf8;">🗺️ PLANTA INDUSTRIAL PIL</strong>
                 <span id="net-status-badge" style="font-size:10px;color:#6ee7b7;">🟢 Online</span>
             </div>
             <canvas id="minimap-canvas" width="240" height="160"></canvas>
 
             <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;">
-                <span>👥 Escuadrón Técnico</span>
+                <span>👥 Escuadrón Lácteo</span>
                 <span id="crew-count" style="color:#38bdf8;">1/6</span>
             </div>
             <div id="crew-roster" class="crew-roster"></div>
@@ -131,7 +131,7 @@
             <div id="chat-messages"></div>
             <div id="emote-bar" class="emote-bar"></div>
             <form id="chat-form">
-                <input type="text" id="chat-input" placeholder="Enviar mensaje al equipo..." maxlength="80">
+                <input type="text" id="chat-input" placeholder="Enviar mensaje al equipo lácteo..." maxlength="80">
                 <button type="submit">Enviar</button>
             </form>
         </div>
@@ -139,12 +139,12 @@
         <!-- Panel Inferior Derecho: Botón de Acción Estilo Among Us -->
         <div class="bottom-right-hud">
             <button id="mute-btn" class="small-util-btn">🔊 Sonido On</button>
-            <button id="emergency-meeting-hud-btn" class="emergency-meeting-btn" title="Llamar a Reunión General de Técnicos">
+            <button id="emergency-meeting-hud-btn" class="emergency-meeting-btn" title="Llamar a Convocatoria del Comité HACCP">
                 🚨 <strong>REUNIÓN</strong>
                 <small id="meeting-cooldown-text">Convocatoria</small>
             </button>
             <button id="hud-interact-btn" class="interact-big-btn" disabled>
-                🔧 <strong>USAR [E]</strong>
+                🥛 <strong>USAR [E]</strong>
                 <small>Acércate a estación</small>
             </button>
         </div>
@@ -176,14 +176,14 @@
     <!-- ==================== MODAL DE VICTORIA FINAL ==================== -->
     <div id="victory-modal" class="overlay hidden">
         <div class="modal-card" style="max-width:540px;text-align:center;border-color:#10b981;">
-            <div style="font-size:54px;margin-bottom:8px;">🏆🚗🇧🇴</div>
-            <h2 style="font-size:26px;color:#10b981;margin-bottom:8px;">¡VEHÍCULO QUANTUM E4 CERTIFICADO!</h2>
+            <div style="font-size:54px;margin-bottom:8px;">🏆🥛🇧🇴</div>
+            <h2 style="font-size:26px;color:#10b981;margin-bottom:8px;">¡LOTE DE LECHE PIL Y DERIVADOS CERTIFICADO!</h2>
             <p style="color:#cbd5e1;font-size:14.5px;line-height:1.5;margin-bottom:14px;">
-                ¡Felicidades Técnicos Aprendices! Han completado todas las etapas de seguridad, baterías de litio, soldadura de chasis, diagnóstico eléctrico, ensamblaje final y control de calidad.
+                ¡Felicidades Técnicos Lácteos! Han completado con éxito la recepción y análisis de leche cruda, pasteurización HTST a 72°C, almacenamiento en silos CIP, envasado aséptico de Leche PIL en Bolsa Azul y la cadena de frío certificada por SENASAG.
             </p>
             <div id="victory-score" style="font-size:22px;font-weight:900;color:#facc15;margin-bottom:18px;"></div>
             <button id="victory-continue-btn" class="primary-action-btn">
-                Seguir Explorando la Fábrica Quantum
+                Seguir Explorando la Planta PIL Andina
             </button>
         </div>
     </div>
@@ -192,21 +192,21 @@
     <div id="call-meeting-modal" class="overlay hidden">
         <div class="modal-card call-meeting-card">
             <div class="modal-header">
-                <h2>🚨 Convocatoria de Reunión de Planta</h2>
+                <h2>🚨 Convocatoria Comité de Inocuidad HACCP</h2>
                 <button id="call-meeting-close-btn" class="close-btn">✕</button>
             </div>
             <p style="color:#cbd5e1;font-size:14px;margin-bottom:14px;line-height:1.5;">
-                Al activar la alarma de reunión, sonará la sirena en toda la fábrica y todos los técnicos (humanos y bots) serán transportados a la <strong>Sala de Reuniones</strong> para coordinar la producción del Quantum E4.
+                Al activar la alarma de reunión, sonará la sirena en toda la planta y todos los técnicos (humanos y bots) serán transportados a la <strong>Sala de Inocuidad HACCP</strong> para coordinar la producción y control de calidad de PIL Andina.
             </p>
             <div class="form-group" style="text-align:left;">
                 <label for="meeting-reason-select" style="font-size:12px;font-weight:700;color:#38bdf8;">Motivo de la Convocatoria:</label>
                 <select id="meeting-reason-select" class="styled-select" style="width:100%;margin-top:6px;padding:9px;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#fff;font-size:13px;">
-                    <option value="Coordinación general de producción del Quantum E4">⚡ Coordinación general y estado del Quantum E4</option>
-                    <option value="Necesitamos apoyo urgente en el Laboratorio de Baterías de Litio">🔋 Apoyo urgente en Baterías de Litio (60V)</option>
-                    <option value="Revisión de estructura y soldadura del Chasis">🏗️ Revisión de soldadura de Chasis</option>
-                    <option value="Diagnóstico de cableado y pernos en Depósito">🔧 Diagnóstico de cableado y arnés eléctrico</option>
-                    <option value="¡Todos a la Línea de Ensamblaje Final!">🚗 ¡Todos a Ensamblaje Final!</option>
-                    <option value="Alerta técnica de ensamblaje">🚨 Alerta o emergencia técnica</option>
+                    <option value="Coordinación general de producción y envasado de Leche PIL">🥛 Coordinación general y estado de envasado</option>
+                    <option value="Revisión urgente de acidez Dornic en tanques de recepción">🧪 Revisión urgente en Control de Leche Cruda</option>
+                    <option value="Verificación térmica del intercambiador HTST a 72°C">🌡️ Verificación térmica en Pasteurización HTST</option>
+                    <option value="Inspección de empaques sanitarios y tuberías CIP">🔧 Mantenimiento en tuberías sanitarias Clamp</option>
+                    <option value="¡Todos a la línea de envasado en Bolsa Azul!">📦 ¡Todos a la Línea de Bolsa Azul PIL!</option>
+                    <option value="Auditoría de Inocuidad SENASAG / HACCP">🚨 Auditoría urgente de Inocuidad Alimentaria</option>
                 </select>
             </div>
             <div style="display:flex;gap:10px;margin-top:18px;">
@@ -225,12 +225,12 @@
         <div class="emergency-strobe"></div>
         <div class="emergency-alert-content">
             <div class="emergency-siren-icon">🚨</div>
-            <h1 class="emergency-alert-title">¡REUNIÓN DE PLANTA CONVOCADA!</h1>
+            <h1 class="emergency-alert-title">¡COMITÉ HACCP CONVOCADO!</h1>
             <div class="emergency-caller-chip">
                 <div id="alert-caller-avatar-slot"></div>
-                <span id="alert-caller-name">Técnico Quantum</span>
+                <span id="alert-caller-name">Técnico PIL</span>
             </div>
-            <p id="alert-caller-reason" class="emergency-reason-banner">Coordinación de Producción</p>
+            <p id="alert-caller-reason" class="emergency-reason-banner">Coordinación de Inocuidad Láctea</p>
         </div>
     </div>
 
@@ -239,10 +239,10 @@
         <div class="boardroom-modal-card">
             <div class="boardroom-header">
                 <div class="boardroom-title-group">
-                    <div class="boardroom-icon">🚨</div>
+                    <div class="boardroom-icon">🛡️</div>
                     <div>
-                        <h2>JUNTA TÉCNICA QUANTUM MOTORS</h2>
-                        <p id="meeting-header-sub">Mesa Central de Estrategia • Coordinación Colectiva</p>
+                        <h2>COMITÉ DE INOCUIDAD Y CALIDAD PIL ANDINA</h2>
+                        <p id="meeting-header-sub">Mesa Central de Control • Buenas Prácticas y Trazabilidad</p>
                     </div>
                 </div>
                 <div class="boardroom-timer-pill">
@@ -254,7 +254,7 @@
             <!-- Dashboard de Estado de la Fábrica -->
             <div class="boardroom-factory-status">
                 <div class="status-title-row">
-                    <strong>📊 Estado de Ensamblaje del Quantum E4:</strong>
+                    <strong>📊 Estado de Producción PIL Andina:</strong>
                     <span id="meeting-progress-summary">0/6 Estaciones Completadas (0%)</span>
                 </div>
                 <div id="meeting-stations-badges" class="meeting-stations-badges"></div>
@@ -268,7 +268,7 @@
             <!-- Votación de Próxima Estación Prioritaria -->
             <div class="boardroom-voting-section">
                 <div class="voting-header">
-                    <strong>🎯 Votación del Equipo: ¿A qué estación vamos ahora?</strong>
+                    <strong>🎯 Votación del Equipo: ¿A qué estación láctea vamos ahora?</strong>
                     <span style="font-size:12px;color:#94a3b8;">Tu voto orientará a los técnicos y aprendices</span>
                 </div>
                 <div id="meeting-vote-options" class="meeting-vote-options"></div>
@@ -277,11 +277,11 @@
             <!-- Chat y Frases Rápidas de Reunión -->
             <div class="boardroom-chat-section">
                 <div class="quick-phrases-row" id="quick-phrases-row">
-                    <button type="button" class="phrase-btn" data-phrase="¡Nos falta terminar el Pack de Baterías de 60V!">🔋 Falta Baterías</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Chasis listo, vamos a ensamblar el motor!">🏗️ Chasis listo</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Revisemos la tornillería y cables en Depósito!">🔧 Revisar cables</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Faltan pocas tareas para certificar el auto!">⚡ ¡Casi listo!</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Excelente trabajo equipo, sigamos adelante!">🇧🇴 ¡Orgullo Quantum!</button>
+                    <button type="button" class="phrase-btn" data-phrase="¡Verifiquemos la acidez Dornic de las cisternas!">🧪 Analizar leche</button>
+                    <button type="button" class="phrase-btn" data-phrase="¡Pasteurizador HTST calibrado a 72°C!">🌡️ Pasteurizador listo</button>
+                    <button type="button" class="phrase-btn" data-phrase="¡Ajustemos las juntas clamp en mantenimiento!">🔧 Ajustar juntas</button>
+                    <button type="button" class="phrase-btn" data-phrase="¡A envasar la Leche PIL en Bolsa Azul!">🥛 Envasar Bolsa Azul</button>
+                    <button type="button" class="phrase-btn" data-phrase="¡Lote con inocuidad garantizada para Bolivia!">🇧🇴 ¡Orgullo PIL!</button>
                 </div>
                 <form id="meeting-chat-form" class="meeting-chat-form">
                     <input type="text" id="meeting-chat-input" placeholder="Comentar en la reunión de mesa..." maxlength="80">
@@ -295,7 +295,7 @@
                     Coordina con tu equipo antes de que termine el tiempo.
                 </span>
                 <button type="button" id="end-meeting-btn" class="primary-action-btn resume-work-btn">
-                    🚀 Reanudar Labores / Volver a la Planta
+                    🥛 Reanudar Labores / Volver a la Planta
                 </button>
             </div>
         </div>

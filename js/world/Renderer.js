@@ -272,7 +272,7 @@ class Renderer {
     }
 
     // =========================================================================
-    // DETAILED ILLUSTRATED PROPS FOR ALL 6 FACTORY ZONES
+    // DETAILED ILLUSTRATED PROPS FOR ALL 7 PIL ANDINA FACTORY ZONES
     // =========================================================================
     drawDetailedZoneScenery(ctx, zone, completedTasks, now) {
         ctx.save();
@@ -280,50 +280,50 @@ class Renderer {
         const zy = zone.y;
 
         if (zone.id === 'recepcion') {
-            // 1. RECEPCIÓN: Lockers 3D, Planta Decorativa, Mostrador Curvo con Sillas y Showroom Quantum E2
+            // 1. RECEPCIÓN & BPM: Lockers sanitarios, pediluvio/lavamanos, mostrador de cisternas y camión lechero PIL en pedestal
             this.drawSafetyLockers(ctx, zx + 36, zy + 115);
-            this.drawFireExtinguisherStand(ctx, zx + 68, zy + 525);
+            this.drawPediluvioAndSanitizer(ctx, zx + 68, zy + 525);
             this.drawReceptionDesk(ctx, zx + 460, zy + 115);
             this.drawPottedPlant(ctx, zx + 430, zy + 140);
             this.drawPottedPlant(ctx, zx + 635, zy + 245);
-            this.drawShowroomPod(ctx, zx + 545, zy + 495, now);
+            this.drawMilkTankerShowroomPod(ctx, zx + 545, zy + 495, now);
 
         } else if (zone.id === 'baterias') {
-            // 2. BATERÍAS: Cables Naranjas con Conectores, Consola BMS con Ventiladores y Celdas Cilíndricas 3D
+            // 2. PASTEURIZACIÓN HTST & HOMOGENEIZADO: Tuberías sanitarias inox, intercambiador de placas 72°C, homogeneizador 180 bar y clarificadora
             const isDone = completedTasks.has('task_battery');
-            this.drawHighVoltageCables(ctx, zx, zy);
-            this.drawBmsConsole(ctx, zx + 50, zy + 115, isDone, now);
-            this.drawCylindricalBatteryRack(ctx, zx + 460, zy + 120, isDone, now);
-            this.drawThermalChamber(ctx, zx + 470, zy + 425, now);
+            this.drawSanitaryPipingCircuits(ctx, zx, zy);
+            this.drawHtstPlatePasteurizer(ctx, zx + 50, zy + 115, isDone, now);
+            this.drawHighPressureHomogenizer(ctx, zx + 460, zy + 120, isDone, now);
+            this.drawCentrifugalClarifier(ctx, zx + 470, zy + 425, now);
 
         } else if (zone.id === 'chasis') {
-            // 3. CHASIS: Cortadora Láser con Chispas, Brazo Robótico Articulado Soldando Chasis Real y Mesa de Planos
+            // 3. SILOS DE LECHE & SISTEMA CIP: Grandes silos verticales 50.000 L, sistema de limpieza CIP y consola de proceso
             const isDone = completedTasks.has('task_chassis');
-            this.drawLaserCutterMachine(ctx, zx + 45, zy + 115, now);
-            this.drawChasisWeldingJig(ctx, zx + 50, zy + 315, isDone, now);
-            this.drawBlueprintTable(ctx, zx + 465, zy + 120);
+            this.drawMilkStorageSilos(ctx, zx + 45, zy + 115, now);
+            this.drawCipCleaningSystem(ctx, zx + 50, zy + 335, isDone, now);
+            this.drawSanitaryProcessDesk(ctx, zx + 465, zy + 120);
 
         } else if (zone.id === 'deposito') {
-            // 6. DEPÓSITO Y LOGÍSTICA: Pallets de Madera con Motores/Neumáticos, Banco de Herramientas y Montacargas
-            this.drawLogisticsShelves(ctx, zx + 38, zy + 110);
-            this.drawToolWorkbench(ctx, zx + 460, zy + 125);
-            this.drawDetailedForklift(ctx, zx + 555, zy + 455, now);
+            // 6. MANTENIMIENTO SANITARIO: Estantes de repuestos inox, banco de abrazaderas clamp y montacargas con canastillas PIL
+            this.drawSanitarySparesShelves(ctx, zx + 38, zy + 110);
+            this.drawSanitaryFittingWorkbench(ctx, zx + 460, zy + 125);
+            this.drawElectricForkliftWithCrates(ctx, zx + 555, zy + 455, now);
 
         } else if (zone.id === 'ensamblaje') {
-            // 4. ENSAMBLAJE FINAL: Cinta Transportadora, Brazos Robóticos con Pinzas y Auto Quantum E4 Detallado
-            this.drawAssemblyLineAndCar(ctx, zx + zone.width / 2, zy + 275, zone.width, completedTasks, now);
+            // 4. LÍNEA DE ENVASADO BOLSA AZUL PIL: Cinta continua con bolsas azules de leche 946ml, torre aséptica UV y robot encajonador
+            this.drawBolsaAzulPackagingLine(ctx, zx + zone.width / 2, zy + 275, zone.width, completedTasks, now);
 
         } else if (zone.id === 'pruebas') {
-            // 5. PRUEBAS DE CALIDAD: Dinamómetro con Ventilador de Túnel de Viento, Arco de Lluvia IP65 y Semáforo
+            // 5. YOGUR & LABORATORIO DE CALIDAD: Tanques de fermentación de yogur (frutilla/durazno), mesa de microbiología y semáforo SENASAG
             const qaDone = completedTasks.has('task_qa');
-            this.drawDynamometerBay(ctx, zx + 55, zy + 275, qaDone, now);
-            this.drawRainTestArch(ctx, zx + 465, zy + 115, now);
-            this.drawTrafficLightTower(ctx, zx + 555, zy + 335, qaDone);
+            this.drawYogurtFermentationTanks(ctx, zx + 55, zy + 275, qaDone, now);
+            this.drawMicrobiologyLabBench(ctx, zx + 465, zy + 115, now);
+            this.drawQualityStatusTower(ctx, zx + 555, zy + 335, qaDone);
 
         } else if (zone.id === 'reuniones') {
-            // 7. SALA DE REUNIONES Y ESTRATEGIA: Mesa Ovalada con Botón de Reunión, Pizarra Kanban, Proyector y Estación de Café
+            // 7. SALA DE INOCUIDAD HACCP: Tablero de puntos críticos HACCP, mesa ejecutiva con botón de emergencia, y estación de refrigerio
             const meetDone = completedTasks.has('task_meeting');
-            this.drawKanbanAndProjector(ctx, zx + 42, zy + 115, meetDone, now);
+            this.drawHaccpBoardAndProjector(ctx, zx + 42, zy + 115, meetDone, now);
             this.drawMeetingRoomTable(ctx, zx + zone.width / 2, zy + 350, meetDone, now);
             this.drawCoffeeAndWaterStation(ctx, zx + 490, zy + 120);
             this.drawPottedPlant(ctx, zx + 75, zy + 545);
@@ -333,7 +333,7 @@ class Renderer {
         ctx.restore();
     }
 
-    // --- ZONE 7 HELPERS (SALA DE REUNIONES) ---
+    // --- ZONE 7 HELPERS (SALA DE INOCUIDAD HACCP) ---
     drawMeetingRoomTable(ctx, cx, cy, isDone, now) {
         ctx.save();
         ctx.translate(cx, cy);
@@ -371,7 +371,7 @@ class Renderer {
             ctx.fill();
             ctx.stroke();
             // Red/rose executive backrest cushion
-            ctx.fillStyle = '#e11d48';
+            ctx.fillStyle = '#0284c7';
             ctx.beginPath();
             ctx.roundRect(-15, -18, 30, 9, 4);
             ctx.fill();
@@ -404,7 +404,7 @@ class Renderer {
         ctx.ellipse(0, 0, 114, 48, 0, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Laptops & Blueprint folders on the table
+        // Laptops & Quality audit folders on the table
         for (let lx of [-75, 65]) {
             ctx.fillStyle = '#cbd5e1';
             ctx.strokeStyle = '#090d16';
@@ -417,8 +417,8 @@ class Renderer {
             ctx.fillStyle = '#0284c7';
             ctx.fillRect(lx - 12, -30, 24, 12);
 
-            // Bottom side notebooks
-            ctx.fillStyle = '#fef08a';
+            // Bottom side quality logbooks
+            ctx.fillStyle = '#bae6fd';
             ctx.beginPath();
             ctx.roundRect(lx - 14, 14, 26, 20, 3);
             ctx.fill();
@@ -456,11 +456,11 @@ class Renderer {
         ctx.restore();
     }
 
-    drawKanbanAndProjector(ctx, x, y, isDone, now) {
+    drawHaccpBoardAndProjector(ctx, x, y, isDone, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Agile Kanban Board with Sticky Notes (Top Left of Meeting Room)
+        // Digital HACCP Quality Control Board
         ctx.fillStyle = '#0f172a';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3.5;
@@ -469,41 +469,33 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // 3 Kanban Columns (TO-DO, DOING, DONE)
-        const cols = [
-            { title: 'PENDIENTE', x: 10, color: '#f43f5e' },
-            { title: 'EN CURSO', x: 70, color: '#facc15' },
-            { title: 'LISTO ✅', x: 130, color: '#10b981' }
+        // 3 HACCP Points
+        const pccs = [
+            { code: 'PCC-1', title: '72°C / 15s', status: 'PASTEURIZADO', col: '#10b981' },
+            { code: 'PCC-2', title: '0.0 Fe/Al', status: 'DETECCIÓN METAL', col: '#38bdf8' },
+            { code: 'PCC-3', title: 'HERMÉTICO', status: 'BOLSA AZUL OK', col: '#facc15' }
         ];
 
-        cols.forEach((col, cIdx) => {
+        pccs.forEach((p, idx) => {
+            const py = 28 + idx * 32;
             ctx.fillStyle = '#1e293b';
             ctx.beginPath();
-            ctx.roundRect(col.x, 28, 54, 90, 6);
+            ctx.roundRect(8, py, 179, 26, 5);
             ctx.fill();
 
-            ctx.fillStyle = col.color;
-            ctx.font = 'bold 8px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(col.title, col.x + 27, 40);
+            ctx.fillStyle = p.col;
+            ctx.font = 'bold 9px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${p.code}: ${p.status}`, 16, py + 16);
 
-            // Colorful Post-it sticky notes
-            const postItColors = ['#fef08a', '#bae6fd', '#fbcfe8', '#bbf7d0'];
-            for (let n = 0; n < 2; n++) {
-                ctx.fillStyle = postItColors[(cIdx + n) % postItColors.length];
-                ctx.strokeStyle = '#090d16';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.roundRect(col.x + 8, 48 + n * 32, 38, 24, 3);
-                ctx.fill();
-                ctx.stroke();
-            }
+            ctx.textAlign = 'right';
+            ctx.fillText(p.title, 180, py + 16);
         });
 
         ctx.fillStyle = '#f8fafc';
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('TABLERO KANBAN SCRUM', 97, 18);
+        ctx.fillText('SISTEMA INOCUIDAD HACCP PIL', 97, 18);
 
         ctx.restore();
     }
@@ -521,17 +513,18 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Espresso Coffee Machine
+        // Dispensador de Leche Fría y Café
         ctx.fillStyle = '#18181b';
         ctx.beginPath();
         ctx.roundRect(14, 14, 52, 56, 8);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#ef4444';
+        ctx.fillStyle = '#0284c7';
         ctx.beginPath();
         ctx.arc(28, 28, 4, 0, Math.PI * 2);
         ctx.fill();
-        // Coffee pot & mugs
+
+        // Vasos de leche PIL
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
         ctx.arc(32, 88, 9, 0, Math.PI * 2);
@@ -545,7 +538,7 @@ class Renderer {
         ctx.roundRect(84, 42, 46, 56, 8);
         ctx.fill();
         ctx.stroke();
-        // Translucent Blue Water Jug on top
+        // Translucent Blue Jug
         ctx.fillStyle = '#38bdf8';
         ctx.beginPath();
         ctx.arc(107, 32, 18, 0, Math.PI * 2);
@@ -555,23 +548,21 @@ class Renderer {
         ctx.fillStyle = '#cbd5e1';
         ctx.font = 'bold 9px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('ESTACIÓN DE CAFÉ', 72, 108);
+        ctx.fillText('REFRIGERIO LÁCTEO', 72, 108);
 
         ctx.restore();
     }
 
-    // --- ZONE 1 HELPERS (RECEPCIÓN) ---
+    // --- ZONE 1 HELPERS (RECEPCIÓN Y BPM) ---
     drawSafetyLockers(ctx, x, y) {
-        // 3D Locker Cabinet bank
+        // 4 Lockers with white lab coats & hairnets
         for (let i = 0; i < 4; i++) {
             const ly = y + i * 78;
-            // Drop shadow
             ctx.fillStyle = 'rgba(0,0,0,0.4)';
             ctx.beginPath();
             ctx.roundRect(x + 6, ly + 6, 70, 68, 8);
             ctx.fill();
 
-            // Locker body
             ctx.fillStyle = '#334155';
             ctx.strokeStyle = '#090d16';
             ctx.lineWidth = 3;
@@ -580,13 +571,12 @@ class Renderer {
             ctx.fill();
             ctx.stroke();
 
-            // Inner door bevel
             ctx.fillStyle = '#475569';
             ctx.beginPath();
             ctx.roundRect(x + 6, ly + 6, 58, 56, 5);
             ctx.fill();
 
-            // Louver vents
+            // Louvers
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 2;
             for (let v = 0; v < 3; v++) {
@@ -602,128 +592,117 @@ class Renderer {
             ctx.roundRect(x + 52, ly + 26, 6, 16, 2);
             ctx.fill();
 
-            // Illustrated EPP item badge on door
-            this.drawMiniEppIllustration(ctx, x + 28, ly + 44, i);
+            // Illustrated BPM icons
+            this.drawMiniBpmIllustration(ctx, x + 28, ly + 44, i);
         }
     }
 
-    drawMiniEppIllustration(ctx, cx, cy, index) {
+    drawMiniBpmIllustration(ctx, cx, cy, index) {
         ctx.save();
         ctx.translate(cx, cy);
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 2;
+
         if (index === 0) {
-            // Hard Hat illustration
-            ctx.fillStyle = '#facc15';
+            // White hairnet (Cofia)
+            ctx.fillStyle = '#f8fafc';
             ctx.beginPath();
-            ctx.arc(0, 2, 11, Math.PI, 0);
+            ctx.arc(0, 0, 11, Math.PI, 0);
             ctx.fill();
             ctx.stroke();
-            ctx.fillRect(-13, 1, 26, 4);
-            ctx.strokeRect(-13, 1, 26, 4);
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(-12, 0, 24, 3);
         } else if (index === 1) {
-            // Dielectric Glove illustration
-            ctx.fillStyle = '#f97316';
+            // Sanitary Face Mask (Barbijo)
+            ctx.fillStyle = '#38bdf8';
             ctx.beginPath();
-            ctx.roundRect(-8, -8, 16, 16, 5);
+            ctx.roundRect(-9, -6, 18, 12, 3);
             ctx.fill();
             ctx.stroke();
-            ctx.fillStyle = '#fb923c';
-            ctx.beginPath();
-            ctx.arc(-4, -9, 3, 0, Math.PI * 2);
-            ctx.arc(1, -10, 3, 0, Math.PI * 2);
-            ctx.arc(6, -8, 3, 0, Math.PI * 2);
-            ctx.fill();
         } else if (index === 2) {
-            // Safety Boot illustration
-            ctx.fillStyle = '#78350f';
+            // White Lab Coat (Mandil blanco)
+            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            ctx.moveTo(-8, -10);
-            ctx.lineTo(2, -10);
-            ctx.lineTo(2, 0);
-            ctx.lineTo(11, 2);
-            ctx.lineTo(11, 8);
-            ctx.lineTo(-8, 8);
+            ctx.moveTo(-9, -9);
+            ctx.lineTo(9, -9);
+            ctx.lineTo(7, 9);
+            ctx.lineTo(-7, 9);
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
-            // Yellow dielectric sole
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(-8, 6, 19, 3);
         } else {
-            // Safety Goggles illustration
-            ctx.fillStyle = '#38bdf8';
+            // White Rubber Boots (Botas de goma)
+            ctx.fillStyle = '#f8fafc';
             ctx.beginPath();
-            ctx.roundRect(-12, -5, 11, 9, 3);
-            ctx.roundRect(1, -5, 11, 9, 3);
+            ctx.moveTo(-6, -9);
+            ctx.lineTo(2, -9);
+            ctx.lineTo(2, 2);
+            ctx.lineTo(9, 4);
+            ctx.lineTo(9, 9);
+            ctx.lineTo(-6, 9);
+            ctx.closePath();
             ctx.fill();
             ctx.stroke();
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(-6, 7, 15, 2);
         }
         ctx.restore();
     }
 
-    drawFireExtinguisherStand(ctx, cx, cy) {
+    drawPediluvioAndSanitizer(ctx, cx, cy) {
         ctx.save();
         ctx.translate(cx, cy);
-        // Red safety mat with white diagonal stripes
-        ctx.fillStyle = '#7f1d1d';
-        ctx.strokeStyle = '#ef4444';
+
+        // Blue sanitized foot-bath mat (Pediluvio)
+        ctx.fillStyle = '#0369a1';
+        ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.roundRect(-28, -28, 56, 56, 10);
+        ctx.roundRect(-30, -30, 60, 60, 10);
         ctx.fill();
         ctx.stroke();
 
-        // Extinguisher cylinder
-        ctx.fillStyle = '#dc2626';
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 2.5;
+        ctx.fillStyle = '#0284c7';
         ctx.beginPath();
-        ctx.roundRect(-10, -14, 20, 32, 8);
+        ctx.roundRect(-24, -24, 48, 48, 6);
         ctx.fill();
-        ctx.stroke();
 
-        // White CO2 label
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(-7, -2, 14, 10);
-        ctx.fillStyle = '#090d16';
-        ctx.font = 'bold 7px sans-serif';
+        // Footprint outline in mat
+        ctx.fillStyle = '#bae6fd';
+        ctx.beginPath();
+        ctx.ellipse(-8, 0, 6, 12, -0.1, 0, Math.PI * 2);
+        ctx.ellipse(8, 0, 6, 12, 0.1, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Label
+        ctx.fillStyle = '#e0f2fe';
+        ctx.font = 'bold 8px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('CO2', 0, 6);
+        ctx.fillText('PEDILUVIO', 0, 22);
 
-        // Valve, pressure gauge & horn hose
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(-4, -20, 8, 6);
-        ctx.beginPath();
-        ctx.moveTo(4, -18);
-        ctx.quadraticCurveTo(16, -12, 14, 6);
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 4;
-        ctx.stroke();
         ctx.restore();
     }
 
     drawPottedPlant(ctx, cx, cy) {
         ctx.save();
         ctx.translate(cx, cy);
-        // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.35)';
         ctx.beginPath();
         ctx.arc(3, 4, 20, 0, Math.PI * 2);
         ctx.fill();
-        // Terracotta pot
-        ctx.fillStyle = '#b45309';
+        // Pot
+        ctx.fillStyle = '#0284c7';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.arc(0, 0, 17, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#451a03';
+        ctx.fillStyle = '#0c4a6e';
         ctx.beginPath();
         ctx.arc(0, 0, 12, 0, Math.PI * 2);
         ctx.fill();
-        // Lush tropical leaves radiating out
+        // Leaves
         const angles = [0, 1.05, 2.1, 3.14, 4.2, 5.25];
         for (let a of angles) {
             ctx.save();
@@ -744,7 +723,7 @@ class Renderer {
         ctx.save();
         ctx.translate(x, y);
 
-        // Two ergonomic swivel chairs behind desk
+        // Two swivel chairs behind desk
         for (let cx of [55, 130]) {
             ctx.fillStyle = '#0284c7';
             ctx.strokeStyle = '#090d16';
@@ -753,7 +732,6 @@ class Renderer {
             ctx.arc(cx, 22, 16, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
-            // Backrest
             ctx.fillStyle = '#0369a1';
             ctx.beginPath();
             ctx.roundRect(cx - 14, 2, 28, 10, 5);
@@ -761,7 +739,7 @@ class Renderer {
             ctx.stroke();
         }
 
-        // Curved L-shaped / kidney reception counter with wooden/cyan trim
+        // Curved counter
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.beginPath();
         ctx.roundRect(6, 36, 185, 78, 28);
@@ -775,21 +753,18 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Glowing cyan front counter lip
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 4;
         ctx.beginPath();
         ctx.roundRect(6, 36, 173, 66, 22);
         ctx.stroke();
 
-        // Dual curved widescreen monitors with keyboards & coffee mug
+        // Monitors
         for (let mx of [32, 108]) {
-            // Keyboard
             ctx.fillStyle = '#475569';
             ctx.beginPath();
             ctx.roundRect(mx + 6, 48, 34, 12, 3);
             ctx.fill();
-            // Monitor screen
             ctx.fillStyle = '#0f172a';
             ctx.strokeStyle = '#38bdf8';
             ctx.lineWidth = 2;
@@ -797,34 +772,20 @@ class Renderer {
             ctx.roundRect(mx, 66, 48, 18, 4);
             ctx.fill();
             ctx.stroke();
-            // Screen glow
             ctx.fillStyle = '#38bdf8';
             ctx.fillRect(mx + 5, 71, 24, 3);
             ctx.fillStyle = '#10b981';
             ctx.fillRect(mx + 5, 77, 34, 3);
         }
 
-        // Coffee mug on desk
-        ctx.fillStyle = '#f8fafc';
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(92, 56, 7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#78350f';
-        ctx.beginPath();
-        ctx.arc(92, 56, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-
         ctx.restore();
     }
 
-    drawShowroomPod(ctx, cx, cy, now) {
+    drawMilkTankerShowroomPod(ctx, cx, cy, now) {
         ctx.save();
         ctx.translate(cx, cy);
 
-        // Circular Illuminated Showroom Stage
+        // Circular illuminated showroom stage
         const grad = ctx.createRadialGradient(0, 0, 15, 0, 0, 95);
         grad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
         grad.addColorStop(0.7, 'rgba(15, 23, 42, 0.9)');
@@ -834,13 +795,13 @@ class Renderer {
         ctx.arc(0, 0, 92, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.arc(0, 0, 88, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Bolivian tricolor curved ribbon at bottom of pedestal
+        // Bolivian tricolor ribbon
         ctx.lineWidth = 5;
         ctx.strokeStyle = '#dc2626';
         ctx.beginPath();
@@ -855,155 +816,246 @@ class Renderer {
         ctx.arc(0, 0, 68, 0.3, 2.84);
         ctx.stroke();
 
-        // Rotating Display Miniature of Quantum E2 Electric Car!
+        // Rotating Display Miniature of PIL Milk Tanker Truck!
         ctx.save();
         ctx.rotate(Math.sin(now * 0.0012) * 0.25 - 0.2);
-        this.drawCompleteCarIllustration(ctx, 0, -10, 0.68, '#00e5ff', true);
+        this.drawMilkTankerTruckIllustration(ctx, 0, -10, 0.72);
         ctx.restore();
 
-        // Showroom plaque
+        // Plaque
         ctx.fillStyle = '#090d16';
-        ctx.strokeStyle = '#facc15';
+        ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.roundRect(-72, 42, 144, 34, 8);
+        ctx.roundRect(-76, 42, 152, 34, 8);
         ctx.fill();
         ctx.stroke();
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('QUANTUM E2 PIONERO', 0, 57);
+        ctx.fillText('CISTERNA PIL ANDINA', 0, 56);
         ctx.fillStyle = '#38bdf8';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('100% Eléctrico • Bolivia', 0, 70);
+        ctx.font = '9.5px sans-serif';
+        ctx.fillText('Recepción de Leche Fresca', 0, 69);
 
         ctx.restore();
     }
 
-    // --- ZONE 2 HELPERS (BATERÍAS) ---
-    drawHighVoltageCables(ctx, zx, zy) {
+    /**
+     * Draws an illustrated top-down / 2.5D PIL Milk Tanker Truck with stainless steel tank
+     */
+    drawMilkTankerTruckIllustration(ctx, x, y, scale = 1.0) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Drop shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.roundRect(-86, -42, 184, 84, 20);
+        ctx.fill();
+
+        // 6 Rubber Heavy-Duty Wheels
+        ctx.fillStyle = '#090d16';
+        for (let [wx, wy] of [[-68, -44], [-24, -44], [52, -44], [-68, 34], [-24, 34], [52, 34]]) {
+            ctx.beginPath();
+            ctx.roundRect(wx, wy, 24, 10, 4);
+            ctx.fill();
+        }
+
+        // Heavy Truck Chassis Frame
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(-78, -34, 168, 68);
+
+        // 1. Polished Stainless Steel Tanker (Rear/Center)
+        const tankGrad = ctx.createLinearGradient(-75, -34, -75, 34);
+        tankGrad.addColorStop(0, '#94a3b8');
+        tankGrad.addColorStop(0.3, '#f8fafc');
+        tankGrad.addColorStop(0.6, '#cbd5e1');
+        tankGrad.addColorStop(1, '#64748b');
+        ctx.fillStyle = tankGrad;
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(-76, -32, 106, 64, 18);
+        ctx.fill();
+        ctx.stroke();
+
+        // Specular chrome reflection along tank top
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.fillRect(-68, -26, 92, 8);
+
+        // Tank top inspection hatches
+        ctx.fillStyle = '#475569';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2;
+        for (let hx of [-52, -18]) {
+            ctx.beginPath();
+            ctx.arc(hx, 0, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Bold "PIL ANDINA" lettering on tanker
+        ctx.fillStyle = '#0284c7';
+        ctx.font = 'bold 13px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PIL', -36, -5);
+        ctx.font = 'bold 8px system-ui, sans-serif';
+        ctx.fillText('ANDINA', -36, 12);
+
+        // 2. White & Blue Truck Cabin (Front)
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(32, -32, 54, 64, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        // Blue aerodynamic cabin roof trim
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(40, -32, 38, 10);
+        ctx.fillRect(40, 22, 38, 10);
+
+        // Windshield
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(50, -22, 28, 44, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Headlights
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.arc(84, -20, 5, 0, Math.PI * 2);
+        ctx.arc(84, 20, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // --- ZONE 2 HELPERS (PASTEURIZACIÓN HTST & HOMOGENEIZADO) ---
+    drawSanitaryPipingCircuits(ctx, zx, zy) {
         ctx.save();
         ctx.lineCap = 'round';
-        // Thick black outer conduit shadow + bright orange EV cable
-        const drawCable = (pts, color) => {
+
+        const drawPipe = (pts, color, label) => {
             ctx.strokeStyle = '#090d16';
             ctx.lineWidth = 11;
             ctx.beginPath();
             pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
             ctx.stroke();
 
+            // Stainless steel core with colored stripe
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 7;
+            ctx.stroke();
+
             ctx.strokeStyle = color;
-            ctx.lineWidth = 6;
+            ctx.lineWidth = 3;
             ctx.stroke();
         };
 
-        drawCable([[zx + 150, zy + 250], [zx + 150, zy + 310], [zx + 465, zy + 310]], '#f97316');
-        drawCable([[zx + 180, zy + 250], [zx + 180, zy + 285], [zx + 465, zy + 285]], '#0284c7');
+        // Cold milk line (Blue, 4°C)
+        drawPipe([[zx + 150, zy + 250], [zx + 150, zy + 310], [zx + 465, zy + 310]], '#0284c7');
+        // Hot pasteurized return line (Red, 72°C)
+        drawPipe([[zx + 180, zy + 250], [zx + 180, zy + 285], [zx + 465, zy + 285]], '#ef4444');
         ctx.restore();
     }
 
-    drawBmsConsole(ctx, x, y, isDone, now) {
+    drawHtstPlatePasteurizer(ctx, x, y, isDone, now) {
         ctx.save();
         ctx.translate(x, y);
 
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.beginPath();
-        ctx.roundRect(6, 6, 200, 145, 14);
+        ctx.roundRect(6, 6, 215, 145, 14);
         ctx.fill();
 
-        // Main metal cabinet
+        // Main stainless steel frame
         ctx.fillStyle = '#1e293b';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
-        ctx.roundRect(0, 0, 200, 145, 14);
+        ctx.roundRect(0, 0, 215, 145, 14);
         ctx.fill();
         ctx.stroke();
 
-        // Dual Rotating Cooling Fans on right side of console
-        for (let fy of [42, 98]) {
-            const fx = 162;
-            ctx.fillStyle = '#090d16';
-            ctx.beginPath();
-            ctx.arc(fx, fy, 22, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.save();
-            ctx.translate(fx, fy);
-            ctx.rotate(now * 0.008);
-            ctx.fillStyle = '#64748b';
-            for (let b = 0; b < 4; b++) {
-                ctx.rotate(Math.PI / 2);
-                ctx.beginPath();
-                ctx.ellipse(10, 0, 9, 4, 0.3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            ctx.restore();
-            // Fan grill ring
-            ctx.strokeStyle = '#22d3ee';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(fx, fy, 22, 0, Math.PI * 2);
-            ctx.stroke();
+        // Header
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PASTEURIZADOR DE PLACAS HTST', 107, 22);
+
+        // Pack of thermal stainless steel plates (alternating blue cold & red hot channels)
+        const plateStartX = 24;
+        const plateY = 36;
+        for (let p = 0; p < 14; p++) {
+            const px = plateStartX + p * 8.5;
+            ctx.fillStyle = p % 2 === 0 ? '#0284c7' : '#ef4444';
+            ctx.fillRect(px, plateY, 6, 62);
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 1.2;
+            ctx.strokeRect(px, plateY, 6, 62);
         }
 
-        // Curved Glass Oscilloscope Screen
-        ctx.fillStyle = '#04101e';
-        ctx.strokeStyle = '#22d3ee';
+        // Heavy tie-rods compressing plates
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(18, plateY + 8, 130, 4);
+        ctx.fillRect(18, plateY + 50, 130, 4);
+
+        // Digital Temperature Display Console
+        ctx.fillStyle = '#090d16';
+        ctx.strokeStyle = isDone ? '#10b981' : '#38bdf8';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.roundRect(14, 16, 118, 82, 10);
+        ctx.roundRect(154, 34, 52, 66, 8);
         ctx.fill();
         ctx.stroke();
 
-        // Oscilloscope Grid
-        ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(14, 57);
-        ctx.lineTo(132, 57);
-        ctx.moveTo(73, 16);
-        ctx.lineTo(73, 98);
-        ctx.stroke();
+        ctx.fillStyle = isDone ? '#10b981' : '#facc15';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('72.0°C', 180, 56);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.font = '8px sans-serif';
+        ctx.fillText('15 SEG', 180, 72);
+        ctx.fillStyle = isDone ? '#10b981' : '#38bdf8';
+        ctx.fillText('HTST OK', 180, 88);
 
-        // Live animated waveform
-        ctx.strokeStyle = isDone ? '#10b981' : '#22d3ee';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        for (let sx = 0; sx <= 104; sx += 4) {
-            const sy = 57 + Math.sin((sx * 0.09) + (now * 0.009)) * 20;
-            if (sx === 0) ctx.moveTo(20 + sx, sy);
-            else ctx.lineTo(20 + sx, sy);
-        }
-        ctx.stroke();
-
-        // Analog rotary dials & status LEDs at bottom
+        // Dual glycerin pressure gauges on bottom
         for (let d = 0; d < 3; d++) {
-            const dx = 30 + d * 32;
+            const dx = 40 + d * 48;
             ctx.fillStyle = '#090d16';
             ctx.beginPath();
-            ctx.arc(dx, 120, 11, 0, Math.PI * 2);
+            ctx.arc(dx, 120, 12, 0, Math.PI * 2);
             ctx.fill();
-            ctx.strokeStyle = '#94a3b8';
+            ctx.strokeStyle = '#cbd5e1';
             ctx.lineWidth = 2;
             ctx.stroke();
-            // Pointer line
-            ctx.strokeStyle = '#facc15';
+
+            // Needle
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
             ctx.beginPath();
             ctx.moveTo(dx, 120);
-            ctx.lineTo(dx + Math.cos(d + now * 0.002) * 8, 120 + Math.sin(d + now * 0.002) * 8);
+            ctx.lineTo(dx + Math.cos(d + now * 0.003) * 8, 120 + Math.sin(d + now * 0.003) * 8);
             ctx.stroke();
         }
 
         ctx.restore();
     }
 
-    drawCylindricalBatteryRack(ctx, x, y, isDone, now) {
+    drawHighPressureHomogenizer(ctx, x, y, isDone, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Cabinet housing with 3D shadow
+        // Heavy Stainless Steel Homogenizer Machine Housing (180 Bar)
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.beginPath();
         ctx.roundRect(8, 8, 185, 265, 16);
@@ -1018,307 +1070,254 @@ class Renderer {
         ctx.stroke();
 
         // Header label
-        ctx.fillStyle = '#22d3ee';
+        ctx.fillStyle = '#38bdf8';
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('CELDAS CILÍNDRICAS LiFePO4', 92, 24);
+        ctx.fillText('HOMOGENEIZADOR (180 BAR)', 92, 24);
 
-        // Draw 3 rows x 4 columns of realistic 3D cylindrical lithium cells connected with copper busbars!
-        for (let r = 0; r < 3; r++) {
-            const cy = 58 + r * 72;
+        // 3 Stainless Steel Piston Chambers
+        for (let p = 0; p < 3; p++) {
+            const px = 34 + p * 44;
+            const py = 54;
+            const pistonMotion = Math.sin(now * 0.01 + p * 2.1) * 8;
 
-            // Copper busbar linking the row of cells
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = 5;
+            ctx.fillStyle = '#475569';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
-            ctx.moveTo(32, cy - 16);
-            ctx.lineTo(152, cy - 16);
+            ctx.roundRect(px, py, 30, 72, 6);
+            ctx.fill();
             ctx.stroke();
 
-            for (let c = 0; c < 4; c++) {
-                const cx = 32 + c * 40;
-                const active = isDone || ((Math.floor(now / 350) + r + c) % 3 !== 0);
-                const cellColor = isDone ? '#10b981' : (active ? '#06b6d4' : '#0369a1');
-
-                // Cylinder body
-                ctx.fillStyle = cellColor;
-                ctx.strokeStyle = '#090d16';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.roundRect(cx - 14, cy - 14, 28, 42, 6);
-                ctx.fill();
-                ctx.stroke();
-
-                // Specular highlight stripe on cylinder
-                ctx.fillStyle = 'rgba(255,255,255,0.28)';
-                ctx.fillRect(cx - 8, cy - 8, 5, 30);
-
-                // Top elliptical cap
-                ctx.fillStyle = '#cbd5e1';
-                ctx.beginPath();
-                ctx.ellipse(cx, cy - 14, 13, 5, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-
-                // Positive brass terminal button
-                ctx.fillStyle = '#facc15';
-                ctx.beginPath();
-                ctx.arc(cx, cy - 15, 4.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-            }
+            // Polished moving chrome piston
+            ctx.fillStyle = '#e2e8f0';
+            ctx.fillRect(px + 6, py + 18 + pistonMotion, 18, 38);
         }
+
+        // Heavy Stainless Steel Manifold Block
+        ctx.fillStyle = '#94a3b8';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(22, 138, 142, 42, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 9px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('BLOQUE DE MICRONIZACIÓN', 93, 163);
+
+        // Large Glycerin Pressure Gauge
+        const gx = 93;
+        const gy = 216;
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(gx, gy, 28, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Needle pointing to 180 BAR
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(gx, gy);
+        ctx.lineTo(gx + 16, gy - 16);
+        ctx.stroke();
+
+        ctx.fillStyle = '#090d16';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.fillText('180 BAR', gx, gy + 14);
 
         ctx.restore();
     }
 
-    drawThermalChamber(ctx, x, y, now) {
+    drawCentrifugalClarifier(ctx, x, y, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Circular High-Voltage Warning Pad with Hazard Symbol
+        // Machine Base
         ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#facc15';
+        ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.roundRect(0, 0, 170, 135, 16);
         ctx.fill();
         ctx.stroke();
 
-        // Illustrated Yellow Warning Triangle
-        ctx.fillStyle = '#facc15';
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(85, 18);
-        ctx.lineTo(122, 78);
-        ctx.lineTo(48, 78);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Lightning bolt inside triangle
-        ctx.fillStyle = '#090d16';
-        ctx.beginPath();
-        ctx.moveTo(88, 34);
-        ctx.lineTo(75, 55);
-        ctx.lineTo(86, 55);
-        ctx.lineTo(80, 72);
-        ctx.lineTo(96, 50);
-        ctx.lineTo(85, 50);
-        ctx.closePath();
-        ctx.fill();
-
-        ctx.fillStyle = '#fde047';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('BANCO ALTA TENSIÓN', 85, 102);
+        // Conical spinning bowl of clarifier
+        const cx = 85;
+        const cy = 60;
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '10px sans-serif';
-        ctx.fillText('60V - 72V DC • Guantes Clase 0', 85, 118);
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, 38, 26, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
 
-        ctx.restore();
-    }
-
-    // --- ZONE 3 HELPERS (CHASIS Y ESTRUCTURA) ---
-    drawLaserCutterMachine(ctx, x, y, now) {
+        // Animated rotating blades inside
         ctx.save();
-        ctx.translate(x, y);
-
-        // Machine bed with slats
-        ctx.fillStyle = '#18181b';
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 205, 135, 12);
-        ctx.fill();
-        ctx.stroke();
-
-        // Cutting grate slats
-        ctx.strokeStyle = '#3f3f46';
-        ctx.lineWidth = 2;
-        for (let sx = 18; sx < 190; sx += 14) {
-            ctx.beginPath();
-            ctx.moveTo(sx, 28);
-            ctx.lineTo(sx, 118);
-            ctx.stroke();
-        }
-
-        // Steel sheet being cut
-        ctx.fillStyle = '#64748b';
-        ctx.strokeStyle = '#94a3b8';
-        ctx.beginPath();
-        ctx.roundRect(28, 38, 148, 68, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Moving CNC Gantry Bridge
-        const gantryX = 40 + ((Math.sin(now * 0.0025) + 1) * 0.5) * 120;
-        const laserY = 50 + ((Math.cos(now * 0.005) + 1) * 0.5) * 44;
-
-        // Gantry bar
-        ctx.fillStyle = '#f59e0b';
-        ctx.strokeStyle = '#090d16';
+        ctx.translate(cx, cy);
+        ctx.rotate(now * 0.015);
+        ctx.strokeStyle = '#f8fafc';
         ctx.lineWidth = 2.5;
-        ctx.fillRect(gantryX - 8, 20, 16, 104);
-        ctx.strokeRect(gantryX - 8, 20, 16, 104);
-
-        // Laser head nozzle
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.arc(gantryX, laserY, 9, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Glowing laser beam spark
-        const grad = ctx.createRadialGradient(gantryX, laserY, 2, gantryX, laserY, 22);
-        grad.addColorStop(0, '#ffffff');
-        grad.addColorStop(0.4, '#ef4444');
-        grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
-        ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(gantryX, laserY, 22, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillText('CORTE LÁSER CNC', 102, 16);
-
-        ctx.restore();
-    }
-
-    drawChasisWeldingJig(ctx, x, y, isDone, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Octagonal Industrial Welding Platform
-        ctx.fillStyle = '#1c1917';
-        ctx.strokeStyle = '#f59e0b';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 215, 255, 16);
-        ctx.fill();
-        ctx.stroke();
-
-        // Draw an authentic Top-Down Tubular Car Chassis Silhouette (not a rectangle!)
-        ctx.save();
-        ctx.translate(115, 118);
-        const frameColor = isDone ? '#10b981' : '#38bdf8';
-
-        // 4 Suspension Coil Springs & Wheel Hubs
-        for (let [wx, wy] of [[-48, -56], [48, -56], [-48, 56], [48, 56]]) {
-            ctx.strokeStyle = '#facc15';
-            ctx.lineWidth = 3;
+        for (let b = 0; b < 6; b++) {
+            ctx.rotate(Math.PI / 3);
             ctx.beginPath();
-            ctx.moveTo(wx * 0.6, wy);
-            ctx.lineTo(wx, wy);
+            ctx.moveTo(0, 0);
+            ctx.lineTo(28, 0);
             ctx.stroke();
-            ctx.fillStyle = '#475569';
-            ctx.fillRect(wx - 6, wy - 12, 12, 24);
-        }
-
-        // Curved Tubular Spaceframe Silhouette
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 9;
-        this.traceChassisPath(ctx);
-        ctx.stroke();
-
-        ctx.strokeStyle = frameColor;
-        ctx.lineWidth = 5;
-        this.traceChassisPath(ctx);
-        ctx.stroke();
-        ctx.restore();
-
-        // Articulated Multi-Joint Robotic Welding Arm (KUKA style)
-        ctx.save();
-        ctx.translate(42, 205);
-        // Turret Base
-        ctx.fillStyle = '#f59e0b';
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(0, 0, 22, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Joint 1 & Lower Arm
-        const angle1 = -0.6 + Math.sin(now * 0.004) * 0.35;
-        ctx.rotate(angle1);
-        ctx.fillStyle = '#fb923c';
-        ctx.beginPath();
-        ctx.roundRect(-8, -65, 16, 65, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // Elbow Joint & Forearm
-        ctx.translate(0, -60);
-        const angle2 = 0.9 + Math.cos(now * 0.005) * 0.3;
-        ctx.rotate(angle2);
-        ctx.fillStyle = '#f59e0b';
-        ctx.beginPath();
-        ctx.roundRect(-6, -52, 12, 52, 5);
-        ctx.fill();
-        ctx.stroke();
-
-        // Welding Torch Tip & Animated Flying Sparks!
-        ctx.fillStyle = '#38bdf8';
-        ctx.beginPath();
-        ctx.arc(0, -56, 6, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (Math.sin(now * 0.04) > -0.2) {
-            for (let sp = 0; sp < 5; sp++) {
-                const sa = (now * 0.02 + sp * 1.2);
-                const sr = ((now * 0.08 + sp * 7) % 24);
-                ctx.strokeStyle = sp % 2 === 0 ? '#fef08a' : '#f97316';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.moveTo(0, -56);
-                ctx.lineTo(Math.cos(sa) * sr, -56 + Math.sin(sa) * sr);
-                ctx.stroke();
-            }
         }
         ctx.restore();
 
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = 'bold 11px sans-serif';
+        // Label
+        ctx.fillStyle = '#bae6fd';
+        ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('SOLDADURA ROBÓTICA MIG', 107, 238);
+        ctx.fillText('CLARIFICADORA CENTRÍFUGA', 85, 115);
 
         ctx.restore();
     }
 
-    traceChassisPath(ctx) {
-        ctx.beginPath();
-        // Tapered front nose bumper
-        ctx.moveTo(-26, -82);
-        ctx.lineTo(26, -82);
-        ctx.lineTo(42, -50);
-        // Side rails
-        ctx.lineTo(42, 55);
-        // Rear motor cradle
-        ctx.lineTo(30, 80);
-        ctx.lineTo(-30, 80);
-        ctx.lineTo(-42, 55);
-        ctx.lineTo(-42, -50);
-        ctx.closePath();
-        // Internal cross-members & battery cradle
-        ctx.moveTo(-40, -25);
-        ctx.lineTo(40, -25);
-        ctx.moveTo(-40, 25);
-        ctx.lineTo(40, 25);
-        ctx.moveTo(-25, -25);
-        ctx.lineTo(25, 25);
-        ctx.moveTo(25, -25);
-        ctx.lineTo(-25, 25);
-    }
-
-    drawBlueprintTable(ctx, x, y) {
+    // --- ZONE 3 HELPERS (SILOS DE LECHE & SISTEMA CIP) ---
+    drawMilkStorageSilos(ctx, x, y, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Drafting table
+        // Two massive vertical stainless steel milk storage silos (50.000 L each)
+        for (let s = 0; s < 2; s++) {
+            const sx = s * 95;
+
+            // Silo shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            ctx.beginPath();
+            ctx.roundRect(sx + 6, 6, 82, 195, 16);
+            ctx.fill();
+
+            // Cylindrical silo body with stainless steel gradient
+            const grad = ctx.createLinearGradient(sx, 0, sx + 82, 0);
+            grad.addColorStop(0, '#64748b');
+            grad.addColorStop(0.35, '#f8fafc');
+            grad.addColorStop(0.7, '#cbd5e1');
+            grad.addColorStop(1, '#475569');
+            ctx.fillStyle = grad;
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.roundRect(sx, 0, 82, 195, 16);
+            ctx.fill();
+            ctx.stroke();
+
+            // Top agitator motor & catwalk railing
+            ctx.fillStyle = '#0284c7';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(sx + 24, -14, 34, 16, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // Slow rotating agitator motor shaft indicator
+            const agitator = (Math.sin(now * 0.004 + s) + 1) * 0.5;
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(sx + 36, -10, 10, 4);
+
+            // Vertical sight-glass showing creamy milk level!
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(sx + 10, 32, 14, 130, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            // White milk fluid in sight-glass
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(sx + 12, 54 + agitator * 3, 10, 106 - agitator * 3);
+
+            // PIL Logo on Silo
+            ctx.fillStyle = '#0284c7';
+            ctx.font = 'bold 15px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('PIL', sx + 50, 72);
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 8.5px sans-serif';
+            ctx.fillText(`SILO #${s + 1}`, sx + 50, 94);
+            ctx.fillText('50.000 L', sx + 50, 108);
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 8px sans-serif';
+            ctx.fillText('4.0°C OK', sx + 50, 124);
+        }
+
+        ctx.restore();
+    }
+
+    drawCipCleaningSystem(ctx, x, y, isDone, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // CIP Station Housing with warning border
+        ctx.fillStyle = '#1c1917';
+        ctx.strokeStyle = isDone ? '#10b981' : '#06b6d4';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 205, 235, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // 3 CIP Chemical Solution Tanks
+        const tanks = [
+            { name: 'AGUA', col: '#38bdf8' },
+            { name: 'SODA', col: '#f59e0b' },
+            { name: 'ÁCIDO', col: '#ef4444' }
+        ];
+
+        tanks.forEach((t, i) => {
+            const tx = 18 + i * 58;
+            ctx.fillStyle = '#334155';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(tx, 34, 52, 92, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Liquid sight window
+            ctx.fillStyle = t.col;
+            ctx.fillRect(tx + 8, 55, 36, 62);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(t.name, tx + 26, 48);
+        });
+
+        // Recirculation Pump at bottom
+        ctx.fillStyle = '#475569';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(32, 142, 140, 52, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isDone ? '#10b981' : '#38bdf8';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(isDone ? 'SISTEMA CIP: LAVADO COMPLETO ✅' : 'BOMBA SANITARIA CIP (RECIRCULACIÓN)', 102, 218);
+
+        ctx.restore();
+    }
+
+    drawSanitaryProcessDesk(ctx, x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Process Desk
         ctx.fillStyle = '#334155';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3;
@@ -1327,7 +1326,7 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Unrolled Blue Engineering Blueprint sheet
+        // SCADA Screen with Plant Flow Diagram
         ctx.fillStyle = '#0284c7';
         ctx.strokeStyle = '#bae6fd';
         ctx.lineWidth = 2;
@@ -1336,148 +1335,126 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Blueprint side-view sketch of Quantum E4
-        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        // SCADA Diagram Sketch
+        ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(42, 82);
-        ctx.lineTo(48, 46);
-        ctx.quadraticCurveTo(85, 34, 118, 48);
-        ctx.lineTo(132, 66);
-        ctx.lineTo(134, 82);
-        ctx.closePath();
-        ctx.stroke();
-        // Blueprint wheels
-        ctx.beginPath();
-        ctx.arc(60, 82, 11, 0, Math.PI * 2);
-        ctx.arc(116, 82, 11, 0, Math.PI * 2);
+        ctx.moveTo(30, 65);
+        ctx.lineTo(65, 65);
+        ctx.lineTo(65, 45);
+        ctx.lineTo(110, 45);
+        ctx.lineTo(110, 85);
+        ctx.lineTo(145, 85);
         ctx.stroke();
 
-        // Yellow triangle ruler on table
         ctx.fillStyle = '#facc15';
         ctx.beginPath();
-        ctx.moveTo(22, 92);
-        ctx.lineTo(48, 92);
-        ctx.lineTo(22, 66);
-        ctx.closePath();
+        ctx.arc(65, 45, 5, 0, Math.PI * 2);
+        ctx.arc(110, 85, 5, 0, Math.PI * 2);
         ctx.fill();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('DIAGRAMA DE FLUJO SCADA PIL', 88, 30);
 
         ctx.restore();
     }
 
-    // --- ZONE 6 HELPERS (DEPÓSITO Y LOGÍSTICA) ---
-    drawLogisticsShelves(ctx, x, y) {
+    // --- ZONE 6 HELPERS (MANTENIMIENTO Y REPUESTOS SANITARIOS) ---
+    drawSanitarySparesShelves(ctx, x, y) {
         ctx.save();
         ctx.translate(x, y);
 
         for (let s = 0; s < 3; s++) {
             const sy = s * 155;
-            // Wooden slatted pallet & rack frame
             ctx.fillStyle = '#1e293b';
-            ctx.strokeStyle = '#a855f7';
+            ctx.strokeStyle = '#818cf8';
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.roundRect(0, sy, 180, 132, 10);
             ctx.fill();
             ctx.stroke();
 
-            // Orange rack beams
-            ctx.fillStyle = '#ea580c';
+            // Blue rack beams
+            ctx.fillStyle = '#0284c7';
             ctx.fillRect(6, sy + 28, 168, 6);
             ctx.fillRect(6, sy + 120, 168, 6);
 
             if (s === 0) {
-                // Shelf 1: Illustrated Brushless Electric Motors with Copper Coils & Gears
+                // Shelf 1: Stainless Steel Sanitary Lobe Pumps & Impellers
                 for (let mx of [52, 128]) {
                     const my = sy + 75;
-                    ctx.fillStyle = '#475569';
+                    ctx.fillStyle = '#94a3b8';
                     ctx.strokeStyle = '#090d16';
                     ctx.lineWidth = 2.5;
                     ctx.beginPath();
                     ctx.arc(mx, my, 24, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.stroke();
-                    // Copper winding ring
-                    ctx.strokeStyle = '#d97706';
-                    ctx.lineWidth = 5;
+                    ctx.fillStyle = '#0284c7';
                     ctx.beginPath();
-                    ctx.arc(mx, my, 13, 0, Math.PI * 2);
-                    ctx.stroke();
-                    // Center rotor shaft
-                    ctx.fillStyle = '#e2e8f0';
-                    ctx.beginPath();
-                    ctx.arc(mx, my, 6, 0, Math.PI * 2);
+                    ctx.arc(mx, my, 10, 0, Math.PI * 2);
                     ctx.fill();
                 }
-                ctx.fillStyle = '#e9d5ff';
+                ctx.fillStyle = '#e0e7ff';
                 ctx.font = 'bold 10px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('MOTORES BRUSHLESS 4kW', 90, sy + 20);
+                ctx.fillText('BOMBAS SANITARIAS INOX', 90, sy + 20);
 
             } else if (s === 1) {
-                // Shelf 2: Sinusoidal Controllers with Heatsink Fins & Connectors
+                // Shelf 2: Tri-Clover Clamps & Butterfly Valves
                 for (let cx of [26, 98]) {
                     const cy = sy + 46;
-                    ctx.fillStyle = '#0284c7';
+                    ctx.fillStyle = '#64748b';
                     ctx.strokeStyle = '#090d16';
                     ctx.lineWidth = 2.5;
                     ctx.beginPath();
                     ctx.roundRect(cx, cy, 56, 58, 8);
                     ctx.fill();
                     ctx.stroke();
-                    // Aluminum heatsink fins
-                    ctx.strokeStyle = '#bae6fd';
-                    ctx.lineWidth = 2;
-                    for (let f = 0; f < 4; f++) {
-                        ctx.beginPath();
-                        ctx.moveTo(cx + 10, cy + 14 + f * 10);
-                        ctx.lineTo(cx + 46, cy + 14 + f * 10);
-                        ctx.stroke();
-                    }
+                    // Blue sanitary silicone gasket
+                    ctx.strokeStyle = '#38bdf8';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(cx + 28, cy + 29, 16, 0, Math.PI * 2);
+                    ctx.stroke();
                 }
-                ctx.fillStyle = '#e9d5ff';
+                ctx.fillStyle = '#e0e7ff';
                 ctx.font = 'bold 10px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('INVERSORES Y CAN-BUS', 90, sy + 20);
+                ctx.fillText('JUNTAS Y CLAMPS TRI-CLOVER', 90, sy + 20);
 
             } else {
-                // Shelf 3: Rubber Tires with Alloy Rims & Coil Springs
-                for (let tx of [52, 128]) {
-                    const ty = sy + 75;
-                    // Tire tread
-                    ctx.fillStyle = '#18181b';
+                // Shelf 3: Clean Yellow & Blue PIL Distribution Crates
+                for (let cx of [28, 102]) {
+                    const cy = sy + 50;
+                    ctx.fillStyle = cx === 28 ? '#eab308' : '#0284c7';
                     ctx.strokeStyle = '#090d16';
-                    ctx.lineWidth = 3;
+                    ctx.lineWidth = 2.5;
                     ctx.beginPath();
-                    ctx.arc(tx, ty, 25, 0, Math.PI * 2);
+                    ctx.roundRect(cx, cy, 50, 48, 6);
                     ctx.fill();
                     ctx.stroke();
-                    // Alloy rim & spokes
-                    ctx.fillStyle = '#cbd5e1';
-                    ctx.beginPath();
-                    ctx.arc(tx, ty, 14, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.fillStyle = '#090d16';
-                    ctx.beginPath();
-                    ctx.arc(tx, ty, 4, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = 'bold 9px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('PIL', cx + 25, cy + 28);
                 }
-                ctx.fillStyle = '#e9d5ff';
+                ctx.fillStyle = '#e0e7ff';
                 ctx.font = 'bold 10px sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('NEUMÁTICOS Y RINES R13', 90, sy + 20);
+                ctx.fillText('CANASTILLAS DE REPARTO', 90, sy + 20);
             }
         }
 
         ctx.restore();
     }
 
-    drawToolWorkbench(ctx, x, y) {
+    drawSanitaryFittingWorkbench(ctx, x, y) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Workbench surface
         ctx.fillStyle = '#334155';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3;
@@ -1486,16 +1463,14 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Red Mechanic's Toolbox
-        ctx.fillStyle = '#dc2626';
+        // Tool box
+        ctx.fillStyle = '#0284c7';
         ctx.beginPath();
         ctx.roundRect(16, 18, 64, 38, 6);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillRect(36, 14, 24, 6);
 
-        // Illustrated Wrench on table
+        // Torque wrench
         ctx.save();
         ctx.translate(115, 42);
         ctx.rotate(-0.4);
@@ -1506,13 +1481,9 @@ class Renderer {
         ctx.roundRect(-22, -4, 44, 8, 3);
         ctx.fill();
         ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(-24, 0, 9, 0.6, Math.PI * 2 - 0.6);
-        ctx.fill();
-        ctx.stroke();
         ctx.restore();
 
-        // Yellow Digital Multimeter with test leads
+        // Digital sanitary pressure calibrator
         ctx.fillStyle = '#facc15';
         ctx.beginPath();
         ctx.roundRect(105, 62, 34, 38, 6);
@@ -1524,11 +1495,11 @@ class Renderer {
         ctx.restore();
     }
 
-    drawDetailedForklift(ctx, cx, cy, now) {
+    drawElectricForkliftWithCrates(ctx, cx, cy, now) {
         ctx.save();
         ctx.translate(cx, cy);
 
-        // Painted safety parking bay
+        // Parking bay
         ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)';
         ctx.lineWidth = 3;
         ctx.setLineDash([10, 8]);
@@ -1537,7 +1508,7 @@ class Renderer {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Wooden Slatted Pallet carried on front forks
+        // Wooden Pallet with Stacks of Yellow & Blue PIL Milk Crates
         ctx.fillStyle = '#b45309';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 2.5;
@@ -1545,16 +1516,22 @@ class Renderer {
         ctx.roundRect(-42, -92, 84, 52, 4);
         ctx.fill();
         ctx.stroke();
-        // Pallet wooden slats
-        ctx.strokeStyle = '#78350f';
-        for (let py = -82; py <= -48; py += 11) {
-            ctx.beginPath();
-            ctx.moveTo(-40, py);
-            ctx.lineTo(40, py);
-            ctx.stroke();
-        }
 
-        // Steel Forks sliding under pallet
+        // Crates on pallet
+        ctx.fillStyle = '#0284c7';
+        ctx.fillRect(-38, -88, 36, 44);
+        ctx.strokeRect(-38, -88, 36, 44);
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(2, -88, 36, 44);
+        ctx.strokeRect(2, -88, 36, 44);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PIL', -20, -65);
+        ctx.fillText('PIL', 20, -65);
+
+        // Forks
         ctx.fillStyle = '#64748b';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 2.5;
@@ -1564,7 +1541,7 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // 4 Thick Rubber Wheels protruding from chassis
+        // Wheels
         ctx.fillStyle = '#090d16';
         for (let [wx, wy] of [[-42, -12], [30, -12], [-42, 42], [30, 42]]) {
             ctx.beginPath();
@@ -1572,8 +1549,8 @@ class Renderer {
             ctx.fill();
         }
 
-        // Curved Yellow & Black Counterbalance Forklift Body
-        ctx.fillStyle = '#eab308';
+        // Forklift Body (PIL Blue & Yellow)
+        ctx.fillStyle = '#0284c7';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
@@ -1581,50 +1558,38 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Rear heavy cast-iron counterweight
-        ctx.fillStyle = '#334155';
+        // Rear Counterweight
+        ctx.fillStyle = '#eab308';
         ctx.beginPath();
         ctx.roundRect(-30, 48, 60, 20, 10);
         ctx.fill();
         ctx.stroke();
 
-        // Driver Compartment: Contoured Seat & Steering Wheel
+        // Driver seat
         ctx.fillStyle = '#1e293b';
         ctx.beginPath();
         ctx.roundRect(-22, -8, 44, 48, 8);
         ctx.fill();
-        // Driver seat cushion
         ctx.fillStyle = '#090d16';
         ctx.beginPath();
         ctx.roundRect(-15, 12, 30, 22, 6);
         ctx.fill();
-        // Steering wheel circle
+
+        // Steering wheel
         ctx.strokeStyle = '#94a3b8';
         ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.arc(0, -2, 9, 0, Math.PI * 2);
         ctx.stroke();
 
-        // Overhead Guard Pillars & Flashing Amber Beacon
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(-24, -12, 48, 52);
-
-        const beaconGlow = (Math.sin(now * 0.01) + 1) * 0.5;
-        ctx.fillStyle = `rgba(245, 158, 11, ${0.4 + beaconGlow * 0.6})`;
-        ctx.beginPath();
-        ctx.arc(18, 34, 9, 0, Math.PI * 2);
-        ctx.fill();
-
         ctx.restore();
     }
 
-    // --- ZONE 4 HELPERS (ENSAMBLAJE FINAL & VEHÍCULO QUANTUM E4) ---
-    drawAssemblyLineAndCar(ctx, cx, cy, zoneWidth, completedTasks, now) {
+    // --- ZONE 4 HELPERS (ENVASADO DE LECHE PIL EN BOLSA AZUL 946 ML) ---
+    drawBolsaAzulPackagingLine(ctx, cx, cy, zoneWidth, completedTasks, now) {
         ctx.save();
-        const numDone = completedTasks.size;
 
-        // Industrial Conveyor Track with Metallic Rollers
+        // Industrial Conveyor Track
         ctx.fillStyle = '#111827';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3;
@@ -1633,120 +1598,85 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
+        // Moving Rollers
         for (let rx = cx - zoneWidth / 2 + 68; rx < cx + zoneWidth / 2 - 68; rx += 32) {
             ctx.fillStyle = '#1e293b';
             ctx.fillRect(rx - 5, cy - 80, 10, 160);
         }
 
-        // Hydraulic 4-Post Car Lift Platform
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#10b981';
+        // Animated Moving Sachets / Pouches of Leche PIL en Bolsa Azul!
+        const beltOffset = (now * 0.08) % 64;
+        for (let bx = cx - zoneWidth / 2 + 75 + beltOffset; bx < cx + zoneWidth / 2 - 80; bx += 64) {
+            this.drawSingleBolsaAzul(ctx, bx, cy - 42);
+            this.drawSingleBolsaAzul(ctx, bx - 32, cy + 32);
+        }
+
+        // Central Vertical Form-Fill-Seal Packaging Tower (Envasadora Aséptica)
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath();
+        ctx.roundRect(cx - 105, cy - 82, 210, 164, 18);
+        ctx.fill();
+
+        const towerGrad = ctx.createLinearGradient(cx - 100, 0, cx + 100, 0);
+        towerGrad.addColorStop(0, '#334155');
+        towerGrad.addColorStop(0.3, '#f8fafc');
+        towerGrad.addColorStop(0.7, '#cbd5e1');
+        towerGrad.addColorStop(1, '#1e293b');
+        ctx.fillStyle = towerGrad;
+        ctx.strokeStyle = '#0284c7';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
-        ctx.roundRect(cx - 132, cy - 78, 264, 156, 18);
+        ctx.roundRect(cx - 100, cy - 78, 200, 156, 16);
         ctx.fill();
         ctx.stroke();
 
-        // 4 Yellow Hydraulic Corner Posts
-        for (let [px, py] of [[-124, -70], [108, -70], [-124, 54], [108, 54]]) {
-            ctx.fillStyle = '#facc15';
-            ctx.strokeStyle = '#090d16';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.roundRect(cx + px, cy + py, 16, 16, 4);
-            ctx.fill();
-            ctx.stroke();
-        }
+        // Roll of Blue Polyethylene Film (Bobina Tricapa Azul) on top
+        ctx.fillStyle = '#0284c7';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy - 46, 42, 16, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
 
-        // Two Articulated Assembly Robots with Dual Grippers flanking the Lift
-        const swing = Math.sin(now * 0.003) * 0.28;
+        // UV Sterilization Window with glowing ultraviolet light
+        ctx.fillStyle = '#38bdf8';
+        ctx.fillRect(cx - 65, cy - 18, 130, 26);
+        ctx.fillStyle = 'rgba(192, 132, 252, 0.45)';
+        ctx.fillRect(cx - 65, cy - 18, 130, 26);
+
+        // Sealing Jaws (Mordazas térmicas)
+        const jawClamp = Math.abs(Math.sin(now * 0.006)) * 4;
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(cx - 40, cy + 18 - jawClamp, 80, 8);
+        ctx.fillRect(cx - 40, cy + 32 + jawClamp, 80, 8);
+
+        // Tower label
+        ctx.fillStyle = '#0284c7';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ENVASADORA ASÉPTICA PIL', cx, cy - 56);
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.fillText('BOLSA AZUL 946 ml', cx, cy + 62);
+
+        // Articulated robotic picker packing sachets into crates
+        const swing = Math.sin(now * 0.004) * 0.3;
         for (let dir of [-1, 1]) {
             ctx.save();
-            ctx.translate(cx + dir * 185, cy);
-            // Robot pedestal
-            ctx.fillStyle = '#f59e0b';
+            ctx.translate(cx + dir * 165, cy);
+            ctx.fillStyle = '#0284c7';
             ctx.strokeStyle = '#090d16';
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(0, 0, 22, 0, Math.PI * 2);
+            ctx.arc(0, 0, 20, 0, Math.PI * 2);
             ctx.fill();
             ctx.stroke();
 
             ctx.rotate(dir * swing);
-            const armX = dir > 0 ? -52 : 0;
-            ctx.fillStyle = '#fb923c';
-            ctx.beginPath();
-            ctx.roundRect(armX, -8, 52, 16, 6);
-            ctx.fill();
-            ctx.stroke();
-
-            // Claw pincers at end of arm
-            const clawX = dir > 0 ? -58 : 58;
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.arc(clawX, 0, 10, dir > 0 ? 1.8 : -1.3, dir > 0 ? 4.5 : 1.3);
-            ctx.stroke();
-            ctx.restore();
-        }
-
-        // Render the Quantum E4 Vehicle on the Lift according to team progress!
-        const hasBody = completedTasks.has('task_assembly') || numDone >= 5;
-        if (hasBody) {
-            this.drawCompleteCarIllustration(ctx, cx, cy, 1.0, '#10b981', true);
-        } else {
-            // Partially assembled vehicle showing realistic chassis, wheels, motor & battery pack!
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(Math.PI / 2); // Orient facing right
-
-            // 4 Realistic Tires with treads
-            ctx.fillStyle = '#090d16';
-            for (let [wx, wy] of [[-46, -58], [46, -58], [-46, 58], [46, 58]]) {
-                ctx.beginPath();
-                ctx.roundRect(wx - 8, wy - 18, 16, 36, 5);
-                ctx.fill();
-            }
-
-            // Curved Tubular Spaceframe
-            ctx.strokeStyle = '#090d16';
-            ctx.lineWidth = 10;
-            this.traceChassisPath(ctx);
-            ctx.stroke();
-            ctx.strokeStyle = completedTasks.has('task_chassis') ? '#f59e0b' : '#94a3b8';
-            ctx.lineWidth = 5.5;
-            this.traceChassisPath(ctx);
-            ctx.stroke();
-
-            // Rear Brushless Electric Motor with copper coils
-            ctx.fillStyle = '#475569';
-            ctx.strokeStyle = '#090d16';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.arc(0, 62, 16, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-            ctx.strokeStyle = '#f59e0b';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.arc(0, 62, 8, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Central Lithium Battery Pack with High-Voltage Orange Cables
-            if (completedTasks.has('task_battery') || numDone >= 2) {
-                ctx.fillStyle = '#0891b2';
-                ctx.strokeStyle = '#090d16';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.roundRect(-28, -24, 56, 48, 8);
-                ctx.fill();
-                ctx.stroke();
-                // Individual cell bars inside pack
-                ctx.fillStyle = '#22d3ee';
-                for (let by = -16; by <= 12; by += 9) {
-                    ctx.fillRect(-20, by, 40, 5);
-                }
-            }
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(dir > 0 ? -48 : 0, -7, 48, 14);
+            ctx.strokeRect(dir > 0 ? -48 : 0, -7, 48, 14);
             ctx.restore();
         }
 
@@ -1754,206 +1684,131 @@ class Renderer {
     }
 
     /**
-     * Draws an authentic, curvy, cartoon-shaded Quantum E4 / E2 Electric Vehicle
+     * Draws an authentic PIL Leche Pasteurizada en Bolsa Azul (946 ml) sachet pouch
      */
-    drawCompleteCarIllustration(ctx, x, y, scale = 1.0, bodyColor = '#10b981', lightsOn = true) {
+    drawSingleBolsaAzul(ctx, x, y) {
         ctx.save();
         ctx.translate(x, y);
-        ctx.scale(scale, scale);
 
-        // Headlight beams if lightsOn
-        if (lightsOn) {
-            const grad = ctx.createLinearGradient(88, 0, 195, 0);
-            grad.addColorStop(0, 'rgba(250, 204, 21, 0.65)');
-            grad.addColorStop(1, 'rgba(250, 204, 21, 0)');
-            ctx.fillStyle = grad;
-            ctx.beginPath();
-            ctx.moveTo(85, -36);
-            ctx.lineTo(195, -72);
-            ctx.lineTo(195, 72);
-            ctx.lineTo(85, 36);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        // Drop shadow under car
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        // Pillow pouch shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.beginPath();
-        ctx.roundRect(-86, -46, 182, 102, 34);
+        ctx.roundRect(-16, -22, 32, 44, 8);
         ctx.fill();
 
-        // 4 Protruding Rubber Wheels
-        ctx.fillStyle = '#090d16';
-        for (let [wx, wy] of [[-58, -54], [46, -54], [-58, 42], [46, 42]]) {
-            ctx.beginPath();
-            ctx.roundRect(wx, wy, 34, 12, 5);
-            ctx.fill();
-        }
-
-        // Side Mirrors (Left & Right)
-        ctx.fillStyle = bodyColor;
+        // Blue Pillow Sachet Body
+        const pouchGrad = ctx.createLinearGradient(-15, -20, 15, 20);
+        pouchGrad.addColorStop(0, '#0284c7');
+        pouchGrad.addColorStop(0.5, '#38bdf8');
+        pouchGrad.addColorStop(1, '#0369a1');
+        ctx.fillStyle = pouchGrad;
         ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.ellipse(28, -53, 8, 5, -0.3, 0, Math.PI * 2);
-        ctx.ellipse(28, 53, 8, 5, 0.3, 0, Math.PI * 2);
+        ctx.roundRect(-15, -20, 30, 40, 8);
         ctx.fill();
         ctx.stroke();
 
-        // Aerodynamic Quantum E4 Curvy Body Shell
-        ctx.fillStyle = bodyColor;
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(-84, -34);
-        ctx.quadraticCurveTo(-92, 0, -84, 34);
-        ctx.quadraticCurveTo(-78, 48, -50, 48);
-        ctx.lineTo(52, 48);
-        ctx.quadraticCurveTo(88, 46, 92, 24);
-        ctx.quadraticCurveTo(96, 0, 92, -24);
-        ctx.quadraticCurveTo(88, -46, 52, -48);
-        ctx.lineTo(-50, -48);
-        ctx.quadraticCurveTo(-78, -48, -84, -34);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
+        // White sealed seams on top and bottom
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillRect(-12, -19, 24, 3);
+        ctx.fillRect(-12, 16, 24, 3);
 
-        // Curved Panoramic Windshield & Rear Glass
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#090d16';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.roundRect(-62, -38, 114, 76, 22);
-        ctx.fill();
-        ctx.stroke();
-
-        // Windshield glossy reflection diagonal streak
-        ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
-        ctx.beginPath();
-        ctx.moveTo(15, -32);
-        ctx.lineTo(42, -26);
-        ctx.lineTo(42, 26);
-        ctx.lineTo(15, 32);
-        ctx.closePath();
-        ctx.fill();
-
-        // Roof panel with Solar / Panoramic sunroof
-        ctx.fillStyle = bodyColor;
-        ctx.beginPath();
-        ctx.roundRect(-42, -30, 58, 60, 12);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.roundRect(-30, -20, 34, 40, 6);
-        ctx.fill();
-
-        // Hood crease lines
-        ctx.strokeStyle = 'rgba(9, 13, 22, 0.35)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(52, -26);
-        ctx.lineTo(86, -18);
-        ctx.moveTo(52, 26);
-        ctx.lineTo(86, 18);
-        ctx.stroke();
-
-        // LED Headlights (Front) & Red Taillights (Rear)
-        ctx.fillStyle = '#fef08a';
-        ctx.beginPath();
-        ctx.ellipse(88, -28, 5, 10, 0.2, 0, Math.PI * 2);
-        ctx.ellipse(88, 28, 5, 10, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ef4444';
-        ctx.beginPath();
-        ctx.roundRect(-89, -36, 6, 16, 3);
-        ctx.roundRect(-89, 20, 6, 16, 3);
-        ctx.fill();
+        // White PIL logo and milk droplet
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 9px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('PIL', 0, -4);
+        ctx.font = 'bold 6.5px sans-serif';
+        ctx.fillText('LECHE', 0, 5);
+        ctx.fillText('946ml', 0, 13);
 
         ctx.restore();
     }
 
-    // --- ZONE 5 HELPERS (PRUEBAS DE CALIDAD QA) ---
-    drawDynamometerBay(ctx, x, y, qaDone, now) {
+    // --- ZONE 5 HELPERS (YOGUR & LABORATORIO DE CALIDAD) ---
+    drawYogurtFermentationTanks(ctx, x, y, qaDone, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Dyno Pit Platform with yellow/black hazard border
+        // Fermentation Bay Housing
         ctx.fillStyle = '#090d16';
-        ctx.strokeStyle = '#facc15';
+        ctx.strokeStyle = qaDone ? '#10b981' : '#34d399';
         ctx.lineWidth = 3.5;
         ctx.beginPath();
         ctx.roundRect(0, 0, 215, 255, 16);
         ctx.fill();
         ctx.stroke();
 
-        // Giant Wind-Tunnel Cooling Fan at the top of the Dyno Bay!
-        const fanX = 107;
-        const fanY = 44;
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.roundRect(fanX - 58, 12, 116, 34, 8);
-        ctx.fill();
-        ctx.stroke();
+        // Two Jacketed Yogurt Fermentation Tanks (Frutilla & Durazno)
+        const yogurts = [
+            { flavor: 'YOGUR FRUTILLA', col: '#ec4899', fruit: '🍓', iconCol: '#be185d' },
+            { flavor: 'YOGUR DURAZNO', col: '#f97316', fruit: '🍑', iconCol: '#c2410c' }
+        ];
 
-        // Animated airflow wind streams blowing down onto the dyno rollers
-        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
-        ctx.lineWidth = 2;
-        for (let w = -36; w <= 36; w += 24) {
-            const wy = 52 + ((now * 0.1 + w * 2) % 140);
+        yogurts.forEach((ygt, idx) => {
+            const ty = 34 + idx * 105;
+
+            // Tank Body (Stainless Steel with color accent)
+            const grad = ctx.createLinearGradient(20, ty, 195, ty);
+            grad.addColorStop(0, '#64748b');
+            grad.addColorStop(0.35, '#f8fafc');
+            grad.addColorStop(0.7, '#cbd5e1');
+            grad.addColorStop(1, '#475569');
+            ctx.fillStyle = grad;
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(fanX + w, wy);
-            ctx.lineTo(fanX + w, wy + 22);
+            ctx.roundRect(20, ty, 175, 92, 14);
+            ctx.fill();
             ctx.stroke();
-        }
 
-        // 4 Metallic 3D Cylindrical Rollers spinning in the pit
-        const spinOffset = (now * 0.05) % 14;
-        for (let r = 0; r < 2; r++) {
-            const ry = 82 + r * 88;
-            for (let pair = 0; pair < 2; pair++) {
-                const cy = ry + pair * 24;
-                const grad = ctx.createLinearGradient(0, cy, 0, cy + 18);
-                grad.addColorStop(0, '#334155');
-                grad.addColorStop(0.5, '#94a3b8');
-                grad.addColorStop(1, '#1e293b');
-                ctx.fillStyle = grad;
-                ctx.strokeStyle = '#090d16';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.roundRect(26, cy, 162, 18, 6);
-                ctx.fill();
-                ctx.stroke();
+            // Fruit window showing yogurt level
+            ctx.fillStyle = ygt.col;
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(32, ty + 18, 48, 56, 8);
+            ctx.fill();
+            ctx.stroke();
 
-                // Spinning hash marks on cylinder
-                ctx.strokeStyle = 'rgba(15, 23, 42, 0.5)';
-                for (let hx = 36 + spinOffset; hx < 180; hx += 18) {
-                    ctx.beginPath();
-                    ctx.moveTo(hx, cy + 2);
-                    ctx.lineTo(hx - 4, cy + 16);
-                    ctx.stroke();
-                }
-            }
-        }
+            // Fruit emoji icon
+            ctx.font = '22px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(ygt.fruit, 56, ty + 54);
+
+            // Digital pH and Temp readouts
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(92, ty + 20, 92, 52);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 9px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText(ygt.flavor, 98, ty + 36);
+
+            ctx.fillStyle = '#10b981';
+            ctx.font = 'bold 11px monospace';
+            ctx.fillText('pH 4.5', 98, ty + 52);
+
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = '9px monospace';
+            ctx.fillText('T: 42°C FERM', 98, ty + 66);
+        });
 
         ctx.fillStyle = qaDone ? '#10b981' : '#facc15';
-        ctx.font = 'bold 11px monospace';
+        ctx.font = 'bold 10px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(qaDone ? 'DINAMÓMETRO: CERTIFICADO ✅' : 'RODILLOS DINAMÓMETRO EV', 107, 238);
+        ctx.fillText(qaDone ? 'FERMENTACIÓN PROBIÓTICA OK ✅' : 'TANQUES DE YOGUR CON CULTIVOS VIVOS', 107, 246);
 
         ctx.restore();
     }
 
-    drawRainTestArch(ctx, x, y, now) {
+    drawMicrobiologyLabBench(ctx, x, y, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        // Glass & Steel Water Test Booth
-        ctx.fillStyle = 'rgba(14, 165, 233, 0.12)';
+        // Sterile White Microbiology Lab Bench
+        ctx.fillStyle = '#0f172a';
         ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -1961,58 +1816,66 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Floor drain grate & animated water ripples
-        ctx.fillStyle = '#0f172a';
+        // Bench surface
+        ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.roundRect(45, 75, 85, 65, 10);
+        ctx.roundRect(12, 14, 151, 142, 10);
         ctx.fill();
 
-        const rippleR = (now * 0.03) % 28;
-        ctx.strokeStyle = `rgba(56, 189, 248, ${1 - rippleR / 28})`;
-        ctx.lineWidth = 2;
+        // Binocular Microscope
+        const mx = 50;
+        const my = 85;
+        ctx.fillStyle = '#1e293b';
         ctx.beginPath();
-        ctx.arc(87, 107, rippleR, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.roundRect(mx - 16, my - 34, 32, 68, 6);
+        ctx.fill();
 
-        // Curved Chrome Overhead Spray Pipe Arch with Yellow Nozzles
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 7;
+        // Eyepieces
+        ctx.fillStyle = '#0284c7';
         ctx.beginPath();
-        ctx.moveTo(22, 145);
-        ctx.lineTo(22, 42);
-        ctx.quadraticCurveTo(87, 18, 152, 42);
-        ctx.lineTo(152, 145);
-        ctx.stroke();
+        ctx.arc(mx - 8, my - 38, 5, 0, Math.PI * 2);
+        ctx.arc(mx + 8, my - 38, 5, 0, Math.PI * 2);
+        ctx.fill();
 
-        // Spray nozzles & animated water streams
-        for (let nx of [42, 65, 87, 110, 132]) {
-            ctx.fillStyle = '#facc15';
-            ctx.beginPath();
-            ctx.arc(nx, 36, 4.5, 0, Math.PI * 2);
-            ctx.fill();
-
-            const dropY = 46 + ((now * 0.14 + nx * 3) % 85);
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(nx, dropY);
-            ctx.lineTo(nx, dropY + 12);
-            ctx.stroke();
+        // Rack of Test Tubes with Dairy Samples
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(94, 60, 65, 42);
+        const tubeColors = ['#0284c7', '#ec4899', '#ffffff', '#10b981'];
+        for (let t = 0; t < 4; t++) {
+            ctx.fillStyle = tubeColors[t];
+            ctx.fillRect(98 + t * 15, 68, 10, 30);
+            ctx.strokeRect(98 + t * 15, 68, 10, 30);
         }
 
+        // Petri Dish with Lactobacillus colonies
         ctx.fillStyle = '#bae6fd';
-        ctx.font = 'bold 10px sans-serif';
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(126, 128, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#10b981';
+        for (let c = 0; c < 5; c++) {
+            ctx.beginPath();
+            ctx.arc(120 + c * 3, 124 + (c % 2) * 6, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.fillStyle = '#0369a1';
+        ctx.font = 'bold 9.5px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('ARCO DE LLUVIA IP65', 87, 158);
+        ctx.fillText('LABORATORIO MICROBIOLÓGICO', 87, 30);
 
         ctx.restore();
     }
 
-    drawTrafficLightTower(ctx, cx, cy, qaDone) {
+    drawQualityStatusTower(ctx, cx, cy, qaDone) {
         ctx.save();
         ctx.translate(cx, cy);
 
-        // Shadow & Base Plate
+        // Base Plate
         ctx.fillStyle = '#334155';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 3;
@@ -2021,16 +1884,15 @@ class Renderer {
         ctx.fill();
         ctx.stroke();
 
-        // Inner dark housing
         ctx.fillStyle = '#090d16';
         ctx.beginPath();
         ctx.roundRect(-24, -10, 48, 140, 14);
         ctx.fill();
 
         const lights = [
-            { y: 18, on: !qaDone, onCol: '#ef4444', offCol: '#450a0a' },
-            { y: 60, on: true, onCol: '#facc15', offCol: '#422006' },
-            { y: 102, on: qaDone, onCol: '#10b981', offCol: '#064e3b' }
+            { y: 18, on: !qaDone, onCol: '#ef4444', offCol: '#450a0a', label: 'CUAR' },
+            { y: 60, on: true, onCol: '#facc15', offCol: '#422006', label: 'TEST' },
+            { y: 102, on: qaDone, onCol: '#10b981', offCol: '#064e3b', label: 'APROB' }
         ];
 
         for (let l of lights) {
@@ -2047,7 +1909,6 @@ class Renderer {
             ctx.beginPath();
             ctx.arc(0, l.y, 14, 0, Math.PI * 2);
             ctx.fill();
-            // Visor hood over lamp
             ctx.strokeStyle = '#475569';
             ctx.lineWidth = 3;
             ctx.beginPath();
@@ -2107,7 +1968,7 @@ class Renderer {
         ctx.fillStyle = accentColor;
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('📘 INFO QUANTUM', 0, -10 + floatY);
+        ctx.fillText('📘 INFO PIL ANDINA', 0, -10 + floatY);
         ctx.fillStyle = '#f8fafc';
         ctx.font = '10px sans-serif';
         ctx.fillText(title.substring(0, 20), 0, 6 + floatY);
@@ -2332,14 +2193,16 @@ class Renderer {
             ctx.fill();
         }
 
-        // Quantum Technician Yellow Safety Hard-Hat on top
-        ctx.fillStyle = '#facc15';
+        // PIL Dairy Sanitary Cap / Hairnet (Cofia blanca con borde azul PIL)
+        ctx.fillStyle = '#f8fafc';
         ctx.strokeStyle = '#090d16';
         ctx.lineWidth = 2.8;
         ctx.beginPath();
         ctx.arc(-1, -28, 15, Math.PI, 0);
         ctx.fill();
         ctx.stroke();
+        // Blue PIL sanitary headband
+        ctx.fillStyle = '#0284c7';
         ctx.beginPath();
         ctx.roundRect(-18, -29, 36, 4.5, 2);
         ctx.fill();
@@ -2427,7 +2290,7 @@ class Renderer {
         ctx.fillStyle = '#22d3ee';
         ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🤖 Q-BOT', 0, -37);
+        ctx.fillText('🤖 PIL-BOT', 0, -37);
 
         ctx.restore();
     }

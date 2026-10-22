@@ -406,7 +406,7 @@ class QuantumMotorsGame {
 
     startGameFromLobby() {
         const nameInput = document.getElementById('player-name-input').value.trim();
-        const roomInput = document.getElementById('room-code-input').value.trim() || 'QM-2026';
+        const roomInput = document.getElementById('room-code-input').value.trim() || 'PIL-2026';
         const wsInput = document.getElementById('ws-url-input').value.trim() || 'ws://localhost:8080';
         const fillBots = document.getElementById('fill-bots-checkbox').checked;
 
@@ -415,7 +415,7 @@ class QuantumMotorsGame {
             this.webcamStream = null;
         }
 
-        this.localPlayer.name = nameInput || 'Técnico Quantum';
+        this.localPlayer.name = nameInput || 'Técnico PIL';
         this.localPlayer.colorId = this.selectedColorId;
         this.localPlayer.avatar = this.selectedAvatarDataUrl;
 
@@ -434,7 +434,7 @@ class QuantumMotorsGame {
             isMoving: false
         }, wsInput, fillBots);
 
-        this.addChatMessage('Q-BOT', 'cyan', `¡Bienvenido a Quantum Motors Bolivia, ${this.localPlayer.name}! Completen las 6 estaciones para ensamblar el Quantum E4.`);
+        this.addChatMessage('PIL-BOT', 'cyan', `¡Bienvenido a la Planta PIL Andina Bolivia, ${this.localPlayer.name}! Completen las 6 estaciones para procesar el lote de leche y yogur.`);
         this.updateCrewRosterHUD();
 
         if (!this.isRunning) {
@@ -483,7 +483,7 @@ class QuantumMotorsGame {
         }
 
         this.localPlayer.setEmote('✅', 3.5);
-        this.addChatMessage('Q-BOT', 'lime', `✅ ¡${this.localPlayer.name} completó "${station.shortName}"! (+${station.points} pts)`);
+        this.addChatMessage('PIL-BOT', 'lime', `✅ ¡${this.localPlayer.name} completó "${station.shortName}"! (+${station.points} pts)`);
 
         this.network.broadcastTaskComplete(station.id, station.badgeId, station.points, this.localPlayer.name);
         this.renderTaskChecklistHUD();
@@ -502,7 +502,7 @@ class QuantumMotorsGame {
         const pct = Math.round((done / total) * 100);
 
         progressFill.style.width = `${pct}%`;
-        progressText.textContent = `Ensamblaje Colectivo Quantum E4: ${done}/${total} (${pct}%)`;
+        progressText.textContent = `Procesamiento Colectivo PIL: ${done}/${total} (${pct}%)`;
         scoreEl.textContent = `${this.teamScore} pts`;
 
         listEl.innerHTML = '';
@@ -577,7 +577,7 @@ class QuantumMotorsGame {
         if (this.factoryMap.completedTasks.size >= this.assets.STATIONS.length) {
             this.victoryShown = true;
             this.sound.playVictoryFanfare();
-            document.getElementById('victory-score').textContent = `${this.teamScore} Puntos de Ingeniería`;
+            document.getElementById('victory-score').textContent = `${this.teamScore} Puntos de Inocuidad Láctea`;
             document.getElementById('victory-modal').classList.remove('hidden');
         }
     }
@@ -1006,10 +1006,10 @@ class QuantumMotorsGame {
         const bots = Array.from(this.network.bots.values());
 
         const botLines = [
-            '¡Atención equipo! Organicemos las estaciones pendientes.',
-            'Sugiero que nos enfoquemos en la zona con mayor puntaje.',
-            '¡Yo puedo colaborar en la siguiente tarea del Quantum E4!',
-            'Revisemos bien los componentes antes de la prueba final.'
+            '¡Atención equipo! Organicemos la inocuidad y las tareas pendientes.',
+            'Sugiero que revisemos la pasteurización HTST y el análisis de leche.',
+            '¡Yo puedo colaborar en la línea de envasado en Bolsa Azul!',
+            'Revisemos bien la cadena de frío antes del despacho nacional.'
         ];
 
         bots.forEach((bot, idx) => {
@@ -1049,7 +1049,7 @@ class QuantumMotorsGame {
         const boardModal = document.getElementById('emergency-meeting-modal');
         if (boardModal) boardModal.classList.add('hidden');
 
-        // Unlock badge Estratega de Directorio
+        // Unlock badge Comité de Inocuidad HACCP
         const isNewBadge = !this.unlockedBadges.has('badge_meeting');
         this.unlockedBadges.add('badge_meeting');
         if (isNewBadge) {
@@ -1058,7 +1058,7 @@ class QuantumMotorsGame {
         }
         this.renderBadgesHUD();
 
-        this.addChatMessage('Q-BOT', 'cyan', '🤝 ¡Junta técnica de planta finalizada con éxito! Todos los técnicos regresan a sus estaciones.');
+        this.addChatMessage('PIL-BOT', 'cyan', '🛡️ ¡Comité de Inocuidad HACCP finalizado con éxito! Todos los técnicos regresan a sus estaciones.');
 
         if (isInitiator) {
             this.network.broadcastMeetingEnded();
