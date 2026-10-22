@@ -265,13 +265,61 @@
                 <!-- 6 Technician Seats populated dynamically -->
             </div>
 
-            <!-- Votación de Próxima Estación Prioritaria -->
+            <!-- ==================== SECCIÓN DE VOTACIÓN MODERADA (3 OPCIONES) ==================== -->
             <div class="boardroom-voting-section">
-                <div class="voting-header">
-                    <strong>🎯 Votación del Equipo: ¿A qué estación láctea vamos ahora?</strong>
-                    <span style="font-size:12px;color:#94a3b8;">Tu voto orientará a los técnicos y aprendices</span>
+                <!-- Panel del Moderador (Solo visible para la persona que convocó la reunión) -->
+                <div id="meeting-moderator-panel" class="moderator-panel hidden">
+                    <div class="moderator-panel-header">
+                        <span class="moderator-badge">👑 PANEL DEL MODERADOR</span>
+                        <strong style="color:#facc15;font-size:13px;">Crear Votación Oficial (3 Opciones)</strong>
+                    </div>
+                    <div class="moderator-form-row">
+                        <input type="text" id="custom-vote-topic-input" class="styled-vote-input topic-input" placeholder="Pregunta o asunto a votar..." value="¿Qué prioridad debe resolver el Comité de Inocuidad PIL?">
+                    </div>
+                    <div class="moderator-options-grid">
+                        <div class="option-input-wrapper">
+                            <span class="opt-num-tag">1</span>
+                            <input type="text" id="custom-vote-opt1-input" class="styled-vote-input" placeholder="Opción 1..." value="Priorizar Pasteurización HTST a 72°C">
+                        </div>
+                        <div class="option-input-wrapper">
+                            <span class="opt-num-tag">2</span>
+                            <input type="text" id="custom-vote-opt2-input" class="styled-vote-input" placeholder="Opción 2..." value="Línea de Envasado Leche Bolsa Azul">
+                        </div>
+                        <div class="option-input-wrapper">
+                            <span class="opt-num-tag">3</span>
+                            <input type="text" id="custom-vote-opt3-input" class="styled-vote-input" placeholder="Opción 3..." value="Auditar Cadena de Frío y Fermentación Yogur">
+                        </div>
+                    </div>
+                    <div class="moderator-actions-row">
+                        <button type="button" id="start-custom-vote-btn" class="primary-action-btn start-vote-btn">
+                            📢 Abrir Votación al Equipo (3 Opciones)
+                        </button>
+                        <button type="button" id="conclude-custom-vote-btn" class="secondary-action-btn danger-btn hidden">
+                            🏁 Concluir Votación y Declarar Ganador
+                        </button>
+                    </div>
                 </div>
-                <div id="meeting-vote-options" class="meeting-vote-options"></div>
+
+                <!-- Cabecera de la Votación Activa -->
+                <div class="voting-header">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span class="vote-active-dot"></span>
+                        <strong id="active-vote-question" style="font-size:14px;color:#38bdf8;">
+                            🎯 Votación del Comité de Inocuidad
+                        </strong>
+                    </div>
+                    <span id="active-vote-instructions" style="font-size:12px;color:#94a3b8;">
+                        Moderada por <span id="meeting-moderator-display-name" style="color:#facc15;font-weight:700;">el Convocante</span> • Vota por 1 opción
+                    </span>
+                </div>
+
+                <!-- Grilla de las 3 Opciones para que todos voten -->
+                <div id="custom-vote-cards-grid" class="custom-vote-cards-grid">
+                    <!-- Populated dynamically with 3 interactive cards -->
+                </div>
+
+                <!-- Banner de Opción Ganadora -->
+                <div id="vote-winner-banner" class="vote-winner-banner hidden"></div>
             </div>
 
             <!-- Chat y Frases Rápidas de Reunión -->

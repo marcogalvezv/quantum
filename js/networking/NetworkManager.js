@@ -316,6 +316,32 @@ class NetworkManager {
         });
     }
 
+    broadcastMeetingCustomVoteCreate(topic, options, moderatorName) {
+        this.sendPacket({
+            type: 'meeting_custom_vote_create',
+            topic,
+            options,
+            moderatorName
+        });
+    }
+
+    broadcastMeetingCustomVoteCast(voterId, optionIndex, voterName) {
+        this.sendPacket({
+            type: 'meeting_custom_vote_cast',
+            voterId,
+            optionIndex,
+            voterName
+        });
+    }
+
+    broadcastMeetingCustomVoteClose(winningOptionText, winnerIndex) {
+        this.sendPacket({
+            type: 'meeting_custom_vote_close',
+            winningOptionText,
+            winnerIndex
+        });
+    }
+
     broadcastMeetingChat(senderName, senderColor, text) {
         this.sendPacket({
             type: 'meeting_chat',
@@ -389,6 +415,24 @@ class NetworkManager {
             case 'meeting_vote': {
                 if (this.callbacks.onMeetingVote) {
                     this.callbacks.onMeetingVote(data);
+                }
+                break;
+            }
+            case 'meeting_custom_vote_create': {
+                if (this.callbacks.onMeetingCustomVoteCreate) {
+                    this.callbacks.onMeetingCustomVoteCreate(data);
+                }
+                break;
+            }
+            case 'meeting_custom_vote_cast': {
+                if (this.callbacks.onMeetingCustomVoteCast) {
+                    this.callbacks.onMeetingCustomVoteCast(data);
+                }
+                break;
+            }
+            case 'meeting_custom_vote_close': {
+                if (this.callbacks.onMeetingCustomVoteClose) {
+                    this.callbacks.onMeetingCustomVoteClose(data);
                 }
                 break;
             }

@@ -33,6 +33,11 @@ class QuantumMotorsGame {
         this.meetingTimeRemaining = 45;
         this.meetingVotes = new Map();
         this.selectedMeetingStationVote = null;
+        this.meetingModeratorName = null;
+        this.isMeetingModerator = false;
+        this.meetingCustomVote = null;
+        this.customVotesByPlayer = new Map();
+        this.selectedCustomVoteIndex = null;
         this.botSpeechTimers = [];
 
         this.initDOM();
@@ -167,6 +172,20 @@ class QuantumMotorsGame {
         if (endMeetingBtn) {
             endMeetingBtn.addEventListener('click', () => {
                 this.endEmergencyMeeting(true);
+            });
+        }
+
+        // Moderator 3-Option Voting buttons
+        const startCustomVoteBtn = document.getElementById('start-custom-vote-btn');
+        if (startCustomVoteBtn) {
+            startCustomVoteBtn.addEventListener('click', () => {
+                this.moderatorCreateCustomVote();
+            });
+        }
+        const concludeCustomVoteBtn = document.getElementById('conclude-custom-vote-btn');
+        if (concludeCustomVoteBtn) {
+            concludeCustomVoteBtn.addEventListener('click', () => {
+                this.concludeCustomVote();
             });
         }
 
@@ -351,6 +370,15 @@ class QuantumMotorsGame {
             },
             onMeetingVote: (data) => {
                 this.handleRemoteMeetingVote(data.voterId, data.stationId);
+            },
+            onMeetingCustomVoteCreate: (data) => {
+                this.handleRemoteCustomVoteCreate(data.topic, data.options, data.moderatorName);
+            },
+            onMeetingCustomVoteCast: (data) => {
+                this.handleRemoteCustomVoteCast(data.voterId, data.optionIndex, data.voterName);
+            },
+            onMeetingCustomVoteClose: (data) => {
+                this.handleRemoteCustomVoteClose(data.winningOptionText, data.winnerIndex);
             },
             onMeetingChat: (data) => {
                 this.handleRemoteMeetingChat(data.senderName, data.senderColor, data.text);
@@ -878,7 +906,22 @@ class QuantumMotorsGame {
 
         // Reset meeting votes & speech timers
         this.meetingVotes.clear();
-        this.selectedMeetingStationVote = null;
+        this.customVotesByPlayer.clear();
+        this.selectedCustomVoteIndex = null;
+        this.meetingModeratorName = callerName || this.localPlayer.name;
+        this.isMeetingModerator = Boolean(isInitiator);
+
+        this.meetingCustomVote = {
+            topic: reason ? `¿Cómo resolvemos: ${reason}?` : '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?',
+            options: [
+                'Priorizar Pasteurización HTST a 72°C',
+                'Línea de Envasado Leche Bolsa Azul',
+                'Auditar Cadena de Frío y Fermentación Yogur'
+            ],
+            isOpen: true,
+            moderatorName: this.meetingModeratorName,
+            isClosed: false
+        };
         this.clearBotSpeechTimers();
 
         // After the dramatic intro (2.2s), open the boardroom screen
@@ -1011,85 +1054,256 @@ class QuantumMotorsGame {
             });
         }
 
-        // 3. Voting Options
-        this.renderMeetingVoteOptions();
+        // 3. Moderated 3-Option Voting Setup
+        this.setupMeetingModeratorPanel();
+        this.renderCustomMeetingVoteCards();
     }
 
-    renderMeetingVoteOptions() {
-        const container = document.getElementById('meeting-vote-options');
-        if (!container) return;
-        container.innerHTML = '';
+    setupMeetingModeratorPanel() {
+        const modPanel = document.getElementById('meeting-moderator-panel');
+        const modNameEl = document.getElementById('meeting-moderator-display-name');
+        const concludeBtn = document.getElementById('conclude-custom-vote-btn');
+        const winnerBanner = document.getElementById('vote-winner-banner');
 
-        // Tally votes per station
-        const voteCounts = new Map();
-        for (const stationId of this.meetingVotes.values()) {
-            voteCounts.set(stationId, (voteCounts.get(stationId) || 0) + 1);
+        if (winnerBanner) winnerBanner.classList.add('hidden');
+
+        if (modNameEl) {
+            modNameEl.textContent = this.meetingModeratorName || (this.isMeetingModerator ? this.localPlayer.name : 'el Convocante');
         }
 
-        this.assets.STATIONS.forEach(st => {
-            const isCompleted = this.factoryMap.completedTasks.has(st.id);
-            const count = voteCounts.get(st.id) || 0;
-            const isSelected = this.selectedMeetingStationVote === st.id;
-
-            const btn = document.createElement('button');
-            btn.type = 'button';
-            btn.className = 'vote-station-btn' + (isSelected ? ' selected' : '');
-            btn.innerHTML = `
-                <span>${st.icon} ${st.shortName} ${isCompleted ? '✓' : ''}</span>
-                <span class="vote-count-badge">${count} votos</span>
-            `;
-
-            btn.addEventListener('click', () => {
-                this.castMeetingVote(st.id, this.network.localId, true);
-            });
-
-            container.appendChild(btn);
-        });
-
-        // Update vote tally info text
-        const tallyInfo = document.getElementById('meeting-votes-tally-info');
-        if (tallyInfo) {
-            let maxVotes = 0;
-            let leadingStation = null;
-            for (const [stId, count] of voteCounts.entries()) {
-                if (count > maxVotes) {
-                    maxVotes = count;
-                    leadingStation = this.assets.STATIONS.find(s => s.id === stId);
-                }
-            }
-            if (leadingStation && maxVotes > 0) {
-                tallyInfo.innerHTML = `🌟 Próximo objetivo acordado: <strong>${leadingStation.icon} ${leadingStation.shortName}</strong> (${maxVotes} votos)`;
+        if (modPanel) {
+            if (this.isMeetingModerator) {
+                modPanel.classList.remove('hidden');
+                if (concludeBtn) concludeBtn.classList.remove('hidden');
             } else {
-                tallyInfo.textContent = 'Coordina con tu equipo antes de que termine el tiempo.';
+                modPanel.classList.add('hidden');
+                if (concludeBtn) concludeBtn.classList.add('hidden');
             }
         }
     }
 
-    castMeetingVote(stationId, voterId = this.network.localId, isLocal = true) {
-        this.meetingVotes.set(voterId, stationId);
+    moderatorCreateCustomVote() {
+        if (!this.isMeetingModerator) return;
+        const topicInput = document.getElementById('custom-vote-topic-input');
+        const opt1Input = document.getElementById('custom-vote-opt1-input');
+        const opt2Input = document.getElementById('custom-vote-opt2-input');
+        const opt3Input = document.getElementById('custom-vote-opt3-input');
+
+        const topic = (topicInput && topicInput.value.trim()) || '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?';
+        const opt1 = (opt1Input && opt1Input.value.trim()) || 'Priorizar Pasteurización HTST a 72°C';
+        const opt2 = (opt2Input && opt2Input.value.trim()) || 'Línea de Envasado Leche Bolsa Azul';
+        const opt3 = (opt3Input && opt3Input.value.trim()) || 'Auditar Cadena de Frío y Fermentación Yogur';
+
+        this.meetingCustomVote = {
+            topic,
+            options: [opt1, opt2, opt3],
+            isOpen: true,
+            moderatorName: this.localPlayer.name,
+            isClosed: false
+        };
+
+        this.customVotesByPlayer.clear();
+        this.selectedCustomVoteIndex = null;
+        this.sound.playClick();
+
+        // Broadcast to other players
+        this.network.broadcastMeetingCustomVoteCreate(topic, [opt1, opt2, opt3], this.localPlayer.name);
+
+        this.addChatMessage('MODERADOR', 'orange', `📢 Votación oficial abierta por ${this.localPlayer.name}: "${topic}". ¡Todos tienen 1 voto!`);
+
+        const concludeBtn = document.getElementById('conclude-custom-vote-btn');
+        if (concludeBtn) concludeBtn.classList.remove('hidden');
+
+        const winnerBanner = document.getElementById('vote-winner-banner');
+        if (winnerBanner) winnerBanner.classList.add('hidden');
+
+        this.renderCustomMeetingVoteCards();
+    }
+
+    handleRemoteCustomVoteCreate(topic, options, moderatorName) {
+        if (!this.meetingInProgress) return;
+        this.meetingCustomVote = {
+            topic,
+            options: Array.isArray(options) ? options : ['Opción 1', 'Opción 2', 'Opción 3'],
+            isOpen: true,
+            moderatorName: moderatorName || 'El Moderador',
+            isClosed: false
+        };
+        this.customVotesByPlayer.clear();
+        this.selectedCustomVoteIndex = null;
+        this.sound.playClick();
+
+        const modNameEl = document.getElementById('meeting-moderator-display-name');
+        if (modNameEl) modNameEl.textContent = moderatorName || 'el Moderador';
+
+        const winnerBanner = document.getElementById('vote-winner-banner');
+        if (winnerBanner) winnerBanner.classList.add('hidden');
+
+        this.addChatMessage('MODERADOR', 'orange', `📢 Votación abierta por ${moderatorName}: "${topic}". Vota por 1 opción.`);
+        this.renderCustomMeetingVoteCards();
+    }
+
+    castCustomMeetingVote(optionIndex, voterId = this.network.localId, isLocal = true) {
+        if (!this.meetingCustomVote || this.meetingCustomVote.isClosed) return;
+        if (optionIndex < 0 || optionIndex > 2) return;
+
+        this.customVotesByPlayer.set(voterId, optionIndex);
         this.sound.playVoteSound();
 
         if (isLocal) {
-            this.selectedMeetingStationVote = stationId;
-            this.network.broadcastMeetingVote(voterId, stationId);
+            this.selectedCustomVoteIndex = optionIndex;
+            this.network.broadcastMeetingCustomVoteCast(voterId, optionIndex, this.localPlayer.name);
         }
 
-        // Update vote tag on voter's card
+        // Update vote tag on voter's seat card
         const tag = document.getElementById(`vote-tag-${voterId}`);
-        const st = this.assets.STATIONS.find(s => s.id === stationId);
-        if (tag && st) {
+        if (tag) {
             tag.style.display = 'inline-flex';
-            tag.innerHTML = `🎯 ${st.icon} ${st.shortName}`;
+            tag.innerHTML = `🗳️ Opción ${optionIndex + 1}`;
             const card = document.getElementById(`tech-card-${voterId}`);
             if (card) card.classList.add('has-voted');
         }
 
-        this.renderMeetingVoteOptions();
+        this.renderCustomMeetingVoteCards();
     }
 
-    handleRemoteMeetingVote(voterId, stationId) {
+    handleRemoteCustomVoteCast(voterId, optionIndex, voterName) {
         if (!this.meetingInProgress) return;
-        this.castMeetingVote(stationId, voterId, false);
+        this.castCustomMeetingVote(optionIndex, voterId, false);
+    }
+
+    renderCustomMeetingVoteCards() {
+        const grid = document.getElementById('custom-vote-cards-grid');
+        const questionEl = document.getElementById('active-vote-question');
+        const modNameEl = document.getElementById('meeting-moderator-display-name');
+        if (!grid) return;
+
+        if (!this.meetingCustomVote) return;
+
+        if (questionEl) questionEl.textContent = `🎯 ${this.meetingCustomVote.topic}`;
+        if (modNameEl) modNameEl.textContent = this.meetingCustomVote.moderatorName || 'el Convocante';
+
+        // Tally votes
+        const totalVotes = this.customVotesByPlayer.size;
+        const tallies = [0, 0, 0];
+        const votersByOption = [[], [], []];
+
+        const allParticipants = [
+            { id: this.network.localId, name: `${this.localPlayer.name} (Tú)` },
+            ...this.network.getAllRemoteAndBotPlayers()
+        ];
+
+        for (const [voterId, optIdx] of this.customVotesByPlayer.entries()) {
+            if (optIdx >= 0 && optIdx <= 2) {
+                tallies[optIdx]++;
+                const p = allParticipants.find(x => x.id === voterId);
+                if (p) votersByOption[optIdx].push(p.name);
+            }
+        }
+
+        grid.innerHTML = '';
+
+        this.meetingCustomVote.options.forEach((optText, idx) => {
+            const count = tallies[idx];
+            const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+            const isMyVote = this.selectedCustomVoteIndex === idx;
+
+            const card = document.createElement('div');
+            card.className = 'custom-vote-card' + (isMyVote ? ' voted-by-me' : '');
+            if (this.meetingCustomVote.isClosed) card.style.cursor = 'default';
+
+            const votersChipsHtml = votersByOption[idx]
+                .map(name => `<span class="voter-chip">👤 ${name}</span>`)
+                .join('');
+
+            card.innerHTML = `
+                <div>
+                    <div class="card-top-badge-row">
+                        <span class="card-opt-badge">OPCIÓN ${idx + 1}</span>
+                        ${isMyVote ? '<span class="my-vote-indicator">✓ Tu Voto</span>' : ''}
+                    </div>
+                    <div class="card-opt-text">${optText}</div>
+                </div>
+                <div>
+                    <div class="vote-progress-wrapper">
+                        <div class="vote-progress-bar" style="width: ${pct}%;"></div>
+                    </div>
+                    <div class="vote-tally-row">
+                        <span>${count} voto${count !== 1 ? 's' : ''}</span>
+                        <span>${pct}%</span>
+                    </div>
+                    <div class="voters-avatars-row">
+                        ${votersChipsHtml}
+                    </div>
+                </div>
+            `;
+
+            if (!this.meetingCustomVote.isClosed) {
+                card.addEventListener('click', () => {
+                    this.castCustomMeetingVote(idx, this.network.localId, true);
+                });
+            }
+
+            grid.appendChild(card);
+        });
+    }
+
+    concludeCustomVote() {
+        if (!this.meetingCustomVote || this.meetingCustomVote.isClosed) return;
+        this.meetingCustomVote.isClosed = true;
+
+        // Calculate counts
+        const tallies = [0, 0, 0];
+        for (const optIdx of this.customVotesByPlayer.values()) {
+            if (optIdx >= 0 && optIdx <= 2) {
+                tallies[optIdx]++;
+            }
+        }
+
+        let maxVotes = -1;
+        let winnerIdx = 0;
+        tallies.forEach((count, idx) => {
+            if (count > maxVotes) {
+                maxVotes = count;
+                winnerIdx = idx;
+            }
+        });
+
+        const winningText = this.meetingCustomVote.options[winnerIdx] || `Opción ${winnerIdx + 1}`;
+
+        // Show banner
+        const banner = document.getElementById('vote-winner-banner');
+        if (banner) {
+            banner.innerHTML = `🏆 <strong>RESOLUCIÓN APROBADA POR EL COMITÉ:</strong><br><span style="font-size:16px;color:#fff;">Opción ${winnerIdx + 1}: ${winningText}</span> <span style="font-size:12px;color:#facc15;">(${maxVotes} votos)</span>`;
+            banner.classList.remove('hidden');
+        }
+
+        this.sound.playTaskComplete();
+        this.addChatMessage('COMITÉ HACCP', 'lime', `🏆 ¡Votación concluida! Resolución aprobada: "Opción ${winnerIdx + 1}: ${winningText}" con ${maxVotes} votos.`);
+
+        // Hide conclude button
+        const concludeBtn = document.getElementById('conclude-custom-vote-btn');
+        if (concludeBtn) concludeBtn.classList.add('hidden');
+
+        if (this.isMeetingModerator) {
+            this.network.broadcastMeetingCustomVoteClose(winningText, winnerIdx);
+        }
+
+        this.renderCustomMeetingVoteCards();
+    }
+
+    handleRemoteCustomVoteClose(winningOptionText, winnerIndex) {
+        if (!this.meetingInProgress) return;
+        if (this.meetingCustomVote) this.meetingCustomVote.isClosed = true;
+
+        const banner = document.getElementById('vote-winner-banner');
+        if (banner) {
+            banner.innerHTML = `🏆 <strong>RESOLUCIÓN APROBADA POR EL COMITÉ:</strong><br><span style="font-size:16px;color:#fff;">Opción ${(winnerIndex || 0) + 1}: ${winningOptionText}</span>`;
+            banner.classList.remove('hidden');
+        }
+        this.sound.playTaskComplete();
+        this.addChatMessage('COMITÉ HACCP', 'lime', `🏆 ¡Votación concluida por el moderador! Resolución aprobada: "${winningOptionText}".`);
+        this.renderCustomMeetingVoteCards();
     }
 
     sendMeetingChatMessage(senderId, senderName, senderColor, text, isLocal = true) {
@@ -1113,7 +1327,6 @@ class QuantumMotorsGame {
 
     handleRemoteMeetingChat(senderName, senderColor, text) {
         if (!this.meetingInProgress) return;
-        // Find matching remote player
         const all = this.network.getAllRemoteAndBotPlayers();
         const p = all.find(x => x.name === senderName);
         const senderId = p ? p.id : 'remote';
@@ -1121,35 +1334,30 @@ class QuantumMotorsGame {
     }
 
     simulateBotParticipation() {
-        const pendingStations = this.assets.STATIONS.filter(s => !this.factoryMap.completedTasks.has(s.id));
         const bots = Array.from(this.network.bots.values());
 
         const botLines = [
-            '¡Atención equipo! Organicemos la inocuidad y las tareas pendientes.',
-            'Sugiero que revisemos la pasteurización HTST y el análisis de leche.',
-            '¡Yo puedo colaborar en la línea de envasado en Bolsa Azul!',
-            'Revisemos bien la cadena de frío antes del despacho nacional.'
+            '¡Apoyo la Opción 1 para asegurar la pasteurización!',
+            '¡Mi voto va para la Opción 2, la línea de Bolsa Azul!',
+            '¡La Opción 3 es fundamental para la inocuidad del yogur!',
+            '¡Excelente planteamiento del moderador!'
         ];
 
         bots.forEach((bot, idx) => {
             // Speech timer
             const speechTimer = setTimeout(() => {
                 if (!this.meetingInProgress) return;
-                const line = (pendingStations.length > 0 && Math.random() < 0.6)
-                    ? `Recomiendo que vayamos a ${pendingStations[0].shortName}.`
-                    : botLines[idx % botLines.length];
+                const line = botLines[idx % botLines.length];
                 this.sendMeetingChatMessage(bot.id, bot.name, bot.colorId, line, false);
-            }, 1200 + (idx * 2400));
+            }, 1200 + (idx * 2200));
             this.botSpeechTimers.push(speechTimer);
 
-            // Vote timer
+            // Vote timer (bots vote for 1 option across the 3 choices)
             const voteTimer = setTimeout(() => {
                 if (!this.meetingInProgress) return;
-                const targetStation = pendingStations.length > 0
-                    ? pendingStations[idx % pendingStations.length]
-                    : this.assets.STATIONS[idx % this.assets.STATIONS.length];
-                this.castMeetingVote(targetStation.id, bot.id, false);
-            }, 2500 + (idx * 1900));
+                const optIdx = idx % 3;
+                this.castCustomMeetingVote(optIdx, bot.id, false);
+            }, 1800 + (idx * 1600));
             this.botSpeechTimers.push(voteTimer);
         });
     }
