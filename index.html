@@ -188,33 +188,41 @@
         </div>
     </div>
 
-    <!-- ==================== MODAL DE CONVOCATORIA DE REUNIÓN ==================== -->
+    <!-- ==================== MODAL DE CONVOCATORIA: CREAR VOTACIÓN ==================== -->
     <div id="call-meeting-modal" class="overlay hidden">
-        <div class="modal-card call-meeting-card">
+        <div class="modal-card call-meeting-card" style="max-width:520px;">
             <div class="modal-header">
-                <h2>🚨 Convocatoria Comité de Inocuidad HACCP</h2>
+                <h2>🗳️ Convocatoria: Crear Votación del Comité</h2>
                 <button id="call-meeting-close-btn" class="close-btn">✕</button>
             </div>
-            <p style="color:#cbd5e1;font-size:14px;margin-bottom:14px;line-height:1.5;">
-                Al activar la alarma de reunión, sonará la sirena en toda la planta y todos los técnicos (humanos y bots) serán transportados a la <strong>Sala de Inocuidad HACCP</strong> para coordinar la producción y control de calidad de PIL Andina.
+            <p style="color:#cbd5e1;font-size:13.5px;margin-bottom:12px;line-height:1.4;">
+                Como moderador, define la pregunta y las 3 opciones de votación. Todos los técnicos se reunirán para votar:
             </p>
-            <div class="form-group" style="text-align:left;">
-                <label for="meeting-reason-select" style="font-size:12px;font-weight:700;color:#38bdf8;">Motivo de la Convocatoria:</label>
-                <select id="meeting-reason-select" class="styled-select" style="width:100%;margin-top:6px;padding:9px;background:#0f172a;border:1px solid #475569;border-radius:8px;color:#fff;font-size:13px;">
-                    <option value="Coordinación general de producción y envasado de Leche PIL">🥛 Coordinación general y estado de envasado</option>
-                    <option value="Revisión urgente de acidez Dornic en tanques de recepción">🧪 Revisión urgente en Control de Leche Cruda</option>
-                    <option value="Verificación térmica del intercambiador HTST a 72°C">🌡️ Verificación térmica en Pasteurización HTST</option>
-                    <option value="Inspección de empaques sanitarios y tuberías CIP">🔧 Mantenimiento en tuberías sanitarias Clamp</option>
-                    <option value="¡Todos a la línea de envasado en Bolsa Azul!">📦 ¡Todos a la Línea de Bolsa Azul PIL!</option>
-                    <option value="Auditoría de Inocuidad SENASAG / HACCP">🚨 Auditoría urgente de Inocuidad Alimentaria</option>
-                </select>
+            <div class="form-group" style="text-align:left;margin-bottom:10px;">
+                <label for="call-vote-topic-input" style="font-size:12px;font-weight:700;color:#38bdf8;">Pregunta o Asunto a Votar:</label>
+                <input type="text" id="call-vote-topic-input" class="styled-select" style="width:100%;margin-top:4px;padding:9px;background:#0f172a;border:1.5px solid #38bdf8;border-radius:8px;color:#fff;font-size:13px;font-weight:700;" value="¿Qué prioridad debe resolver el Comité de Inocuidad PIL?">
             </div>
-            <div style="display:flex;gap:10px;margin-top:18px;">
+            <div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
+                <label style="font-size:12px;font-weight:700;color:#facc15;">3 Opciones para que el equipo vote (1 voto por persona):</label>
+                <div class="option-input-wrapper">
+                    <span class="opt-num-tag">1</span>
+                    <input type="text" id="call-vote-opt1-input" class="styled-vote-input" placeholder="Opción 1..." value="Priorizar Pasteurización HTST a 72°C">
+                </div>
+                <div class="option-input-wrapper">
+                    <span class="opt-num-tag">2</span>
+                    <input type="text" id="call-vote-opt2-input" class="styled-vote-input" placeholder="Opción 2..." value="Línea de Envasado Leche Bolsa Azul">
+                </div>
+                <div class="option-input-wrapper">
+                    <span class="opt-num-tag">3</span>
+                    <input type="text" id="call-vote-opt3-input" class="styled-vote-input" placeholder="Opción 3..." value="Auditar Cadena de Frío y Fermentación Yogur">
+                </div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:16px;">
                 <button type="button" id="cancel-call-meeting-btn" class="secondary-action-btn" style="flex:1;">
                     Cancelar
                 </button>
-                <button type="button" id="confirm-call-meeting-btn" class="primary-action-btn danger-call-btn" style="flex:2;">
-                    🔴 ¡ACTIVAR SIRENA Y CONVOCAR!
+                <button type="button" id="confirm-call-meeting-btn" class="primary-action-btn danger-call-btn" style="flex:2;background:linear-gradient(135deg, #ef4444, #b91c1c);">
+                    🔴 ¡CONVOCAR Y ABRIR VOTACIÓN!
                 </button>
             </div>
         </div>
@@ -251,60 +259,18 @@
                 </div>
             </div>
 
-            <!-- Dashboard de Estado de la Fábrica -->
-            <div class="boardroom-factory-status">
-                <div class="status-title-row">
-                    <strong>📊 Estado de Producción PIL Andina:</strong>
-                    <span id="meeting-progress-summary">0/6 Estaciones Completadas (0%)</span>
-                </div>
-                <div id="meeting-stations-badges" class="meeting-stations-badges"></div>
-            </div>
-
             <!-- Grilla de los 6 Asientos de Técnicos (Among Us Boardroom) -->
             <div class="technicians-grid" id="technicians-grid">
                 <!-- 6 Technician Seats populated dynamically -->
             </div>
 
-            <!-- ==================== SECCIÓN DE VOTACIÓN MODERADA (3 OPCIONES) ==================== -->
+            <!-- ==================== SECCIÓN DE VOTACIÓN (3 OPCIONES) ==================== -->
             <div class="boardroom-voting-section">
-                <!-- Panel del Moderador (Solo visible para la persona que convocó la reunión) -->
-                <div id="meeting-moderator-panel" class="moderator-panel hidden">
-                    <div class="moderator-panel-header">
-                        <span class="moderator-badge">👑 PANEL DEL MODERADOR</span>
-                        <strong style="color:#facc15;font-size:13px;">Crear Votación Oficial (3 Opciones)</strong>
-                    </div>
-                    <div class="moderator-form-row">
-                        <input type="text" id="custom-vote-topic-input" class="styled-vote-input topic-input" placeholder="Pregunta o asunto a votar..." value="¿Qué prioridad debe resolver el Comité de Inocuidad PIL?">
-                    </div>
-                    <div class="moderator-options-grid">
-                        <div class="option-input-wrapper">
-                            <span class="opt-num-tag">1</span>
-                            <input type="text" id="custom-vote-opt1-input" class="styled-vote-input" placeholder="Opción 1..." value="Priorizar Pasteurización HTST a 72°C">
-                        </div>
-                        <div class="option-input-wrapper">
-                            <span class="opt-num-tag">2</span>
-                            <input type="text" id="custom-vote-opt2-input" class="styled-vote-input" placeholder="Opción 2..." value="Línea de Envasado Leche Bolsa Azul">
-                        </div>
-                        <div class="option-input-wrapper">
-                            <span class="opt-num-tag">3</span>
-                            <input type="text" id="custom-vote-opt3-input" class="styled-vote-input" placeholder="Opción 3..." value="Auditar Cadena de Frío y Fermentación Yogur">
-                        </div>
-                    </div>
-                    <div class="moderator-actions-row">
-                        <button type="button" id="start-custom-vote-btn" class="primary-action-btn start-vote-btn">
-                            📢 Abrir Votación al Equipo (3 Opciones)
-                        </button>
-                        <button type="button" id="conclude-custom-vote-btn" class="secondary-action-btn danger-btn hidden">
-                            🏁 Concluir Votación y Declarar Ganador
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Cabecera de la Votación Activa -->
                 <div class="voting-header">
                     <div style="display:flex;align-items:center;gap:8px;">
                         <span class="vote-active-dot"></span>
-                        <strong id="active-vote-question" style="font-size:14px;color:#38bdf8;">
+                        <strong id="active-vote-question" style="font-size:15px;color:#38bdf8;">
                             🎯 Votación del Comité de Inocuidad
                         </strong>
                     </div>
@@ -322,26 +288,11 @@
                 <div id="vote-winner-banner" class="vote-winner-banner hidden"></div>
             </div>
 
-            <!-- Chat y Frases Rápidas de Reunión -->
-            <div class="boardroom-chat-section">
-                <div class="quick-phrases-row" id="quick-phrases-row">
-                    <button type="button" class="phrase-btn" data-phrase="¡Verifiquemos la acidez Dornic de las cisternas!">🧪 Analizar leche</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Pasteurizador HTST calibrado a 72°C!">🌡️ Pasteurizador listo</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Ajustemos las juntas clamp en mantenimiento!">🔧 Ajustar juntas</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡A envasar la Leche PIL en Bolsa Azul!">🥛 Envasar Bolsa Azul</button>
-                    <button type="button" class="phrase-btn" data-phrase="¡Lote con inocuidad garantizada para Bolivia!">🇧🇴 ¡Orgullo PIL!</button>
-                </div>
-                <form id="meeting-chat-form" class="meeting-chat-form">
-                    <input type="text" id="meeting-chat-input" placeholder="Comentar en la reunión de mesa..." maxlength="80">
-                    <button type="submit" class="primary-action-btn" style="padding:0 18px;">Hablar</button>
-                </form>
-            </div>
-
             <!-- Barra Inferior de Acción -->
             <div class="boardroom-footer">
-                <span id="meeting-votes-tally-info" style="font-size:12.5px;color:#94a3b8;">
-                    Coordina con tu equipo antes de que termine el tiempo.
-                </span>
+                <button type="button" id="conclude-custom-vote-btn" class="secondary-action-btn danger-btn hidden" style="background:#dc2626;border-color:#b91c1c;padding:9px 16px;font-weight:700;font-size:13px;">
+                    🏁 Concluir Votación y Declarar Ganador
+                </button>
                 <button type="button" id="end-meeting-btn" class="primary-action-btn resume-work-btn">
                     🥛 Reanudar Labores / Volver a la Planta
                 </button>

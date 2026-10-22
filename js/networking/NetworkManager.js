@@ -298,13 +298,15 @@ class NetworkManager {
         });
     }
 
-    broadcastEmergencyMeeting(callerName, callerColor, callerAvatar, reason) {
+    broadcastEmergencyMeeting(callerName, callerColor, callerAvatar, reason, voteTopic, voteOptions) {
         this.sendPacket({
             type: 'emergency_meeting',
             callerName,
             callerColor,
             callerAvatar,
-            reason
+            reason,
+            voteTopic,
+            voteOptions
         });
     }
 

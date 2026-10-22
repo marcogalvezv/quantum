@@ -160,10 +160,18 @@ class QuantumMotorsGame {
         }
         if (callConfirmBtn) {
             callConfirmBtn.addEventListener('click', () => {
-                const reasonSelect = document.getElementById('meeting-reason-select');
-                const reason = reasonSelect ? reasonSelect.value : 'Coordinación general de producción';
+                const topicInput = document.getElementById('call-vote-topic-input');
+                const opt1Input = document.getElementById('call-vote-opt1-input');
+                const opt2Input = document.getElementById('call-vote-opt2-input');
+                const opt3Input = document.getElementById('call-vote-opt3-input');
+
+                const topic = (topicInput && topicInput.value.trim()) || '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?';
+                const opt1 = (opt1Input && opt1Input.value.trim()) || 'Priorizar Pasteurización HTST a 72°C';
+                const opt2 = (opt2Input && opt2Input.value.trim()) || 'Línea de Envasado Leche Bolsa Azul';
+                const opt3 = (opt3Input && opt3Input.value.trim()) || 'Auditar Cadena de Frío y Fermentación Yogur';
+
                 document.getElementById('call-meeting-modal').classList.add('hidden');
-                this.triggerEmergencyMeeting(this.localPlayer.name, this.localPlayer.colorId, this.localPlayer.avatar, reason, true);
+                this.triggerEmergencyMeeting(this.localPlayer.name, this.localPlayer.colorId, this.localPlayer.avatar, topic, true, [opt1, opt2, opt3]);
             });
         }
 
@@ -366,7 +374,7 @@ class QuantumMotorsGame {
                 }
             },
             onEmergencyMeeting: (data) => {
-                this.triggerEmergencyMeeting(data.callerName, data.callerColor, data.callerAvatar, data.reason, false);
+                this.triggerEmergencyMeeting(data.callerName, data.callerColor, data.callerAvatar, data.voteTopic || data.reason, false, data.voteOptions);
             },
             onMeetingVote: (data) => {
                 this.handleRemoteMeetingVote(data.voterId, data.stationId);
@@ -828,7 +836,7 @@ class QuantumMotorsGame {
         this.sound.playClick();
     }
 
-    triggerEmergencyMeeting(callerName, callerColor, callerAvatar, reason, isInitiator) {
+    triggerEmergencyMeeting(callerName, callerColor, callerAvatar, reason, isInitiator, initialOptions) {
         if (this.meetingInProgress) return;
         this.meetingInProgress = true;
 
@@ -837,9 +845,16 @@ class QuantumMotorsGame {
         document.getElementById('signage-modal').classList.add('hidden');
         document.getElementById('call-meeting-modal').classList.add('hidden');
 
+        const voteOptions = (Array.isArray(initialOptions) && initialOptions.length >= 3) ? initialOptions : [
+            'Priorizar Pasteurización HTST a 72°C',
+            'Línea de Envasado Leche Bolsa Azul',
+            'Auditar Cadena de Frío y Fermentación Yogur'
+        ];
+        const voteTopic = reason || '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?';
+
         // Broadcast to network if local caller
         if (isInitiator) {
-            this.network.broadcastEmergencyMeeting(callerName, callerColor, callerAvatar, reason);
+            this.network.broadcastEmergencyMeeting(callerName, callerColor, callerAvatar, voteTopic, voteTopic, voteOptions);
         }
 
         // Sound the emergency alarm (siren + gong)
@@ -850,8 +865,8 @@ class QuantumMotorsGame {
         const alertCallerReason = document.getElementById('alert-caller-reason');
         const alertAvatarSlot = document.getElementById('alert-caller-avatar-slot');
 
-        if (alertCallerName) alertCallerName.textContent = callerName || 'Técnico Quantum';
-        if (alertCallerReason) alertCallerReason.textContent = `Motivo: ${reason}`;
+        if (alertCallerName) alertCallerName.textContent = callerName || 'Técnico PIL';
+        if (alertCallerReason) alertCallerReason.textContent = `Votación: ${voteTopic}`;
         if (alertAvatarSlot) {
             if (callerAvatar) {
                 alertAvatarSlot.innerHTML = `<img src="${callerAvatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #38bdf8;">`;
@@ -912,12 +927,8 @@ class QuantumMotorsGame {
         this.isMeetingModerator = Boolean(isInitiator);
 
         this.meetingCustomVote = {
-            topic: reason ? `¿Cómo resolvemos: ${reason}?` : '¿Qué prioridad debe resolver el Comité de Inocuidad PIL?',
-            options: [
-                'Priorizar Pasteurización HTST a 72°C',
-                'Línea de Envasado Leche Bolsa Azul',
-                'Auditar Cadena de Frío y Fermentación Yogur'
-            ],
+            topic: voteTopic,
+            options: voteOptions,
             isOpen: true,
             moderatorName: this.meetingModeratorName,
             isClosed: false
@@ -932,7 +943,7 @@ class QuantumMotorsGame {
 
             const headerSub = document.getElementById('meeting-header-sub');
             if (headerSub) {
-                headerSub.textContent = `Convocada por ${callerName} • Motivo: ${reason}`;
+                headerSub.textContent = `Votación convocada por ${callerName} • Moderador de Sala`;
             }
 
             this.meetingTimeRemaining = 45;
@@ -1060,7 +1071,6 @@ class QuantumMotorsGame {
     }
 
     setupMeetingModeratorPanel() {
-        const modPanel = document.getElementById('meeting-moderator-panel');
         const modNameEl = document.getElementById('meeting-moderator-display-name');
         const concludeBtn = document.getElementById('conclude-custom-vote-btn');
         const winnerBanner = document.getElementById('vote-winner-banner');
@@ -1071,13 +1081,11 @@ class QuantumMotorsGame {
             modNameEl.textContent = this.meetingModeratorName || (this.isMeetingModerator ? this.localPlayer.name : 'el Convocante');
         }
 
-        if (modPanel) {
+        if (concludeBtn) {
             if (this.isMeetingModerator) {
-                modPanel.classList.remove('hidden');
-                if (concludeBtn) concludeBtn.classList.remove('hidden');
+                concludeBtn.classList.remove('hidden');
             } else {
-                modPanel.classList.add('hidden');
-                if (concludeBtn) concludeBtn.classList.add('hidden');
+                concludeBtn.classList.add('hidden');
             }
         }
     }
