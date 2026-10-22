@@ -1,15 +1,7 @@
 /**
- * Renderer.js - Industry 4.0 Smart Factory Isometric Vector Rendering Engine
- * Transforms the visual style to match modern 2.5D clean isometric industrial illustrations:
- * - Elevated crisp white platforms with 3D drop bevels and soft cast shadows
- * - Smooth corporate teal/slate background with routed cyan data bus conduits
- * - Safety-orange articulated robotic arms with hydraulic joints and welding sparks
- * - Conveyor belts with moving rollers, boxes, and components
- * - Tall blue cylindrical storage silos with pulsating IoT / Wi-Fi telemetry waves
- * - Giant wall tablet dashboard with production charts & graphs
- * - Curved multi-monitor central control room desk with operator chair
- * - Cloud server racks (HUB Datos) with glowing cloud logo and blinking LEDs
- * - Industry 4.0 vector technicians with hard hats, safety vests, and diagnostic tablets
+ * Renderer.js - Rich Illustrated 2D Vector Rendering Engine (Among Us Cartoon Style)
+ * Features thick outlines, 3D shaded machinery, curved car bodies, articulated robots,
+ * rotating fans, cylindrical batteries, detailed forklifts, and holographic terminals.
  */
 window.QuantumGame = window.QuantumGame || {};
 
@@ -50,12 +42,8 @@ class Renderer {
         this.camera.x += (targetCamX - this.camera.x) * 0.14;
         this.camera.y += (targetCamY - this.camera.y) * 0.14;
 
-        // 1. Pale Corporate Teal/Slate Industrial Background (matches reference image)
-        const bgGrad = ctx.createLinearGradient(0, 0, w, h);
-        bgGrad.addColorStop(0, '#e5edf3');
-        bgGrad.addColorStop(0.5, '#dbe7ee');
-        bgGrad.addColorStop(1, '#d2e0e8');
-        ctx.fillStyle = bgGrad;
+        // Clear background
+        ctx.fillStyle = '#070b12';
         ctx.fillRect(0, 0, w, h);
 
         ctx.save();
@@ -63,40 +51,34 @@ class Renderer {
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
 
-        // 2. Blueprint floor isometric grid & data conduits on the ground
-        this.drawFloorGrid(ctx, factoryMap.width, factoryMap.height);
-        this.drawDataConduits(ctx, now);
+        // 1. Exterior blueprint grid
+        this.drawExteriorGrid(ctx, factoryMap.width, factoryMap.height);
 
-        // 3. Corridors & 3D Isometric Connecting Stairs (drawn beneath platform surfaces)
-        this.drawCorridorsAndStairs(ctx, factoryMap.corridors, now);
-
-        // 4. Elevated White Platforms (Slabs) with 3D drop bevels and cast shadows
+        // 2. Factory Zones & Rich Illustrated Scenery
         for (const zone of factoryMap.zones) {
-            this.drawElevatedPlatform(ctx, zone, factoryMap.completedTasks, now);
+            this.drawZone(ctx, zone, factoryMap.completedTasks, now);
         }
 
-        // 5. Machinery, Assembly Lines, Silos, Screens & Props
-        for (const zone of factoryMap.zones) {
-            this.drawSmartFactoryMachinery(ctx, zone, factoryMap.completedTasks, now);
-        }
+        // 3. Corridors connecting zones (drawn over zone walls to create open bulkhead doorways)
+        this.drawCorridors(ctx, factoryMap.corridors, now);
 
-        // 6. Educational Signage Hologram Pedestals
+        // 4. Educational Signage Holograms
         for (const zone of factoryMap.zones) {
             if (zone.signage) {
                 const isNear = nearestSignage && nearestSignage.title === zone.signage.title;
-                this.drawSignagePedestal(ctx, zone.signage, zone.accentColor, isNear, now);
+                this.drawSignage(ctx, zone.signage, zone.accentColor, isNear, now);
             }
         }
 
-        // 7. Interactive Station Terminals (Smart Pedestals)
+        // 5. Interactive Task Terminals
         for (const station of factoryMap.stations) {
             const isCompleted = factoryMap.completedTasks.has(station.id);
             const isNear = nearestStation && nearestStation.id === station.id;
             const animTimer = factoryMap.taskAnimations.get(station.id) || 0;
-            this.drawSmartStation(ctx, station, isCompleted, isNear, animTimer, now);
+            this.drawStation(ctx, station, isCompleted, isNear, animTimer, now);
         }
 
-        // 8. Characters (Technicians, Apprentices & Q-BOT) sorted by Y for 2.5D depth
+        // 6. Sort all characters by Y for proper 2.5D depth overlapping
         const allEntities = [
             { type: 'player', data: localPlayer, isLocal: true },
             ...remotePlayers.map(p => ({ type: 'player', data: p, isLocal: false })),
@@ -105,32 +87,24 @@ class Renderer {
 
         for (const ent of allEntities) {
             if (ent.type === 'qbot') {
-                this.drawQBotDrone(ctx, ent.data, now);
+                this.drawQBot(ctx, ent.data);
             } else {
-                this.drawIndustryTechnician(ctx, ent.data, ent.isLocal, now);
+                this.drawCrewmate(ctx, ent.data, ent.isLocal, now);
             }
         }
 
         ctx.restore();
 
-        // 9. Watermark Badge in Top Right ("QUANTUM MOTORS • SMART FACTORY")
-        this.drawBrandHeader(ctx, w, h);
-
-        // 10. Minimap
+        // 7. Render Minimap
         if (this.minimapCtx) {
             this.renderMinimap(factoryMap, localPlayer, remotePlayers);
         }
     }
 
-    // =========================================================================
-    // BACKGROUND & DATA CONDUITS
-    // =========================================================================
-
-    drawFloorGrid(ctx, worldW, worldH) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(10, 61, 86, 0.05)';
+    drawExteriorGrid(ctx, worldW, worldH) {
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.04)';
         ctx.lineWidth = 1;
-        const step = 90;
+        const step = 80;
         for (let x = 0; x <= worldW; x += step) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
@@ -143,1501 +117,393 @@ class Renderer {
             ctx.lineTo(worldW, y);
             ctx.stroke();
         }
-        ctx.restore();
     }
 
-    drawDataConduits(ctx, now) {
-        ctx.save();
-        // Cyan data bus lines running between HUB (bottom-left) and the other platforms
-        const cables = [
-            // HUB (420, 1200) to Remote Office (420, 600)
-            [{ x: 420, y: 1200 }, { x: 420, y: 700 }],
-            // HUB (420, 1200) to Central Assembly (960, 1200)
-            [{ x: 420, y: 1200 }, { x: 860, y: 1200 }],
-            // Central Assembly (1540, 1200) to Central Control (1700, 1200)
-            [{ x: 1540, y: 1200 }, { x: 1640, y: 1200 }],
-            // Remote Office (760, 390) to Lithium Silos (860, 390)
-            [{ x: 760, y: 390 }, { x: 860, y: 390 }],
-            // Lithium Silos (1540, 390) to Chassis Robotics (1640, 390)
-            [{ x: 1540, y: 390 }, { x: 1640, y: 390 }],
-            // Central Assembly (1200, 1520) to Boardroom (1200, 1700)
-            [{ x: 1200, y: 1520 }, { x: 1200, y: 1700 }]
-        ];
-
-        // Cable shadow
-        ctx.strokeStyle = 'rgba(15, 35, 55, 0.12)';
-        ctx.lineWidth = 6;
-        for (const cable of cables) {
-            ctx.beginPath();
-            ctx.moveTo(cable[0].x + 3, cable[0].y + 4);
-            ctx.lineTo(cable[1].x + 3, cable[1].y + 4);
-            ctx.stroke();
-        }
-
-        // Cable outer body
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 4;
-        for (const cable of cables) {
-            ctx.beginPath();
-            ctx.moveTo(cable[0].x, cable[0].y);
-            ctx.lineTo(cable[1].x, cable[1].y);
-            ctx.stroke();
-        }
-
-        // Inner glowing core
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1.8;
-        for (const cable of cables) {
-            ctx.beginPath();
-            ctx.moveTo(cable[0].x, cable[0].y);
-            ctx.lineTo(cable[1].x, cable[1].y);
-            ctx.stroke();
-        }
-
-        // Animated traveling data pulse packets
-        const pulse = (now * 0.0015) % 1;
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = '#00e5ff';
-        ctx.shadowBlur = 8;
-        for (const cable of cables) {
-            const px = cable[0].x + (cable[1].x - cable[0].x) * pulse;
-            const py = cable[0].y + (cable[1].y - cable[0].y) * pulse;
-            ctx.beginPath();
-            ctx.arc(px, py, 4, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.shadowBlur = 0;
-        ctx.restore();
-    }
-
-    drawBrandHeader(ctx, w, h) {
-        ctx.save();
-        // Modern logo matching the "meinsa" style from the reference image
-        const logoX = w - 275;
-        const logoY = 34;
-
-        ctx.textAlign = 'right';
-        ctx.font = '900 24px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#00687f';
-        ctx.fillText('meinsa', logoX, logoY);
-
-        // Small cyan dot/accent on top of the 'i' in meinsa
-        ctx.fillStyle = '#00b4d8';
-        ctx.beginPath();
-        ctx.arc(logoX - 44, logoY - 14, 3, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.font = '700 9.5px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#0a3d56';
-        ctx.letterSpacing = '1px';
-        ctx.fillText('QUANTUM MOTORS • SMART FACTORY 4.0', logoX, logoY + 16);
-        ctx.restore();
-    }
-
-    // =========================================================================
-    // ELEVATED WHITE PLATFORMS (SLABS) & ISOMETRIC CONNECTING STAIRS
-    // =========================================================================
-
-    drawElevatedPlatform(ctx, zone, completedTasks, now) {
-        ctx.save();
-        const zx = zone.x;
-        const zy = zone.y;
-        const zw = zone.width;
-        const zh = zone.height;
-        const bevel = 14;
-
-        // 1. Soft Drop Shadow on pale teal ground
-        ctx.fillStyle = 'rgba(15, 45, 65, 0.12)';
-        ctx.beginPath();
-        ctx.roundRect(zx + 14, zy + 16, zw, zh, 12);
-        ctx.fill();
-
-        // 2. 3D Isometric Slab Bevel (Bottom and Right Edges)
-        ctx.fillStyle = '#94a3b8';
-        ctx.beginPath();
-        ctx.roundRect(zx, zy + 8, zw + 8, zh + bevel, 12);
-        ctx.fill();
-
-        ctx.fillStyle = '#cbd5e1';
-        ctx.beginPath();
-        ctx.roundRect(zx, zy + 4, zw + 4, zh + bevel * 0.6, 12);
-        ctx.fill();
-
-        // 3. Crisp Pure White Slab Surface
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.roundRect(zx, zy, zw, zh, 10);
-        ctx.fill();
-
-        // 4. Subtle Perimeter Rim
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(zx, zy, zw, zh, 10);
-        ctx.stroke();
-
-        // 5. Subtle Interior Floor Joints / Tile Seams
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.16)';
-        ctx.lineWidth = 1;
-        const tileStep = 75;
-        for (let gx = zx + tileStep; gx < zx + zw; gx += tileStep) {
-            ctx.beginPath();
-            ctx.moveTo(gx, zy + 6);
-            ctx.lineTo(gx, zy + zh - 6);
-            ctx.stroke();
-        }
-        for (let gy = zy + tileStep; gy < zy + zh; gy += tileStep) {
-            ctx.beginPath();
-            ctx.moveTo(zx + 6, gy);
-            ctx.lineTo(zx + zw - 6, gy);
-            ctx.stroke();
-        }
-
-        // 6. Platform Title & Section Labels (Clean bold navy & teal typography)
-        ctx.save();
-        const mainLabel = zone.mainLabel || 'PLANTA';
-        const subLabel = zone.subLabel || 'FÁBRICA';
-
-        ctx.textAlign = 'left';
-        // Main bold title
-        ctx.font = '900 24px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#0a3d56';
-        ctx.fillText(mainLabel, zx + 32, zy + 46);
-
-        // Subtitle in clean corporate teal
-        ctx.font = '700 12.5px "Segoe UI", system-ui, sans-serif';
-        ctx.fillStyle = '#007a99';
-        ctx.fillText(subLabel, zx + 32, zy + 66);
-        ctx.restore();
-
-        ctx.restore();
-    }
-
-    drawCorridorsAndStairs(ctx, corridors, now) {
-        ctx.save();
+    drawCorridors(ctx, corridors, now) {
+        const pulse = (Math.sin(now * 0.004) + 1) * 0.5;
         for (const c of corridors) {
             const isHorizontal = c.width <= 120 && c.height <= 165 && c.x !== 340 && c.x !== 1120 && c.x !== 1900;
+            const padX = isHorizontal ? 20 : 0;
+            const padY = isHorizontal ? 0 : 20;
 
-            // 1. Shadow underneath stairs
-            ctx.fillStyle = 'rgba(15, 35, 55, 0.22)';
-            ctx.fillRect(c.x + 8, c.y + 10, c.width, c.height);
+            // Metallic corridor floor with gradient
+            const grad = isHorizontal
+                ? ctx.createLinearGradient(c.x, c.y, c.x, c.y + c.height)
+                : ctx.createLinearGradient(c.x, c.y, c.x + c.width, c.y);
+            grad.addColorStop(0, '#1e293b');
+            grad.addColorStop(0.5, '#334155');
+            grad.addColorStop(1, '#1e293b');
+            ctx.fillStyle = grad;
+            ctx.fillRect(c.x - padX, c.y - padY, c.width + padX * 2, c.height + padY * 2);
 
-            // 2. Base walkway surface
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(c.x, c.y, c.width, c.height);
-
-            // 3. Realistic 3D White Steps (Stairs between platforms, matching reference image)
-            const stepCount = 5;
+            // Anti-slip metal treads
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.22)';
+            ctx.lineWidth = 2.5;
             if (isHorizontal) {
-                const stepW = c.width / stepCount;
-                for (let i = 0; i < stepCount; i++) {
-                    const sx = c.x + i * stepW;
-                    // Step tread (top)
-                    ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#f8fafc';
-                    ctx.fillRect(sx, c.y, stepW - 3, c.height);
-                    // Step riser (shadow edge)
-                    ctx.fillStyle = '#cbd5e1';
-                    ctx.fillRect(sx + stepW - 3, c.y, 3, c.height);
+                for (let gx = c.x - 8; gx <= c.x + c.width + 8; gx += 18) {
+                    ctx.beginPath();
+                    ctx.moveTo(gx, c.y + 12);
+                    ctx.lineTo(gx, c.y + c.height - 12);
+                    ctx.stroke();
                 }
             } else {
-                const stepH = c.height / stepCount;
-                for (let i = 0; i < stepCount; i++) {
-                    const sy = c.y + i * stepH;
-                    // Step tread
-                    ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#f8fafc';
-                    ctx.fillRect(c.x, sy, c.width, stepH - 3);
-                    // Step riser
-                    ctx.fillStyle = '#cbd5e1';
-                    ctx.fillRect(c.x, sy + stepH - 3, c.width, 3);
+                for (let gy = c.y - 8; gy <= c.y + c.height + 8; gy += 18) {
+                    ctx.beginPath();
+                    ctx.moveTo(c.x + 12, gy);
+                    ctx.lineTo(c.x + c.width - 12, gy);
+                    ctx.stroke();
                 }
             }
 
-            // Outer clean boundary
-            ctx.strokeStyle = '#94a3b8';
-            ctx.lineWidth = 1.5;
-            ctx.strokeRect(c.x, c.y, c.width, c.height);
+            // Thick industrial side pipes along corridor walls
+            ctx.fillStyle = '#090d16';
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 3;
+            if (isHorizontal) {
+                this.drawPipe(ctx, c.x - padX, c.y - 4, c.width + padX * 2, 10, true);
+                this.drawPipe(ctx, c.x - padX, c.y + c.height - 6, c.width + padX * 2, 10, true);
+            } else {
+                this.drawPipe(ctx, c.x - 4, c.y - padY, 10, c.height + padY * 2, false);
+                this.drawPipe(ctx, c.x + c.width - 6, c.y - padY, 10, c.height + padY * 2, false);
+            }
+
+            // Glowing chevron arrows painted on corridor floor
+            ctx.save();
+            ctx.translate(c.x + c.width / 2, c.y + c.height / 2);
+            if (!isHorizontal) ctx.rotate(Math.PI / 2);
+            ctx.strokeStyle = `rgba(56, 189, 248, ${0.35 + pulse * 0.5})`;
+            ctx.lineWidth = 4;
+            for (let dir of [-18, 0, 18]) {
+                ctx.beginPath();
+                ctx.moveTo(dir - 6, -10);
+                ctx.lineTo(dir + 6, 0);
+                ctx.lineTo(dir - 6, 10);
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+    }
+
+    drawPipe(ctx, x, y, w, h, horizontal) {
+        ctx.save();
+        ctx.fillStyle = '#475569';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 4);
+        ctx.fill();
+        ctx.stroke();
+        // Pipe joints
+        ctx.fillStyle = '#facc15';
+        if (horizontal) {
+            ctx.fillRect(x + 12, y - 2, 8, h + 4);
+            ctx.fillRect(x + w - 20, y - 2, 8, h + 4);
+        } else {
+            ctx.fillRect(x - 2, y + 12, w + 4, 8);
+            ctx.fillRect(x - 2, y + h - 20, w + 4, 8);
         }
         ctx.restore();
     }
 
-    // =========================================================================
-    // SMART FACTORY MACHINERY, ROBOTIC ARMS, SILOS & SCREENS
-    // =========================================================================
+    drawZone(ctx, zone, completedTasks, now) {
+        // Thick 3D Among-Us style room bulkhead walls
+        ctx.fillStyle = '#090d16';
+        ctx.beginPath();
+        ctx.roundRect(zone.x - 16, zone.y - 16, zone.width + 32, zone.height + 32, 18);
+        ctx.fill();
 
-    drawSmartFactoryMachinery(ctx, zone, completedTasks, now) {
+        // Outer metallic wall rim
+        ctx.fillStyle = '#334155';
+        ctx.beginPath();
+        ctx.roundRect(zone.x - 10, zone.y - 10, zone.width + 20, zone.height + 20, 14);
+        ctx.fill();
+
+        // Floor base fill
+        ctx.fillStyle = zone.floorColor;
+        ctx.beginPath();
+        ctx.roundRect(zone.x, zone.y, zone.width, zone.height, 8);
+        ctx.fill();
+
+        // Subtle hexagonal/tile floor pattern
+        ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+        ctx.lineWidth = 1;
+        for (let gx = zone.x + 60; gx < zone.x + zone.width; gx += 60) {
+            ctx.beginPath();
+            ctx.moveTo(gx, zone.y);
+            ctx.lineTo(gx, zone.y + zone.height);
+            ctx.stroke();
+        }
+        for (let gy = zone.y + 60; gy < zone.y + zone.height; gy += 60) {
+            ctx.beginPath();
+            ctx.moveTo(zone.x, gy);
+            ctx.lineTo(zone.x + zone.width, gy);
+            ctx.stroke();
+        }
+
+        // Neon zone border
+        ctx.strokeStyle = zone.accentColor;
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(zone.x, zone.y, zone.width, zone.height, 8);
+        ctx.stroke();
+
+        // Rich Illustrated Zone Scenery
+        this.drawDetailedZoneScenery(ctx, zone, completedTasks, now);
+
+        // Illustrated Top Header Banner inside Zone
+        ctx.save();
+        ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
+        ctx.strokeStyle = zone.accentColor;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(zone.x + 22, zone.y + 16, zone.width - 44, 56, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 19px "Segoe UI", system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`${zone.icon} ${zone.name}`, zone.x + 38, zone.y + 42);
+
+        ctx.fillStyle = zone.accentColor;
+        ctx.font = '12.5px "Segoe UI", system-ui, sans-serif';
+        ctx.fillText(zone.subtitle, zone.x + 38, zone.y + 62);
+        ctx.restore();
+    }
+
+    // =========================================================================
+    // DETAILED ILLUSTRATED PROPS FOR ALL 6 FACTORY ZONES
+    // =========================================================================
+    drawDetailedZoneScenery(ctx, zone, completedTasks, now) {
         ctx.save();
         const zx = zone.x;
         const zy = zone.y;
 
         if (zone.id === 'recepcion') {
-            // =================================================================
-            // 1. OFICINA CONTROL REMOTO:
-            // Giant Wall Tablet Dashboard, Presentation Office Tables, Potted Plants
-            // Scenery Engineers matching reference illustration
-            // =================================================================
-            this.drawGiantTabletDashboard(ctx, zx + 440, zy + 110, 200, 240, now);
-            this.drawOfficeGlassTable(ctx, zx + 80, zy + 160);
-            this.drawOfficeDesksAndEngineers(ctx, zx + 80, zy + 370, now);
-            this.drawPottedPlantIsometric(ctx, zx + 400, zy + 130);
-            this.drawPottedPlantIsometric(ctx, zx + 630, zy + 380);
-
-            // Scenery Figure 1: Executive in dark suit pointing at giant tablet dashboard
-            this.drawVectorPerson(ctx, {
-                x: zx + 420, y: zy + 250,
-                facing: 1, shirt: '#0f2942', shirtShadow: '#091e30',
-                pants: '#1e293b', skin: '#fed7aa', hair: '#1e293b',
-                helmet: null, pose: 'point', reflectiveStripe: false,
-                scale: 1.15, now
-            });
-
-            // Scenery Figure 2: Engineer in orange polo walking towards stairs with briefcase
-            this.drawVectorPerson(ctx, {
-                x: zx + 360, y: zy + 460,
-                facing: 1, shirt: '#ea580c', pants: '#1e293b',
-                skin: '#fed7aa', hair: '#334155', helmet: null,
-                pose: 'briefcase', reflectiveStripe: false,
-                scale: 1.15, now
-            });
-
-            // Scenery Figure 3: Woman standing on left holding open laptop
-            this.drawVectorPerson(ctx, {
-                x: zx + 60, y: zy + 210,
-                facing: 1, shirt: '#ffffff', pants: '#1e293b',
-                skin: '#fbcfe8', hair: '#451a03', helmet: null,
-                pose: 'laptop', reflectiveStripe: false,
-                scale: 1.15, now
-            });
+            // 1. RECEPCIÓN: Lockers 3D, Planta Decorativa, Mostrador Curvo con Sillas y Showroom Quantum E2
+            this.drawSafetyLockers(ctx, zx + 36, zy + 115);
+            this.drawFireExtinguisherStand(ctx, zx + 68, zy + 525);
+            this.drawReceptionDesk(ctx, zx + 460, zy + 115);
+            this.drawPottedPlant(ctx, zx + 430, zy + 140);
+            this.drawPottedPlant(ctx, zx + 635, zy + 245);
+            this.drawShowroomPod(ctx, zx + 545, zy + 495, now);
 
         } else if (zone.id === 'baterias') {
-            // =================================================================
-            // 2. PLANTA FÁBRICA: BATERÍAS & SILOS DE LITIO
-            // 4 Tall Cylindrical Tanks with Pulsating IoT / Wi-Fi Telemetry Waves
-            // Conveyor Belt with Lithium Cells & Orange Robotic Arm
-            // =================================================================
-            this.drawStorageSilos(ctx, zx + 80, zy + 120, 4, now);
-            this.drawConveyorBelt(ctx, zx + 80, zy + 440, 420, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 220, zy + 390, 1.1, -0.2, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 380, zy + 390, 1.1, 0.3, true, now);
-            this.drawDigitalInspectionBoard(ctx, zx + 540, zy + 130, 'LITIO 60V • TELEMETRÍA IOT', now);
-
-            // Scenery Technician pointing at digital inspection board
-            this.drawVectorPerson(ctx, {
-                x: zx + 510, y: zy + 195,
-                facing: 1, shirt: '#ea580c', pants: '#1e293b',
-                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
-                pose: 'point', reflectiveStripe: true,
-                scale: 1.2, now
-            });
-
-            // Scenery Technician standing near conveyor inspecting with tablet
-            this.drawVectorPerson(ctx, {
-                x: zx + 470, y: zy + 440,
-                facing: -1, shirt: '#0284c7', pants: '#1e293b',
-                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
-                pose: 'tablet', reflectiveStripe: true,
-                scale: 1.2, now
-            });
+            // 2. BATERÍAS: Cables Naranjas con Conectores, Consola BMS con Ventiladores y Celdas Cilíndricas 3D
+            const isDone = completedTasks.has('task_battery');
+            this.drawHighVoltageCables(ctx, zx, zy);
+            this.drawBmsConsole(ctx, zx + 50, zy + 115, isDone, now);
+            this.drawCylindricalBatteryRack(ctx, zx + 460, zy + 120, isDone, now);
+            this.drawThermalChamber(ctx, zx + 470, zy + 425, now);
 
         } else if (zone.id === 'chasis') {
-            // =================================================================
-            // 3. PLANTA FÁBRICA: ROBÓTICA DE CHASIS
-            // Orange Robotic Arms Welding Tubular Frame, Laser Cutter, Blueprint
-            // =================================================================
-            this.drawOrangeIndustrialGantry(ctx, zx + 160, zy + 150, 260, 180, now);
-            this.drawConveyorBelt(ctx, zx + 70, zy + 250, 480, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 190, zy + 190, 1.25, 0.4, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 360, zy + 190, 1.25, -0.3, true, now);
-            this.drawTubularChassisFrame(ctx, zx + 270, zy + 250, completedTasks.has('task_chassis'), now);
-            this.drawDesignTabletStand(ctx, zx + 440, zy + 420);
+            // 3. CHASIS: Cortadora Láser con Chispas, Brazo Robótico Articulado Soldando Chasis Real y Mesa de Planos
+            const isDone = completedTasks.has('task_chassis');
+            this.drawLaserCutterMachine(ctx, zx + 45, zy + 115, now);
+            this.drawChasisWeldingJig(ctx, zx + 50, zy + 315, isDone, now);
+            this.drawBlueprintTable(ctx, zx + 465, zy + 120);
 
         } else if (zone.id === 'deposito') {
-            // =================================================================
-            // 6. HUB CENTRO DE PROCESO DE DATOS & LOGÍSTICA
-            // Cloud Server Racks with Cyan Cloud Icon, Blinking LEDs, Cable Bundles
-            // Forklift and Neatly Arranged Cardboard Parts Pallets
-            // =================================================================
-            this.drawCloudServerHub(ctx, zx + 80, zy + 130, now);
-            this.drawComponentShelves(ctx, zx + 380, zy + 120);
-            this.drawCardboardPalletStack(ctx, zx + 120, zy + 460);
-            this.drawModernElectricForklift(ctx, zx + 460, zy + 450, now);
-
-            // Scenery Logistics Technician checking inventory near pallets
-            this.drawVectorPerson(ctx, {
-                x: zx + 230, y: zy + 470,
-                facing: 1, shirt: '#0284c7', pants: '#1e293b',
-                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
-                pose: 'tablet', reflectiveStripe: true,
-                scale: 1.2, now
-            });
+            // 6. DEPÓSITO Y LOGÍSTICA: Pallets de Madera con Motores/Neumáticos, Banco de Herramientas y Montacargas
+            this.drawLogisticsShelves(ctx, zx + 38, zy + 110);
+            this.drawToolWorkbench(ctx, zx + 460, zy + 125);
+            this.drawDetailedForklift(ctx, zx + 555, zy + 455, now);
 
         } else if (zone.id === 'ensamblaje') {
-            // =================================================================
-            // 4. PLANTA FÁBRICA: LÍNEA PRINCIPAL QUANTUM E4
-            // Industrial Conveyor, Double Orange Robotic Arms & Quantum E4 Car
-            // =================================================================
-            this.drawOrangeIndustrialGantry(ctx, zx + 80, zy + 130, 520, 210, now);
-            this.drawConveyorBelt(ctx, zx + 60, zy + 280, 560, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 160, zy + 210, 1.3, 0.35, true, now);
-            this.drawOrangeRoboticArm(ctx, zx + 500, zy + 210, 1.3, -0.35, true, now);
-            this.drawQuantumE4CarOnPlatform(ctx, zx + 330, zy + 265, completedTasks, now);
-            this.drawAssemblyTelemetryBoard(ctx, zx + 80, zy + 470, now);
+            // 4. ENSAMBLAJE FINAL: Cinta Transportadora, Brazos Robóticos con Pinzas y Auto Quantum E4 Detallado
+            this.drawAssemblyLineAndCar(ctx, zx + zone.width / 2, zy + 275, zone.width, completedTasks, now);
 
         } else if (zone.id === 'pruebas') {
-            // =================================================================
-            // 5. OFICINA CONTROL CENTRAL & PRUEBAS QA
-            // Curved Semi-Circular Multi-Monitor Desk with Operator
-            // Dynamometer Rollers & Rain Testing Arch
-            // =================================================================
-            this.drawCurvedControlDesk(ctx, zx + 440, zy + 180, completedTasks.has('task_qa'), now);
-            this.drawDynamometerRollers(ctx, zx + 110, zy + 260, completedTasks.has('task_qa'), now);
-            this.drawRainTestArch(ctx, zx + 110, zy + 130, now);
-            this.drawTelemetryTower(ctx, zx + 520, zy + 440, completedTasks.has('task_qa'));
-
-            // Scenery Operator sitting in swivel chair facing curved screens
-            this.drawVectorPerson(ctx, {
-                x: zx + 440, y: zy + 208,
-                facing: 1, shirt: '#0284c7', pants: '#1e293b',
-                skin: '#fed7aa', hair: '#1e293b', helmet: null,
-                pose: 'sit', reflectiveStripe: false,
-                scale: 1.15, now
-            });
-
-            // Scenery Technician with hard hat standing near server rack
-            this.drawVectorPerson(ctx, {
-                x: zx + 550, y: zy + 220,
-                facing: -1, shirt: '#0284c7', pants: '#1e293b',
-                skin: '#fed7aa', hair: '#1e293b', helmet: '#facc15',
-                pose: 'tablet', reflectiveStripe: true,
-                scale: 1.2, now
-            });
+            // 5. PRUEBAS DE CALIDAD: Dinamómetro con Ventilador de Túnel de Viento, Arco de Lluvia IP65 y Semáforo
+            const qaDone = completedTasks.has('task_qa');
+            this.drawDynamometerBay(ctx, zx + 55, zy + 275, qaDone, now);
+            this.drawRainTestArch(ctx, zx + 465, zy + 115, now);
+            this.drawTrafficLightTower(ctx, zx + 555, zy + 335, qaDone);
 
         } else if (zone.id === 'reuniones') {
-            // =================================================================
-            // 7. OFICINA DE ESTRATEGIA Y SALA DE REUNIONES
-            // Executive Oval Boardroom Table with Emergency Briefing Button
-            // Projector Screen, Executive Chairs, Glass Laptops
-            // =================================================================
+            // 7. SALA DE REUNIONES Y ESTRATEGIA: Mesa Ovalada con Botón de Reunión, Pizarra Kanban, Proyector y Estación de Café
             const meetDone = completedTasks.has('task_meeting');
-            this.drawExecutiveBoardroomTable(ctx, zx + zone.width / 2, zy + 330, meetDone, now);
-            this.drawProjectorScreen(ctx, zx + 80, zy + 120, meetDone, now);
-            this.drawCoffeeAndWaterStation(ctx, zx + 480, zy + 120);
-            this.drawPottedPlantIsometric(ctx, zx + 90, zy + 520);
-            this.drawPottedPlantIsometric(ctx, zx + 590, zy + 520);
+            this.drawKanbanAndProjector(ctx, zx + 42, zy + 115, meetDone, now);
+            this.drawMeetingRoomTable(ctx, zx + zone.width / 2, zy + 350, meetDone, now);
+            this.drawCoffeeAndWaterStation(ctx, zx + 490, zy + 120);
+            this.drawPottedPlant(ctx, zx + 75, zy + 545);
+            this.drawPottedPlant(ctx, zx + 605, zy + 545);
         }
 
         ctx.restore();
     }
 
-    // --- ORANGE ARTICULATED ROBOTIC ARMS (Signature element from image) ---
-    drawOrangeRoboticArm(ctx, x, y, scale = 1, baseAngle = 0, isWorking = true, now = 0) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.scale(scale, scale);
-
-        // Subtle kinematic joint swaying
-        const armSway = isWorking ? Math.sin(now * 0.003 + x) * 0.18 : 0;
-        const forearmSway = isWorking ? Math.cos(now * 0.0035 + y) * 0.22 : 0;
-
-        // 1. Circular Pedestal Base (Dark Slate with Orange Rim)
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.25)';
-        ctx.beginPath();
-        ctx.ellipse(3, 10, 24, 10, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#ea580c';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.ellipse(0, 4, 20, 8, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Turntable cylinder
-        ctx.fillStyle = '#334155';
-        ctx.beginPath();
-        ctx.roundRect(-12, -10, 24, 14, 4);
-        ctx.fill();
-
-        ctx.save();
-        ctx.rotate(baseAngle + armSway * 0.5);
-
-        // 2. Heavy Orange Lower Boom Segment
-        ctx.fillStyle = '#f97316';
-        ctx.strokeStyle = '#c2410c';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(-8, -55, 16, 50, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // Hydraulic chrome piston on boom
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillRect(-3, -45, 6, 32);
-
-        // Pivot knuckle at shoulder
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.arc(0, -6, 7, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 3. Articulated Forearm Segment
-        ctx.translate(0, -52);
-        ctx.rotate(-0.6 + forearmSway);
-
-        // Elbow joint knuckle
-        ctx.fillStyle = '#1e293b';
-        ctx.beginPath();
-        ctx.arc(0, 0, 8, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ea580c';
-        ctx.strokeStyle = '#9a3412';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(-6, -42, 12, 42, 5);
-        ctx.fill();
-        ctx.stroke();
-
-        // 4. Tool End (Gripper / Welder Head)
-        ctx.translate(0, -42);
-        ctx.fillStyle = '#334155';
-        ctx.beginPath();
-        ctx.roundRect(-10, -8, 20, 8, 3);
-        ctx.fill();
-
-        // Two-prong mechanical gripper
-        ctx.fillStyle = '#f97316';
-        ctx.fillRect(-8, -18, 4, 10);
-        ctx.fillRect(4, -18, 4, 10);
-
-        // Welding spark arc or component held
-        if (isWorking) {
-            const spark = Math.sin(now * 0.02) > 0.6;
-            if (spark) {
-                ctx.fillStyle = '#ffffff';
-                ctx.shadowColor = '#00e5ff';
-                ctx.shadowBlur = 10;
-                ctx.beginPath();
-                ctx.arc(0, -22, 5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.shadowBlur = 0;
-            }
-        }
-
-        ctx.restore();
-        ctx.restore();
-    }
-
-    // --- INDUSTRIAL CONVEYOR BELTS WITH MOVING PARTS ---
-    drawConveyorBelt(ctx, x, y, length, isHorizontal, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        const beltW = isHorizontal ? length : 38;
-        const beltH = isHorizontal ? 38 : length;
-
-        // Shadow under conveyor
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.2)';
-        ctx.beginPath();
-        ctx.roundRect(4, 6, beltW, beltH, 6);
-        ctx.fill();
-
-        // Support Pylons / Legs
-        ctx.fillStyle = '#334155';
-        for (let i = 20; i < beltW; i += 90) {
-            ctx.fillRect(i, beltH - 4, 8, 14);
-            ctx.fillRect(i - 4, beltH + 8, 16, 4);
-        }
-
-        // Metal conveyor bed frame (Slate Blue)
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, beltW, beltH, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // Moving dark rubber belt tread
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.roundRect(6, 6, beltW - 12, beltH - 12, 4);
-        ctx.fill();
-
-        // Moving tread rollers
-        const rollOffset = (now * 0.04) % 24;
-        ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
-        ctx.lineWidth = 2;
-        for (let rx = 10 + rollOffset; rx < beltW - 12; rx += 24) {
-            ctx.beginPath();
-            ctx.moveTo(rx, 8);
-            ctx.lineTo(rx, beltH - 8);
-            ctx.stroke();
-        }
-
-        // Cardboard boxes & battery units traveling on belt
-        const boxOffset1 = (now * 0.035) % beltW;
-        const boxOffset2 = (now * 0.035 + beltW * 0.5) % beltW;
-
-        for (const bx of [boxOffset1, boxOffset2]) {
-            if (bx > 15 && bx < beltW - 35) {
-                // Cardboard box (Kraft Brown)
-                ctx.fillStyle = '#d97706';
-                ctx.strokeStyle = '#92400e';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.roundRect(bx, 10, 22, 18, 3);
-                ctx.fill();
-                ctx.stroke();
-                // Barcode / packing tape
-                ctx.fillStyle = '#fef3c7';
-                ctx.fillRect(bx + 4, 16, 14, 5);
-            }
-        }
-
-        ctx.restore();
-    }
-
-    // --- 4 CYLINDRICAL STORAGE TANKS / SILOS WITH IOT WAVES (From image) ---
-    drawStorageSilos(ctx, x, y, count = 4, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        const tankW = 68;
-        const tankH = 135;
-        const gap = 16;
-
-        // Overhead Interconnecting Transfer Pipes
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 8;
-        ctx.beginPath();
-        ctx.moveTo(10, 40);
-        ctx.lineTo((tankW + gap) * count - 20, 40);
-        ctx.stroke();
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        for (let i = 0; i < count; i++) {
-            const tx = i * (tankW + gap);
-
-            // Tank drop shadow
-            ctx.fillStyle = 'rgba(15, 35, 55, 0.25)';
-            ctx.beginPath();
-            ctx.ellipse(tx + tankW / 2 + 4, tankH + 8, tankW / 2, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Cylinder body with metallic steel-blue gradient
-            const grad = ctx.createLinearGradient(tx, 0, tx + tankW, 0);
-            grad.addColorStop(0, '#2b5c77');
-            grad.addColorStop(0.35, '#4a8ba9');
-            grad.addColorStop(0.7, '#38738e');
-            grad.addColorStop(1, '#1e4459');
-
-            ctx.fillStyle = grad;
-            ctx.strokeStyle = '#1e3a4f';
-            ctx.lineWidth = 2.5;
-            ctx.beginPath();
-            ctx.roundRect(tx, 20, tankW, tankH - 20, 8);
-            ctx.fill();
-            ctx.stroke();
-
-            // Cylindrical metallic dome cap on top
-            ctx.fillStyle = '#4a8ba9';
-            ctx.beginPath();
-            ctx.ellipse(tx + tankW / 2, 20, tankW / 2, 14, 0, Math.PI, 0);
-            ctx.fill();
-            ctx.stroke();
-
-            // Pressure release valve on dome
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(tx + tankW / 2 - 3, 2, 6, 8);
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath();
-            ctx.arc(tx + tankW / 2, 2, 5, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Horizontal weld bands on tank
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-            ctx.lineWidth = 1.5;
-            for (let wy of [55, 88, 118]) {
-                ctx.beginPath();
-                ctx.moveTo(tx + 4, wy);
-                ctx.lineTo(tx + tankW - 4, wy);
-                ctx.stroke();
-            }
-
-            // Vertical ladder on 1st and 3rd tanks
-            if (i % 2 === 0) {
-                ctx.strokeStyle = '#cbd5e1';
-                ctx.lineWidth = 1.5;
-                const lx = tx + tankW - 14;
-                ctx.beginPath();
-                ctx.moveTo(lx, 24);
-                ctx.lineTo(lx, tankH);
-                ctx.moveTo(lx + 8, 24);
-                ctx.lineTo(lx + 8, tankH);
-                for (let r = 32; r < tankH - 5; r += 12) {
-                    ctx.moveTo(lx, r);
-                    ctx.lineTo(lx + 8, r);
-                }
-                ctx.stroke();
-            }
-
-            // PULSATING IOT / WI-FI TELEMETRY WAVES (Exact detail from reference image)
-            const wavePhase = (now * 0.0025 + i * 0.8) % 1;
-            ctx.save();
-            ctx.translate(tx + tankW / 2, -10);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${1 - wavePhase})`;
-            ctx.lineWidth = 2.5;
-
-            // Small antenna transmitter node
-            ctx.fillStyle = '#00e5ff';
-            ctx.beginPath();
-            ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
-            ctx.fill();
-
-            // 3 Concentric curved broadcast arcs
-            for (let w = 1; w <= 3; w++) {
-                const radius = 8 + w * 6 + wavePhase * 6;
-                ctx.beginPath();
-                ctx.arc(0, -2, radius, -Math.PI * 0.75, -Math.PI * 0.25);
-                ctx.stroke();
-            }
-            ctx.restore();
-        }
-
-        ctx.restore();
-    }
-
-    // --- GIANT WALL TABLET DASHBOARD (In Oficina Control Remoto) ---
-    drawGiantTabletDashboard(ctx, x, y, w, h, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Drop shadow on wall/floor
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.3)';
-        ctx.beginPath();
-        ctx.roundRect(8, 10, w, h, 14);
-        ctx.fill();
-
-        // Tablet outer dark slate bezel
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#334155';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, w, h, 14);
-        ctx.fill();
-        ctx.stroke();
-
-        // Front-facing camera dot
-        ctx.fillStyle = '#0284c7';
-        ctx.beginPath();
-        ctx.arc(w / 2, 8, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Tablet bright display screen
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.roundRect(8, 18, w - 16, h - 26, 8);
-        ctx.fill();
-
-        // Header Bar in Screen
-        ctx.fillStyle = '#0f2942';
-        ctx.fillRect(8, 18, w - 16, 26);
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('⚡ TELEMETRÍA PLANTA 4.0', 16, 35);
-
-        // Card 1: Orange/Coral Bar Chart (Matching image dashboard)
-        ctx.fillStyle = '#fff7ed';
-        ctx.strokeStyle = '#fed7aa';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(14, 50, 80, 80, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // 4 Animated Vertical Bars
-        const barHeights = [38, 54, 42, 62];
-        barHeights.forEach((bh, idx) => {
-            const animH = bh + Math.sin(now * 0.004 + idx) * 5;
-            ctx.fillStyle = idx === 3 ? '#ea580c' : '#f97316';
-            ctx.fillRect(20 + idx * 17, 122 - animH, 11, animH);
-        });
-
-        // Card 2: Cyan Production Line Graph & Meters
-        ctx.fillStyle = '#f0f9ff';
-        ctx.strokeStyle = '#bae6fd';
-        ctx.beginPath();
-        ctx.roundRect(102, 50, w - 116, 80, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // Live sinusoidal telemetry pulse line
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        for (let lx = 0; lx < 66; lx += 4) {
-            const ly = 90 + Math.sin((lx + now * 0.06) * 0.15) * 14;
-            if (lx === 0) ctx.moveTo(108 + lx, ly);
-            else ctx.lineTo(108 + lx, ly);
-        }
-        ctx.stroke();
-
-        // Card 3: System Status Indicators
-        ctx.fillStyle = '#f8fafc';
-        ctx.strokeStyle = '#e2e8f0';
-        ctx.beginPath();
-        ctx.roundRect(14, 138, w - 28, 64, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#059669';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.fillText('● LÍNEA E4: ÓPTIMO (98.4%)', 22, 156);
-        ctx.fillStyle = '#0284c7';
-        ctx.fillText('● SILOS LITIO: 60.4V BMS OK', 22, 172);
-        ctx.fillStyle = '#d97706';
-        ctx.fillText('● ROBOTS: EN CICLO ACTIVO', 22, 188);
-
-        ctx.restore();
-    }
-
-    // --- CURVED CENTRAL CONTROL DESK (Oficina Control Central) ---
-    drawCurvedControlDesk(ctx, x, y, isDone, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Desk shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.25)';
-        ctx.beginPath();
-        ctx.ellipse(4, 14, 98, 44, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Curved Semi-Circular Console Desk in Slate
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#475569';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 92, 40, 0, Math.PI, 0); // Front curved rim
-        ctx.lineTo(76, 26);
-        ctx.ellipse(0, 26, 76, 32, 0, 0, Math.PI);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-
-        // Desk Surface Inlay
-        ctx.fillStyle = '#334155';
-        ctx.beginPath();
-        ctx.ellipse(0, -4, 82, 30, 0, Math.PI, 0);
-        ctx.fill();
-
-        // 3 Curved LCD Telemetry Monitors
-        const monitors = [
-            { x: -50, y: -22, a: -0.3 },
-            { x: 0, y: -30, a: 0 },
-            { x: 50, y: -22, a: 0.3 }
-        ];
-
-        monitors.forEach((m, idx) => {
-            ctx.save();
-            ctx.translate(m.x, m.y);
-            ctx.rotate(m.a);
-
-            // Stand
-            ctx.fillStyle = '#64748b';
-            ctx.fillRect(-3, 6, 6, 8);
-            ctx.fillRect(-8, 14, 16, 3);
-
-            // Screen frame
-            ctx.fillStyle = '#090d16';
-            ctx.strokeStyle = '#0284c7';
-            ctx.lineWidth = 1.5;
-            ctx.beginPath();
-            ctx.roundRect(-22, -14, 44, 22, 3);
-            ctx.fill();
-            ctx.stroke();
-
-            // Glowing cyan monitor display
-            ctx.fillStyle = '#0284c7';
-            ctx.fillRect(-19, -11, 38, 16);
-
-            // Waveform lines on screen
-            ctx.strokeStyle = isDone ? '#6ee7b7' : '#e0f2fe';
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.moveTo(-16, -3);
-            ctx.lineTo(-8, -8 + (idx * 2));
-            ctx.lineTo(0, 0);
-            ctx.lineTo(8, -6);
-            ctx.lineTo(16, -3);
-            ctx.stroke();
-
-            ctx.restore();
-        });
-
-        // Operator Swivel Chair
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#64748b';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(0, 28, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-        // Yellow safety cushion
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.arc(0, 28, 9, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
-    }
-
-    // --- CLOUD SERVER HUB (Hub Centro de Proceso de Datos) ---
-    drawCloudServerHub(ctx, x, y, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Rack shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.28)';
-        ctx.beginPath();
-        ctx.roundRect(8, 12, 100, 165, 8);
-        ctx.fill();
-
-        // 42U Server Cabinet Frame (Dark Matte Steel)
-        ctx.fillStyle = '#0f172a';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 96, 160, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        // Large Glowing Cyan Cloud Icon (Signature from reference image)
-        ctx.save();
-        ctx.translate(48, 40);
-        ctx.fillStyle = '#0284c7';
-        ctx.shadowColor = '#00e5ff';
-        ctx.shadowBlur = 12;
-
-        // Cloud icon shape
-        ctx.beginPath();
-        ctx.arc(-10, 0, 10, Math.PI * 0.5, Math.PI * 1.5);
-        ctx.arc(-2, -10, 12, Math.PI, Math.PI * 1.85);
-        ctx.arc(10, -4, 11, Math.PI * 1.2, Math.PI * 2);
-        ctx.arc(8, 4, 10, 0, Math.PI * 0.5);
-        ctx.closePath();
-        ctx.fill();
-        ctx.shadowBlur = 0;
-        ctx.restore();
-
-        // Text below cloud
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 8.5px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('CONEXIÓN EN LA NUBE', 48, 62);
-
-        // Rackmount Blade Servers with Blinking LEDs
-        for (let s = 0; s < 5; s++) {
-            const sy = 74 + s * 16;
-            ctx.fillStyle = '#1e293b';
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.roundRect(8, sy, 80, 12, 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Blinking status LEDs (green, cyan, amber)
-            const blink = Math.sin(now * 0.005 + s) > 0;
-            ctx.fillStyle = blink ? '#10b981' : '#047857';
-            ctx.beginPath();
-            ctx.arc(16, sy + 6, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = '#00e5ff';
-            ctx.beginPath();
-            ctx.arc(24, sy + 6, 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Drive bay vents
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(40, sy + 3, 42, 6);
-        }
-
-        // Heavy cyan data cables emerging from bottom
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(35, 160);
-        ctx.bezierCurveTo(35, 180, 10, 185, 0, 195);
-        ctx.moveTo(55, 160);
-        ctx.bezierCurveTo(55, 185, 75, 190, 85, 200);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    // --- ORANGE INDUSTRIAL GANTRY CRANE ---
-    drawOrangeIndustrialGantry(ctx, x, y, w, h, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Left & Right Vertical Orange Columns
-        ctx.fillStyle = '#ea580c';
-        ctx.strokeStyle = '#c2410c';
-        ctx.lineWidth = 2.5;
-
-        // Left column
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 24, h, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Right column
-        ctx.beginPath();
-        ctx.roundRect(w - 24, 0, 24, h, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Top Horizontal Crossbeam
-        ctx.fillStyle = '#f97316';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, w, 22, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Motorized Hoist Trolley traveling horizontally
-        const trolleyX = 40 + (Math.sin(now * 0.001) + 1) * 0.5 * (w - 100);
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(trolleyX, 18, 32, 14);
-
-        // Steel Lifting Cables
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(trolleyX + 8, 32);
-        ctx.lineTo(trolleyX + 8, 70);
-        ctx.moveTo(trolleyX + 24, 32);
-        ctx.lineTo(trolleyX + 24, 70);
-        ctx.stroke();
-
-        // Heavy Lifting Hook
-        ctx.fillStyle = '#facc15';
-        ctx.beginPath();
-        ctx.arc(trolleyX + 16, 76, 8, 0, Math.PI);
-        ctx.fill();
-
-        ctx.restore();
-    }
-
-    // --- QUANTUM E4 ELECTRIC CAR (Centerpiece on Assembly Platform) ---
-    drawQuantumE4CarOnPlatform(ctx, x, y, completedTasks, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        const doneCount = completedTasks.size;
-        const liftOffset = Math.min(25, doneCount * 4.5);
-
-        // Hydraulic lift pedestal
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(-28, 48 - liftOffset, 56, liftOffset + 8);
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillRect(-12, 48 - liftOffset, 24, liftOffset + 8);
-
-        // Car Shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.35)';
-        ctx.beginPath();
-        ctx.ellipse(4, 52, 92, 34, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.translate(0, -liftOffset);
-
-        // Car Body (Aerodynamic Quantum E4 City Electric Vehicle in Cyan/Teal)
-        const carGrad = ctx.createLinearGradient(0, -40, 0, 40);
-        carGrad.addColorStop(0, '#38bdf8');
-        carGrad.addColorStop(0.5, '#0284c7');
-        carGrad.addColorStop(1, '#0369a1');
-
-        ctx.fillStyle = carGrad;
-        ctx.strokeStyle = '#082f49';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.roundRect(-75, -28, 150, 56, 18);
-        ctx.fill();
-        ctx.stroke();
-
-        // Tinted Glass Panoramic Roof / Windshield
-        ctx.fillStyle = '#0f172a';
-        ctx.beginPath();
-        ctx.roundRect(-42, -22, 84, 44, 12);
-        ctx.fill();
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.beginPath();
-        ctx.roundRect(-36, -18, 72, 36, 8);
-        ctx.fill();
-
-        // Windshield reflection
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-        ctx.beginPath();
-        ctx.ellipse(-8, -8, 22, 6, -0.2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // LED Headlights (Bright Cyan Xenon)
-        ctx.fillStyle = '#ffffff';
-        ctx.shadowColor = '#00e5ff';
-        ctx.shadowBlur = 8;
-        ctx.fillRect(72, -18, 6, 12);
-        ctx.fillRect(72, 6, 6, 12);
-        ctx.shadowBlur = 0;
-
-        // Front Grille with Quantum Motors Badge
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(73, -5, 4, 10);
-        ctx.fillStyle = '#facc15';
-        ctx.font = 'bold 9px sans-serif';
-        ctx.fillText('⚡', 73, 4);
-
-        // 4 Wheels with Alloy Rims
-        const wheels = [
-            { x: -50, y: -34 }, { x: 50, y: -34 },
-            { x: -50, y: 28 }, { x: 50, y: 28 }
-        ];
-        wheels.forEach(w => {
-            ctx.fillStyle = '#1e293b';
-            ctx.strokeStyle = '#090d16';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.roundRect(w.x - 12, w.y, 24, 8, 3);
-            ctx.fill();
-            ctx.stroke();
-        });
-
-        // Vehicle Model Label
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '900 11px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('QUANTUM E4', 0, 3);
-
-        ctx.restore();
-    }
-
-    // --- OFFICE DESKS & BOARDS ---
-    drawOfficeGlassTable(ctx, x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.2)';
-        ctx.beginPath();
-        ctx.roundRect(4, 8, 180, 80, 8);
-        ctx.fill();
-
-        // Table surface (Clean White/Glass)
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 180, 80, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        // 2 Laptops on table
-        for (let lx of [40, 120]) {
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(lx, 26, 28, 20);
-            ctx.fillStyle = '#0284c7';
-            ctx.fillRect(lx + 3, 28, 22, 12);
-        }
-
-        ctx.restore();
-    }
-
-    drawOfficeDesksAndEngineers(ctx, x, y, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Collaborative meeting table with gears/blueprints (from reference image)
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.2)';
-        ctx.beginPath();
-        ctx.roundRect(4, 6, 170, 75, 8);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 170, 75, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        // Cyan blueprint sheet
-        ctx.fillStyle = '#e0f2fe';
-        ctx.strokeStyle = '#38bdf8';
-        ctx.lineWidth = 1;
-        ctx.fillRect(35, 15, 60, 45);
-        ctx.strokeRect(35, 15, 60, 45);
-
-        // Interactive orange gear props on table (matching reference image!)
-        ctx.fillStyle = '#ea580c';
-        ctx.beginPath();
-        ctx.arc(115, 35, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(115, 35, 6, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Two sitting engineers collaborating around gears (from reference image)
-        this.drawVectorPerson(ctx, {
-            x: 20, y: 55, facing: 1, shirt: '#ffffff',
-            pants: '#1e293b', skin: '#fed7aa', hair: '#1e293b',
-            helmet: null, pose: 'sit', reflectiveStripe: false,
-            scale: 1.05, now
-        });
-
-        this.drawVectorPerson(ctx, {
-            x: 150, y: 55, facing: -1, shirt: '#ea580c',
-            pants: '#1e293b', skin: '#fed7aa', hair: '#451a03',
-            helmet: null, pose: 'sit', reflectiveStripe: false,
-            scale: 1.05, now
-        });
-
-        ctx.restore();
-    }
-
-    drawPottedPlantIsometric(ctx, x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // White ceramic cylindrical pot
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.2)';
-        ctx.beginPath();
-        ctx.ellipse(2, 10, 12, 6, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.roundRect(-10, -6, 20, 16, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Lush green leaves
-        ctx.fillStyle = '#10b981';
-        for (let la of [-0.6, 0, 0.6]) {
-            ctx.save();
-            ctx.rotate(la);
-            ctx.beginPath();
-            ctx.ellipse(0, -18, 6, 14, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
-        }
-
-        ctx.restore();
-    }
-
-    drawTubularChassisFrame(ctx, x, y, isDone, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.strokeStyle = isDone ? '#10b981' : '#f97316';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.roundRect(-45, -20, 90, 40, 6);
-        ctx.stroke();
-
-        // Internal crossbraces
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(-45, -20);
-        ctx.lineTo(45, 20);
-        ctx.moveTo(-45, 20);
-        ctx.lineTo(45, -20);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    drawDesignTabletStand(ctx, x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(-15, -25, 30, 50);
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(-12, -22, 24, 30);
-
-        ctx.restore();
-    }
-
-    drawComponentShelves(ctx, x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Warehouse rack frame (Slate)
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(0, 0, 16, 120);
-        ctx.fillRect(160, 0, 16, 120);
-
-        // 3 Shelves with cardboard boxes
-        for (let sh of [30, 65, 100]) {
-            ctx.fillStyle = '#1e293b';
-            ctx.fillRect(0, sh, 176, 8);
-
-            // Cardboard boxes
-            for (let bx = 22; bx < 150; bx += 36) {
-                ctx.fillStyle = '#d97706';
-                ctx.fillRect(bx, sh - 18, 26, 18);
-            }
-        }
-
-        ctx.restore();
-    }
-
-    drawCardboardPalletStack(ctx, x, y) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Wooden pallet base
-        ctx.fillStyle = '#92400e';
-        ctx.fillRect(0, 20, 70, 8);
-
-        // Stacked boxes
-        ctx.fillStyle = '#d97706';
-        ctx.strokeStyle = '#78350f';
-        ctx.lineWidth = 1;
-        ctx.fillRect(4, 2, 30, 18);
-        ctx.strokeRect(4, 2, 30, 18);
-        ctx.fillRect(36, 2, 30, 18);
-        ctx.strokeRect(36, 2, 30, 18);
-
-        ctx.restore();
-    }
-
-    drawModernElectricForklift(ctx, x, y, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        // Shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.25)';
-        ctx.beginPath();
-        ctx.ellipse(0, 16, 32, 12, 0, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Safety Orange Forklift Body
-        ctx.fillStyle = '#ea580c';
-        ctx.strokeStyle = '#9a3412';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(-24, -16, 48, 32, 6);
-        ctx.fill();
-        ctx.stroke();
-
-        // Rollcage
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(-16, -14, 24, 24);
-
-        // Lifting mast & forks
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(24, -22, 6, 38);
-        ctx.fillStyle = '#64748b';
-        ctx.fillRect(28, 4, 22, 4);
-
-        ctx.restore();
-    }
-
-    drawAssemblyTelemetryBoard(ctx, x, y, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 190, 60, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#0f2942';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('📊 ESTADO DE LÍNEA QUANTUM E4', 12, 22);
-
-        ctx.fillStyle = '#ea580c';
-        ctx.fillText('● INTEGRACIÓN ELECTROMECÁNICA', 12, 42);
-
-        ctx.restore();
-    }
-
-    drawDigitalInspectionBoard(ctx, x, y, title, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#00a8cc';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, 180, 65, 8);
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = '#0b2545';
-        ctx.font = 'bold 10px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText(title, 12, 22);
-
-        ctx.fillStyle = '#10b981';
-        ctx.fillText('● CELDAS LIFEPO4: 3.25V NOMINAL', 12, 40);
-        ctx.fillText('● EQUILIBRIO BMS: ACTIVO', 12, 54);
-
-        ctx.restore();
-    }
-
-    drawDynamometerRollers(ctx, x, y, isDone, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 0, 160, 50);
-
-        // Rotating rollers
-        ctx.fillStyle = isDone ? '#10b981' : '#64748b';
-        ctx.fillRect(20, 10, 45, 30);
-        ctx.fillRect(95, 10, 45, 30);
-
-        ctx.restore();
-    }
-
-    drawRainTestArch(ctx, x, y, now) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 6;
-        ctx.beginPath();
-        ctx.arc(80, 50, 45, Math.PI, 0);
-        ctx.stroke();
-
-        ctx.restore();
-    }
-
-    drawTelemetryTower(ctx, x, y, isDone) {
-        ctx.save();
-        ctx.translate(x, y);
-
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(0, 0, 14, 70);
-
-        ctx.fillStyle = isDone ? '#10b981' : '#ef4444';
-        ctx.beginPath();
-        ctx.arc(7, 10, 7, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.restore();
-    }
-
-    // --- EXECUTIVE BOARDROOM TABLE WITH EMERGENCY BUTTON ---
-    drawExecutiveBoardroomTable(ctx, cx, cy, isDone, now) {
+    // --- ZONE 7 HELPERS (SALA DE REUNIONES) ---
+    drawMeetingRoomTable(ctx, cx, cy, isDone, now) {
         ctx.save();
         ctx.translate(cx, cy);
 
-        // Drop shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.3)';
+        // Luxury Oval Boardroom Carpet underneath
+        ctx.fillStyle = 'rgba(244, 63, 94, 0.14)';
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.ellipse(4, 10, 145, 75, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 0, 178, 108, 0, 0, Math.PI * 2);
         ctx.fill();
+        ctx.stroke();
 
-        // 8 Executive Chairs around the table
-        const chairs = [
-            { x: -125, y: -65, a: 0.4 }, { x: 0, y: -85, a: 0 }, { x: 125, y: -65, a: -0.4 },
-            { x: -125, y: 65, a: -0.4 }, { x: 0, y: 85, a: 0 }, { x: 125, y: 65, a: 0.4 },
-            { x: -160, y: 0, a: 1.57 }, { x: 160, y: 0, a: -1.57 }
+        // 8 Executive Swivel Chairs arranged around the oval table
+        const chairPositions = [
+            { x: -120, y: -62, a: 0.4 },
+            { x: 0, y: -84, a: 0 },
+            { x: 120, y: -62, a: -0.4 },
+            { x: -120, y: 62, a: -0.4 },
+            { x: 0, y: 84, a: 0 },
+            { x: 120, y: 62, a: 0.4 },
+            { x: -158, y: 0, a: 1.57 },
+            { x: 158, y: 0, a: -1.57 }
         ];
 
-        chairs.forEach(ch => {
+        for (let ch of chairPositions) {
             ctx.save();
             ctx.translate(ch.x, ch.y);
             ctx.rotate(ch.a);
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = '#334155';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
-            ctx.arc(0, 0, 16, 0, Math.PI * 2);
+            ctx.arc(0, 0, 18, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = '#0284c7';
-            ctx.fillRect(-12, -16, 24, 7);
+            ctx.stroke();
+            // Red/rose executive backrest cushion
+            ctx.fillStyle = '#e11d48';
+            ctx.beginPath();
+            ctx.roundRect(-15, -18, 30, 9, 4);
+            ctx.fill();
+            ctx.stroke();
             ctx.restore();
-        });
-
-        // Oval Boardroom Table Surface (Pure White with Slate Rim)
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#0b2545';
-        ctx.lineWidth = 3.5;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 140, 70, 0, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Inner glowing ring
-        ctx.strokeStyle = isDone ? '#10b981' : '#00a8cc';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 116, 50, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Laptops on table
-        for (let lx of [-75, 75]) {
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(lx - 14, -30, 28, 18);
-            ctx.fillStyle = '#0284c7';
-            ctx.fillRect(lx - 10, -28, 20, 10);
         }
 
-        // ICONIC CENTRAL EMERGENCY / BRIEFING BUTTON (Among Us style!)
-        const pulse = (Math.sin(now * 0.006) + 1) * 0.5;
-
-        // Metallic Pedestal
-        ctx.fillStyle = '#1e293b';
+        // Table drop shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
         ctx.beginPath();
-        ctx.roundRect(-24, -20, 48, 40, 8);
+        ctx.ellipse(6, 8, 138, 68, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Hazard stripes
-        ctx.fillStyle = '#facc15';
-        ctx.fillRect(-18, -14, 36, 28);
+        // Large Oval Executive Conference Table (Among Us + Boardroom Hybrid)
+        const tableGrad = ctx.createRadialGradient(0, -10, 15, 0, 0, 140);
+        tableGrad.addColorStop(0, '#334155');
+        tableGrad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = tableGrad;
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 136, 66, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
 
-        // Glowing Red Emergency Button
+        // Inner glowing cyan/rose table inlay ring
+        ctx.strokeStyle = isDone ? '#10b981' : '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 114, 48, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Laptops & Blueprint folders on the table
+        for (let lx of [-75, 65]) {
+            ctx.fillStyle = '#cbd5e1';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(lx - 16, -34, 32, 22, 4);
+            ctx.fill();
+            ctx.stroke();
+            // Laptop screen glow
+            ctx.fillStyle = '#0284c7';
+            ctx.fillRect(lx - 12, -30, 24, 12);
+
+            // Bottom side notebooks
+            ctx.fillStyle = '#fef08a';
+            ctx.beginPath();
+            ctx.roundRect(lx - 14, 14, 26, 20, 3);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Iconic Central Emergency / Briefing Button under Glass Dome (Among Us style!)
+        const pulse = (Math.sin(now * 0.006) + 1) * 0.5;
+        // Metallic octagon pedestal
+        ctx.fillStyle = '#475569';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-26, -22, 52, 44, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // Yellow/Black hazard stripes around button base
+        ctx.fillStyle = '#facc15';
+        ctx.fillRect(-20, -16, 40, 32);
+
+        // Glowing Red Briefing Button in center
         ctx.fillStyle = isDone ? '#10b981' : '#ef4444';
         ctx.beginPath();
-        ctx.arc(0, 0, 12 + pulse * 1.5, 0, Math.PI * 2);
+        ctx.arc(0, 0, 13 + pulse * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Specular glass dome highlight over button
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        ctx.beginPath();
+        ctx.ellipse(-4, -5, 6, 3, -0.3, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
     }
 
-    drawProjectorScreen(ctx, x, y, isDone, now) {
+    drawKanbanAndProjector(ctx, x, y, isDone, now) {
         ctx.save();
         ctx.translate(x, y);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 2.5;
+        // Agile Kanban Board with Sticky Notes (Top Left of Meeting Room)
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
         ctx.beginPath();
-        ctx.roundRect(0, 0, 180, 85, 8);
+        ctx.roundRect(0, 0, 195, 130, 12);
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#0f2942';
+        // 3 Kanban Columns (TO-DO, DOING, DONE)
+        const cols = [
+            { title: 'PENDIENTE', x: 10, color: '#f43f5e' },
+            { title: 'EN CURSO', x: 70, color: '#facc15' },
+            { title: 'LISTO ✅', x: 130, color: '#10b981' }
+        ];
+
+        cols.forEach((col, cIdx) => {
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.roundRect(col.x, 28, 54, 90, 6);
+            ctx.fill();
+
+            ctx.fillStyle = col.color;
+            ctx.font = 'bold 8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(col.title, col.x + 27, 40);
+
+            // Colorful Post-it sticky notes
+            const postItColors = ['#fef08a', '#bae6fd', '#fbcfe8', '#bbf7d0'];
+            for (let n = 0; n < 2; n++) {
+                ctx.fillStyle = postItColors[(cIdx + n) % postItColors.length];
+                ctx.strokeStyle = '#090d16';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.roundRect(col.x + 8, 48 + n * 32, 38, 24, 3);
+                ctx.fill();
+                ctx.stroke();
+            }
+        });
+
+        ctx.fillStyle = '#f8fafc';
         ctx.font = 'bold 11px sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('📋 HOJA DE RUTA QUANTUM', 14, 26);
-        ctx.fillStyle = '#059669';
-        ctx.fillText('● 100% CERO EMISIONES', 14, 46);
-        ctx.fillText('● ENSAMBLADO EN BOLIVIA', 14, 64);
+        ctx.textAlign = 'center';
+        ctx.fillText('TABLERO KANBAN SCRUM', 97, 18);
 
         ctx.restore();
     }
@@ -1646,102 +512,1704 @@ class Renderer {
         ctx.save();
         ctx.translate(x, y);
 
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1.5;
+        // Breakroom Countertop
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.roundRect(0, 0, 90, 50, 6);
+        ctx.roundRect(0, 0, 145, 115, 12);
         ctx.fill();
         ctx.stroke();
 
-        // Water dispenser bottle
+        // Espresso Coffee Machine
+        ctx.fillStyle = '#18181b';
+        ctx.beginPath();
+        ctx.roundRect(14, 14, 52, 56, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(28, 28, 4, 0, Math.PI * 2);
+        ctx.fill();
+        // Coffee pot & mugs
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(32, 88, 9, 0, Math.PI * 2);
+        ctx.arc(56, 88, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Water Dispenser with Blue Jug on Right Side
+        ctx.fillStyle = '#e2e8f0';
+        ctx.beginPath();
+        ctx.roundRect(84, 42, 46, 56, 8);
+        ctx.fill();
+        ctx.stroke();
+        // Translucent Blue Water Jug on top
         ctx.fillStyle = '#38bdf8';
         ctx.beginPath();
-        ctx.arc(45, 16, 12, 0, Math.PI * 2);
+        ctx.arc(107, 32, 18, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#cbd5e1';
+        ctx.font = 'bold 9px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ESTACIÓN DE CAFÉ', 72, 108);
+
+        ctx.restore();
+    }
+
+    // --- ZONE 1 HELPERS (RECEPCIÓN) ---
+    drawSafetyLockers(ctx, x, y) {
+        // 3D Locker Cabinet bank
+        for (let i = 0; i < 4; i++) {
+            const ly = y + i * 78;
+            // Drop shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.4)';
+            ctx.beginPath();
+            ctx.roundRect(x + 6, ly + 6, 70, 68, 8);
+            ctx.fill();
+
+            // Locker body
+            ctx.fillStyle = '#334155';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(x, ly, 70, 68, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Inner door bevel
+            ctx.fillStyle = '#475569';
+            ctx.beginPath();
+            ctx.roundRect(x + 6, ly + 6, 58, 56, 5);
+            ctx.fill();
+
+            // Louver vents
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 2;
+            for (let v = 0; v < 3; v++) {
+                ctx.beginPath();
+                ctx.moveTo(x + 14, ly + 14 + v * 5);
+                ctx.lineTo(x + 42, ly + 14 + v * 5);
+                ctx.stroke();
+            }
+
+            // Chrome handle
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.roundRect(x + 52, ly + 26, 6, 16, 2);
+            ctx.fill();
+
+            // Illustrated EPP item badge on door
+            this.drawMiniEppIllustration(ctx, x + 28, ly + 44, i);
+        }
+    }
+
+    drawMiniEppIllustration(ctx, cx, cy, index) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2;
+        if (index === 0) {
+            // Hard Hat illustration
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(0, 2, 11, Math.PI, 0);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillRect(-13, 1, 26, 4);
+            ctx.strokeRect(-13, 1, 26, 4);
+        } else if (index === 1) {
+            // Dielectric Glove illustration
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath();
+            ctx.roundRect(-8, -8, 16, 16, 5);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = '#fb923c';
+            ctx.beginPath();
+            ctx.arc(-4, -9, 3, 0, Math.PI * 2);
+            ctx.arc(1, -10, 3, 0, Math.PI * 2);
+            ctx.arc(6, -8, 3, 0, Math.PI * 2);
+            ctx.fill();
+        } else if (index === 2) {
+            // Safety Boot illustration
+            ctx.fillStyle = '#78350f';
+            ctx.beginPath();
+            ctx.moveTo(-8, -10);
+            ctx.lineTo(2, -10);
+            ctx.lineTo(2, 0);
+            ctx.lineTo(11, 2);
+            ctx.lineTo(11, 8);
+            ctx.lineTo(-8, 8);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            // Yellow dielectric sole
+            ctx.fillStyle = '#facc15';
+            ctx.fillRect(-8, 6, 19, 3);
+        } else {
+            // Safety Goggles illustration
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.roundRect(-12, -5, 11, 9, 3);
+            ctx.roundRect(1, -5, 11, 9, 3);
+            ctx.fill();
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    drawFireExtinguisherStand(ctx, cx, cy) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        // Red safety mat with white diagonal stripes
+        ctx.fillStyle = '#7f1d1d';
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-28, -28, 56, 56, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // Extinguisher cylinder
+        ctx.fillStyle = '#dc2626';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-10, -14, 20, 32, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // White CO2 label
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(-7, -2, 14, 10);
+        ctx.fillStyle = '#090d16';
+        ctx.font = 'bold 7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('CO2', 0, 6);
+
+        // Valve, pressure gauge & horn hose
+        ctx.fillStyle = '#94a3b8';
+        ctx.fillRect(-4, -20, 8, 6);
+        ctx.beginPath();
+        ctx.moveTo(4, -18);
+        ctx.quadraticCurveTo(16, -12, 14, 6);
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+    }
+
+    drawPottedPlant(ctx, cx, cy) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.35)';
+        ctx.beginPath();
+        ctx.arc(3, 4, 20, 0, Math.PI * 2);
+        ctx.fill();
+        // Terracotta pot
+        ctx.fillStyle = '#b45309';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(0, 0, 17, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#451a03';
+        ctx.beginPath();
+        ctx.arc(0, 0, 12, 0, Math.PI * 2);
+        ctx.fill();
+        // Lush tropical leaves radiating out
+        const angles = [0, 1.05, 2.1, 3.14, 4.2, 5.25];
+        for (let a of angles) {
+            ctx.save();
+            ctx.rotate(a);
+            ctx.fillStyle = '#10b981';
+            ctx.strokeStyle = '#064e3b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(11, 0, 11, 5.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.restore();
+        }
+        ctx.restore();
+    }
+
+    drawReceptionDesk(ctx, x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Two ergonomic swivel chairs behind desk
+        for (let cx of [55, 130]) {
+            ctx.fillStyle = '#0284c7';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(cx, 22, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            // Backrest
+            ctx.fillStyle = '#0369a1';
+            ctx.beginPath();
+            ctx.roundRect(cx - 14, 2, 28, 10, 5);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Curved L-shaped / kidney reception counter with wooden/cyan trim
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.beginPath();
+        ctx.roundRect(6, 36, 185, 78, 28);
+        ctx.fill();
+
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(0, 30, 185, 78, 28);
+        ctx.fill();
+        ctx.stroke();
+
+        // Glowing cyan front counter lip
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.roundRect(6, 36, 173, 66, 22);
+        ctx.stroke();
+
+        // Dual curved widescreen monitors with keyboards & coffee mug
+        for (let mx of [32, 108]) {
+            // Keyboard
+            ctx.fillStyle = '#475569';
+            ctx.beginPath();
+            ctx.roundRect(mx + 6, 48, 34, 12, 3);
+            ctx.fill();
+            // Monitor screen
+            ctx.fillStyle = '#0f172a';
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(mx, 66, 48, 18, 4);
+            ctx.fill();
+            ctx.stroke();
+            // Screen glow
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillRect(mx + 5, 71, 24, 3);
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(mx + 5, 77, 34, 3);
+        }
+
+        // Coffee mug on desk
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(92, 56, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#78350f';
+        ctx.beginPath();
+        ctx.arc(92, 56, 4.5, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.restore();
     }
 
-    // =========================================================================
-    // SMART PEDESTAL TERMINALS & SIGNAGE
-    // =========================================================================
-
-    drawSmartStation(ctx, station, isCompleted, isNear, animTimer, now) {
+    drawShowroomPod(ctx, cx, cy, now) {
         ctx.save();
-        ctx.translate(station.x, station.y);
+        ctx.translate(cx, cy);
 
-        // Ground shadow
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.25)';
+        // Circular Illuminated Showroom Stage
+        const grad = ctx.createRadialGradient(0, 0, 15, 0, 0, 95);
+        grad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+        grad.addColorStop(0.7, 'rgba(15, 23, 42, 0.9)');
+        grad.addColorStop(1, 'rgba(56, 189, 248, 0.05)');
+        ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.ellipse(2, 8, 20, 9, 0, 0, Math.PI * 2);
+        ctx.arc(0, 0, 92, 0, Math.PI * 2);
         ctx.fill();
 
-        // Sleek White Pedestal
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = isCompleted ? '#10b981' : (isNear ? '#f97316' : '#0284c7');
-        ctx.lineWidth = isNear ? 3 : 2;
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.roundRect(-16, -20, 32, 26, 6);
+        ctx.arc(0, 0, 88, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Bolivian tricolor curved ribbon at bottom of pedestal
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.arc(0, 0, 78, 0.3, 2.84);
+        ctx.stroke();
+        ctx.strokeStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(0, 0, 73, 0.3, 2.84);
+        ctx.stroke();
+        ctx.strokeStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(0, 0, 68, 0.3, 2.84);
+        ctx.stroke();
+
+        // Rotating Display Miniature of Quantum E2 Electric Car!
+        ctx.save();
+        ctx.rotate(Math.sin(now * 0.0012) * 0.25 - 0.2);
+        this.drawCompleteCarIllustration(ctx, 0, -10, 0.68, '#00e5ff', true);
+        ctx.restore();
+
+        // Showroom plaque
+        ctx.fillStyle = '#090d16';
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-72, 42, 144, 34, 8);
         ctx.fill();
         ctx.stroke();
 
-        // Glowing Interface Screen
-        ctx.fillStyle = isCompleted ? '#10b981' : (isNear ? '#f97316' : '#0284c7');
-        ctx.fillRect(-12, -16, 24, 12);
-
-        // Floating icon / status beacon
-        const bounce = Math.sin(now * 0.005) * 3;
-        ctx.font = '16px sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(station.icon, 0, -32 + bounce);
+        ctx.fillText('QUANTUM E2 PIONERO', 0, 57);
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('100% Eléctrico • Bolivia', 0, 70);
 
-        // Station name pill
-        ctx.fillStyle = '#0f2942';
-        ctx.font = 'bold 10.5px sans-serif';
-        ctx.fillText(station.shortName, 0, 22);
+        ctx.restore();
+    }
 
-        // Proximity glow ring when player is close
-        if (isNear) {
-            ctx.strokeStyle = 'rgba(249, 115, 22, 0.7)';
-            ctx.lineWidth = 2.5;
+    // --- ZONE 2 HELPERS (BATERÍAS) ---
+    drawHighVoltageCables(ctx, zx, zy) {
+        ctx.save();
+        ctx.lineCap = 'round';
+        // Thick black outer conduit shadow + bright orange EV cable
+        const drawCable = (pts, color) => {
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 11;
             ctx.beginPath();
-            ctx.arc(0, -6, 32, 0, Math.PI * 2);
+            pts.forEach((p, i) => i === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]));
+            ctx.stroke();
+
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 6;
+            ctx.stroke();
+        };
+
+        drawCable([[zx + 150, zy + 250], [zx + 150, zy + 310], [zx + 465, zy + 310]], '#f97316');
+        drawCable([[zx + 180, zy + 250], [zx + 180, zy + 285], [zx + 465, zy + 285]], '#0284c7');
+        ctx.restore();
+    }
+
+    drawBmsConsole(ctx, x, y, isDone, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.beginPath();
+        ctx.roundRect(6, 6, 200, 145, 14);
+        ctx.fill();
+
+        // Main metal cabinet
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 200, 145, 14);
+        ctx.fill();
+        ctx.stroke();
+
+        // Dual Rotating Cooling Fans on right side of console
+        for (let fy of [42, 98]) {
+            const fx = 162;
+            ctx.fillStyle = '#090d16';
+            ctx.beginPath();
+            ctx.arc(fx, fy, 22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.save();
+            ctx.translate(fx, fy);
+            ctx.rotate(now * 0.008);
+            ctx.fillStyle = '#64748b';
+            for (let b = 0; b < 4; b++) {
+                ctx.rotate(Math.PI / 2);
+                ctx.beginPath();
+                ctx.ellipse(10, 0, 9, 4, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.restore();
+            // Fan grill ring
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(fx, fy, 22, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+
+        // Curved Glass Oscilloscope Screen
+        ctx.fillStyle = '#04101e';
+        ctx.strokeStyle = '#22d3ee';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(14, 16, 118, 82, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // Oscilloscope Grid
+        ctx.strokeStyle = 'rgba(34, 211, 238, 0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(14, 57);
+        ctx.lineTo(132, 57);
+        ctx.moveTo(73, 16);
+        ctx.lineTo(73, 98);
+        ctx.stroke();
+
+        // Live animated waveform
+        ctx.strokeStyle = isDone ? '#10b981' : '#22d3ee';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let sx = 0; sx <= 104; sx += 4) {
+            const sy = 57 + Math.sin((sx * 0.09) + (now * 0.009)) * 20;
+            if (sx === 0) ctx.moveTo(20 + sx, sy);
+            else ctx.lineTo(20 + sx, sy);
+        }
+        ctx.stroke();
+
+        // Analog rotary dials & status LEDs at bottom
+        for (let d = 0; d < 3; d++) {
+            const dx = 30 + d * 32;
+            ctx.fillStyle = '#090d16';
+            ctx.beginPath();
+            ctx.arc(dx, 120, 11, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#94a3b8';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            // Pointer line
+            ctx.strokeStyle = '#facc15';
+            ctx.beginPath();
+            ctx.moveTo(dx, 120);
+            ctx.lineTo(dx + Math.cos(d + now * 0.002) * 8, 120 + Math.sin(d + now * 0.002) * 8);
             ctx.stroke();
         }
 
         ctx.restore();
     }
 
-    drawSignagePedestal(ctx, signage, accentColor, isNear, now) {
+    drawCylindricalBatteryRack(ctx, x, y, isDone, now) {
         ctx.save();
-        ctx.translate(signage.x, signage.y);
+        ctx.translate(x, y);
 
-        // Holographic Information Terminal
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 2;
+        // Cabinet housing with 3D shadow
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.beginPath();
-        ctx.roundRect(-14, -18, 28, 24, 5);
+        ctx.roundRect(8, 8, 185, 265, 16);
+        ctx.fill();
+
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 185, 265, 16);
         ctx.fill();
         ctx.stroke();
 
-        // Floating info icon
-        ctx.font = '16px sans-serif';
+        // Header label
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('📘', 0, -28 + Math.sin(now * 0.004) * 3);
+        ctx.fillText('CELDAS CILÍNDRICAS LiFePO4', 92, 24);
 
-        ctx.fillStyle = '#0f2942';
-        ctx.font = 'bold 9.5px sans-serif';
-        ctx.fillText('INFO', 0, 18);
+        // Draw 3 rows x 4 columns of realistic 3D cylindrical lithium cells connected with copper busbars!
+        for (let r = 0; r < 3; r++) {
+            const cy = 58 + r * 72;
+
+            // Copper busbar linking the row of cells
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(32, cy - 16);
+            ctx.lineTo(152, cy - 16);
+            ctx.stroke();
+
+            for (let c = 0; c < 4; c++) {
+                const cx = 32 + c * 40;
+                const active = isDone || ((Math.floor(now / 350) + r + c) % 3 !== 0);
+                const cellColor = isDone ? '#10b981' : (active ? '#06b6d4' : '#0369a1');
+
+                // Cylinder body
+                ctx.fillStyle = cellColor;
+                ctx.strokeStyle = '#090d16';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(cx - 14, cy - 14, 28, 42, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                // Specular highlight stripe on cylinder
+                ctx.fillStyle = 'rgba(255,255,255,0.28)';
+                ctx.fillRect(cx - 8, cy - 8, 5, 30);
+
+                // Top elliptical cap
+                ctx.fillStyle = '#cbd5e1';
+                ctx.beginPath();
+                ctx.ellipse(cx, cy - 14, 13, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Positive brass terminal button
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.arc(cx, cy - 15, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+            }
+        }
+
+        ctx.restore();
+    }
+
+    drawThermalChamber(ctx, x, y, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Circular High-Voltage Warning Pad with Hazard Symbol
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 170, 135, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // Illustrated Yellow Warning Triangle
+        ctx.fillStyle = '#facc15';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(85, 18);
+        ctx.lineTo(122, 78);
+        ctx.lineTo(48, 78);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Lightning bolt inside triangle
+        ctx.fillStyle = '#090d16';
+        ctx.beginPath();
+        ctx.moveTo(88, 34);
+        ctx.lineTo(75, 55);
+        ctx.lineTo(86, 55);
+        ctx.lineTo(80, 72);
+        ctx.lineTo(96, 50);
+        ctx.lineTo(85, 50);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = '#fde047';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('BANCO ALTA TENSIÓN', 85, 102);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px sans-serif';
+        ctx.fillText('60V - 72V DC • Guantes Clase 0', 85, 118);
+
+        ctx.restore();
+    }
+
+    // --- ZONE 3 HELPERS (CHASIS Y ESTRUCTURA) ---
+    drawLaserCutterMachine(ctx, x, y, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Machine bed with slats
+        ctx.fillStyle = '#18181b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 205, 135, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        // Cutting grate slats
+        ctx.strokeStyle = '#3f3f46';
+        ctx.lineWidth = 2;
+        for (let sx = 18; sx < 190; sx += 14) {
+            ctx.beginPath();
+            ctx.moveTo(sx, 28);
+            ctx.lineTo(sx, 118);
+            ctx.stroke();
+        }
+
+        // Steel sheet being cut
+        ctx.fillStyle = '#64748b';
+        ctx.strokeStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.roundRect(28, 38, 148, 68, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Moving CNC Gantry Bridge
+        const gantryX = 40 + ((Math.sin(now * 0.0025) + 1) * 0.5) * 120;
+        const laserY = 50 + ((Math.cos(now * 0.005) + 1) * 0.5) * 44;
+
+        // Gantry bar
+        ctx.fillStyle = '#f59e0b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.5;
+        ctx.fillRect(gantryX - 8, 20, 16, 104);
+        ctx.strokeRect(gantryX - 8, 20, 16, 104);
+
+        // Laser head nozzle
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(gantryX, laserY, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Glowing laser beam spark
+        const grad = ctx.createRadialGradient(gantryX, laserY, 2, gantryX, laserY, 22);
+        grad.addColorStop(0, '#ffffff');
+        grad.addColorStop(0.4, '#ef4444');
+        grad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(gantryX, laserY, 22, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('CORTE LÁSER CNC', 102, 16);
+
+        ctx.restore();
+    }
+
+    drawChasisWeldingJig(ctx, x, y, isDone, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Octagonal Industrial Welding Platform
+        ctx.fillStyle = '#1c1917';
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 215, 255, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // Draw an authentic Top-Down Tubular Car Chassis Silhouette (not a rectangle!)
+        ctx.save();
+        ctx.translate(115, 118);
+        const frameColor = isDone ? '#10b981' : '#38bdf8';
+
+        // 4 Suspension Coil Springs & Wheel Hubs
+        for (let [wx, wy] of [[-48, -56], [48, -56], [-48, 56], [48, 56]]) {
+            ctx.strokeStyle = '#facc15';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(wx * 0.6, wy);
+            ctx.lineTo(wx, wy);
+            ctx.stroke();
+            ctx.fillStyle = '#475569';
+            ctx.fillRect(wx - 6, wy - 12, 12, 24);
+        }
+
+        // Curved Tubular Spaceframe Silhouette
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 9;
+        this.traceChassisPath(ctx);
+        ctx.stroke();
+
+        ctx.strokeStyle = frameColor;
+        ctx.lineWidth = 5;
+        this.traceChassisPath(ctx);
+        ctx.stroke();
+        ctx.restore();
+
+        // Articulated Multi-Joint Robotic Welding Arm (KUKA style)
+        ctx.save();
+        ctx.translate(42, 205);
+        // Turret Base
+        ctx.fillStyle = '#f59e0b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Joint 1 & Lower Arm
+        const angle1 = -0.6 + Math.sin(now * 0.004) * 0.35;
+        ctx.rotate(angle1);
+        ctx.fillStyle = '#fb923c';
+        ctx.beginPath();
+        ctx.roundRect(-8, -65, 16, 65, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Elbow Joint & Forearm
+        ctx.translate(0, -60);
+        const angle2 = 0.9 + Math.cos(now * 0.005) * 0.3;
+        ctx.rotate(angle2);
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.roundRect(-6, -52, 12, 52, 5);
+        ctx.fill();
+        ctx.stroke();
+
+        // Welding Torch Tip & Animated Flying Sparks!
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(0, -56, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        if (Math.sin(now * 0.04) > -0.2) {
+            for (let sp = 0; sp < 5; sp++) {
+                const sa = (now * 0.02 + sp * 1.2);
+                const sr = ((now * 0.08 + sp * 7) % 24);
+                ctx.strokeStyle = sp % 2 === 0 ? '#fef08a' : '#f97316';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(0, -56);
+                ctx.lineTo(Math.cos(sa) * sr, -56 + Math.sin(sa) * sr);
+                ctx.stroke();
+            }
+        }
+        ctx.restore();
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('SOLDADURA ROBÓTICA MIG', 107, 238);
+
+        ctx.restore();
+    }
+
+    traceChassisPath(ctx) {
+        ctx.beginPath();
+        // Tapered front nose bumper
+        ctx.moveTo(-26, -82);
+        ctx.lineTo(26, -82);
+        ctx.lineTo(42, -50);
+        // Side rails
+        ctx.lineTo(42, 55);
+        // Rear motor cradle
+        ctx.lineTo(30, 80);
+        ctx.lineTo(-30, 80);
+        ctx.lineTo(-42, 55);
+        ctx.lineTo(-42, -50);
+        ctx.closePath();
+        // Internal cross-members & battery cradle
+        ctx.moveTo(-40, -25);
+        ctx.lineTo(40, -25);
+        ctx.moveTo(-40, 25);
+        ctx.lineTo(40, 25);
+        ctx.moveTo(-25, -25);
+        ctx.lineTo(25, 25);
+        ctx.moveTo(25, -25);
+        ctx.lineTo(-25, 25);
+    }
+
+    drawBlueprintTable(ctx, x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Drafting table
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 175, 130, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // Unrolled Blue Engineering Blueprint sheet
+        ctx.fillStyle = '#0284c7';
+        ctx.strokeStyle = '#bae6fd';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(14, 14, 147, 102, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Blueprint side-view sketch of Quantum E4
+        ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(42, 82);
+        ctx.lineTo(48, 46);
+        ctx.quadraticCurveTo(85, 34, 118, 48);
+        ctx.lineTo(132, 66);
+        ctx.lineTo(134, 82);
+        ctx.closePath();
+        ctx.stroke();
+        // Blueprint wheels
+        ctx.beginPath();
+        ctx.arc(60, 82, 11, 0, Math.PI * 2);
+        ctx.arc(116, 82, 11, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Yellow triangle ruler on table
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.moveTo(22, 92);
+        ctx.lineTo(48, 92);
+        ctx.lineTo(22, 66);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // --- ZONE 6 HELPERS (DEPÓSITO Y LOGÍSTICA) ---
+    drawLogisticsShelves(ctx, x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        for (let s = 0; s < 3; s++) {
+            const sy = s * 155;
+            // Wooden slatted pallet & rack frame
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.roundRect(0, sy, 180, 132, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Orange rack beams
+            ctx.fillStyle = '#ea580c';
+            ctx.fillRect(6, sy + 28, 168, 6);
+            ctx.fillRect(6, sy + 120, 168, 6);
+
+            if (s === 0) {
+                // Shelf 1: Illustrated Brushless Electric Motors with Copper Coils & Gears
+                for (let mx of [52, 128]) {
+                    const my = sy + 75;
+                    ctx.fillStyle = '#475569';
+                    ctx.strokeStyle = '#090d16';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 24, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Copper winding ring
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 5;
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 13, 0, Math.PI * 2);
+                    ctx.stroke();
+                    // Center rotor shaft
+                    ctx.fillStyle = '#e2e8f0';
+                    ctx.beginPath();
+                    ctx.arc(mx, my, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#e9d5ff';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('MOTORES BRUSHLESS 4kW', 90, sy + 20);
+
+            } else if (s === 1) {
+                // Shelf 2: Sinusoidal Controllers with Heatsink Fins & Connectors
+                for (let cx of [26, 98]) {
+                    const cy = sy + 46;
+                    ctx.fillStyle = '#0284c7';
+                    ctx.strokeStyle = '#090d16';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.roundRect(cx, cy, 56, 58, 8);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Aluminum heatsink fins
+                    ctx.strokeStyle = '#bae6fd';
+                    ctx.lineWidth = 2;
+                    for (let f = 0; f < 4; f++) {
+                        ctx.beginPath();
+                        ctx.moveTo(cx + 10, cy + 14 + f * 10);
+                        ctx.lineTo(cx + 46, cy + 14 + f * 10);
+                        ctx.stroke();
+                    }
+                }
+                ctx.fillStyle = '#e9d5ff';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('INVERSORES Y CAN-BUS', 90, sy + 20);
+
+            } else {
+                // Shelf 3: Rubber Tires with Alloy Rims & Coil Springs
+                for (let tx of [52, 128]) {
+                    const ty = sy + 75;
+                    // Tire tread
+                    ctx.fillStyle = '#18181b';
+                    ctx.strokeStyle = '#090d16';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    // Alloy rim & spokes
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, 14, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.fillStyle = '#090d16';
+                    ctx.beginPath();
+                    ctx.arc(tx, ty, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#e9d5ff';
+                ctx.font = 'bold 10px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('NEUMÁTICOS Y RINES R13', 90, sy + 20);
+            }
+        }
+
+        ctx.restore();
+    }
+
+    drawToolWorkbench(ctx, x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Workbench surface
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 180, 110, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        // Red Mechanic's Toolbox
+        ctx.fillStyle = '#dc2626';
+        ctx.beginPath();
+        ctx.roundRect(16, 18, 64, 38, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(36, 14, 24, 6);
+
+        // Illustrated Wrench on table
+        ctx.save();
+        ctx.translate(115, 42);
+        ctx.rotate(-0.4);
+        ctx.fillStyle = '#cbd5e1';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-22, -4, 44, 8, 3);
+        ctx.fill();
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(-24, 0, 9, 0.6, Math.PI * 2 - 0.6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+
+        // Yellow Digital Multimeter with test leads
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.roundRect(105, 62, 34, 38, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(111, 68, 22, 12);
+
+        ctx.restore();
+    }
+
+    drawDetailedForklift(ctx, cx, cy, now) {
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Painted safety parking bay
+        ctx.strokeStyle = 'rgba(250, 204, 21, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.setLineDash([10, 8]);
+        ctx.beginPath();
+        ctx.roundRect(-72, -105, 144, 205, 12);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Wooden Slatted Pallet carried on front forks
+        ctx.fillStyle = '#b45309';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-42, -92, 84, 52, 4);
+        ctx.fill();
+        ctx.stroke();
+        // Pallet wooden slats
+        ctx.strokeStyle = '#78350f';
+        for (let py = -82; py <= -48; py += 11) {
+            ctx.beginPath();
+            ctx.moveTo(-40, py);
+            ctx.lineTo(40, py);
+            ctx.stroke();
+        }
+
+        // Steel Forks sliding under pallet
+        ctx.fillStyle = '#64748b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-28, -88, 12, 65, 3);
+        ctx.roundRect(16, -88, 12, 65, 3);
+        ctx.fill();
+        ctx.stroke();
+
+        // 4 Thick Rubber Wheels protruding from chassis
+        ctx.fillStyle = '#090d16';
+        for (let [wx, wy] of [[-42, -12], [30, -12], [-42, 42], [30, 42]]) {
+            ctx.beginPath();
+            ctx.roundRect(wx, wy, 12, 26, 4);
+            ctx.fill();
+        }
+
+        // Curved Yellow & Black Counterbalance Forklift Body
+        ctx.fillStyle = '#eab308';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(-34, -24, 68, 96, 22);
+        ctx.fill();
+        ctx.stroke();
+
+        // Rear heavy cast-iron counterweight
+        ctx.fillStyle = '#334155';
+        ctx.beginPath();
+        ctx.roundRect(-30, 48, 60, 20, 10);
+        ctx.fill();
+        ctx.stroke();
+
+        // Driver Compartment: Contoured Seat & Steering Wheel
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.roundRect(-22, -8, 44, 48, 8);
+        ctx.fill();
+        // Driver seat cushion
+        ctx.fillStyle = '#090d16';
+        ctx.beginPath();
+        ctx.roundRect(-15, 12, 30, 22, 6);
+        ctx.fill();
+        // Steering wheel circle
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, -2, 9, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Overhead Guard Pillars & Flashing Amber Beacon
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(-24, -12, 48, 52);
+
+        const beaconGlow = (Math.sin(now * 0.01) + 1) * 0.5;
+        ctx.fillStyle = `rgba(245, 158, 11, ${0.4 + beaconGlow * 0.6})`;
+        ctx.beginPath();
+        ctx.arc(18, 34, 9, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // --- ZONE 4 HELPERS (ENSAMBLAJE FINAL & VEHÍCULO QUANTUM E4) ---
+    drawAssemblyLineAndCar(ctx, cx, cy, zoneWidth, completedTasks, now) {
+        ctx.save();
+        const numDone = completedTasks.size;
+
+        // Industrial Conveyor Track with Metallic Rollers
+        ctx.fillStyle = '#111827';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(cx - zoneWidth / 2 + 45, cy - 86, zoneWidth - 90, 172, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        for (let rx = cx - zoneWidth / 2 + 68; rx < cx + zoneWidth / 2 - 68; rx += 32) {
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(rx - 5, cy - 80, 10, 160);
+        }
+
+        // Hydraulic 4-Post Car Lift Platform
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(cx - 132, cy - 78, 264, 156, 18);
+        ctx.fill();
+        ctx.stroke();
+
+        // 4 Yellow Hydraulic Corner Posts
+        for (let [px, py] of [[-124, -70], [108, -70], [-124, 54], [108, 54]]) {
+            ctx.fillStyle = '#facc15';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.roundRect(cx + px, cy + py, 16, 16, 4);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        // Two Articulated Assembly Robots with Dual Grippers flanking the Lift
+        const swing = Math.sin(now * 0.003) * 0.28;
+        for (let dir of [-1, 1]) {
+            ctx.save();
+            ctx.translate(cx + dir * 185, cy);
+            // Robot pedestal
+            ctx.fillStyle = '#f59e0b';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0, 0, 22, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.rotate(dir * swing);
+            const armX = dir > 0 ? -52 : 0;
+            ctx.fillStyle = '#fb923c';
+            ctx.beginPath();
+            ctx.roundRect(armX, -8, 52, 16, 6);
+            ctx.fill();
+            ctx.stroke();
+
+            // Claw pincers at end of arm
+            const clawX = dir > 0 ? -58 : 58;
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 3.5;
+            ctx.beginPath();
+            ctx.arc(clawX, 0, 10, dir > 0 ? 1.8 : -1.3, dir > 0 ? 4.5 : 1.3);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // Render the Quantum E4 Vehicle on the Lift according to team progress!
+        const hasBody = completedTasks.has('task_assembly') || numDone >= 5;
+        if (hasBody) {
+            this.drawCompleteCarIllustration(ctx, cx, cy, 1.0, '#10b981', true);
+        } else {
+            // Partially assembled vehicle showing realistic chassis, wheels, motor & battery pack!
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(Math.PI / 2); // Orient facing right
+
+            // 4 Realistic Tires with treads
+            ctx.fillStyle = '#090d16';
+            for (let [wx, wy] of [[-46, -58], [46, -58], [-46, 58], [46, 58]]) {
+                ctx.beginPath();
+                ctx.roundRect(wx - 8, wy - 18, 16, 36, 5);
+                ctx.fill();
+            }
+
+            // Curved Tubular Spaceframe
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 10;
+            this.traceChassisPath(ctx);
+            ctx.stroke();
+            ctx.strokeStyle = completedTasks.has('task_chassis') ? '#f59e0b' : '#94a3b8';
+            ctx.lineWidth = 5.5;
+            this.traceChassisPath(ctx);
+            ctx.stroke();
+
+            // Rear Brushless Electric Motor with copper coils
+            ctx.fillStyle = '#475569';
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.5;
+            ctx.beginPath();
+            ctx.arc(0, 62, 16, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(0, 62, 8, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Central Lithium Battery Pack with High-Voltage Orange Cables
+            if (completedTasks.has('task_battery') || numDone >= 2) {
+                ctx.fillStyle = '#0891b2';
+                ctx.strokeStyle = '#090d16';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.roundRect(-28, -24, 56, 48, 8);
+                ctx.fill();
+                ctx.stroke();
+                // Individual cell bars inside pack
+                ctx.fillStyle = '#22d3ee';
+                for (let by = -16; by <= 12; by += 9) {
+                    ctx.fillRect(-20, by, 40, 5);
+                }
+            }
+            ctx.restore();
+        }
+
+        ctx.restore();
+    }
+
+    /**
+     * Draws an authentic, curvy, cartoon-shaded Quantum E4 / E2 Electric Vehicle
+     */
+    drawCompleteCarIllustration(ctx, x, y, scale = 1.0, bodyColor = '#10b981', lightsOn = true) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        // Headlight beams if lightsOn
+        if (lightsOn) {
+            const grad = ctx.createLinearGradient(88, 0, 195, 0);
+            grad.addColorStop(0, 'rgba(250, 204, 21, 0.65)');
+            grad.addColorStop(1, 'rgba(250, 204, 21, 0)');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(85, -36);
+            ctx.lineTo(195, -72);
+            ctx.lineTo(195, 72);
+            ctx.lineTo(85, 36);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Drop shadow under car
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.beginPath();
+        ctx.roundRect(-86, -46, 182, 102, 34);
+        ctx.fill();
+
+        // 4 Protruding Rubber Wheels
+        ctx.fillStyle = '#090d16';
+        for (let [wx, wy] of [[-58, -54], [46, -54], [-58, 42], [46, 42]]) {
+            ctx.beginPath();
+            ctx.roundRect(wx, wy, 34, 12, 5);
+            ctx.fill();
+        }
+
+        // Side Mirrors (Left & Right)
+        ctx.fillStyle = bodyColor;
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(28, -53, 8, 5, -0.3, 0, Math.PI * 2);
+        ctx.ellipse(28, 53, 8, 5, 0.3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Aerodynamic Quantum E4 Curvy Body Shell
+        ctx.fillStyle = bodyColor;
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(-84, -34);
+        ctx.quadraticCurveTo(-92, 0, -84, 34);
+        ctx.quadraticCurveTo(-78, 48, -50, 48);
+        ctx.lineTo(52, 48);
+        ctx.quadraticCurveTo(88, 46, 92, 24);
+        ctx.quadraticCurveTo(96, 0, 92, -24);
+        ctx.quadraticCurveTo(88, -46, 52, -48);
+        ctx.lineTo(-50, -48);
+        ctx.quadraticCurveTo(-78, -48, -84, -34);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Curved Panoramic Windshield & Rear Glass
+        ctx.fillStyle = '#0f172a';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-62, -38, 114, 76, 22);
+        ctx.fill();
+        ctx.stroke();
+
+        // Windshield glossy reflection diagonal streak
+        ctx.fillStyle = 'rgba(56, 189, 248, 0.25)';
+        ctx.beginPath();
+        ctx.moveTo(15, -32);
+        ctx.lineTo(42, -26);
+        ctx.lineTo(42, 26);
+        ctx.lineTo(15, 32);
+        ctx.closePath();
+        ctx.fill();
+
+        // Roof panel with Solar / Panoramic sunroof
+        ctx.fillStyle = bodyColor;
+        ctx.beginPath();
+        ctx.roundRect(-42, -30, 58, 60, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#1e293b';
+        ctx.beginPath();
+        ctx.roundRect(-30, -20, 34, 40, 6);
+        ctx.fill();
+
+        // Hood crease lines
+        ctx.strokeStyle = 'rgba(9, 13, 22, 0.35)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(52, -26);
+        ctx.lineTo(86, -18);
+        ctx.moveTo(52, 26);
+        ctx.lineTo(86, 18);
+        ctx.stroke();
+
+        // LED Headlights (Front) & Red Taillights (Rear)
+        ctx.fillStyle = '#fef08a';
+        ctx.beginPath();
+        ctx.ellipse(88, -28, 5, 10, 0.2, 0, Math.PI * 2);
+        ctx.ellipse(88, 28, 5, 10, -0.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.roundRect(-89, -36, 6, 16, 3);
+        ctx.roundRect(-89, 20, 6, 16, 3);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    // --- ZONE 5 HELPERS (PRUEBAS DE CALIDAD QA) ---
+    drawDynamometerBay(ctx, x, y, qaDone, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Dyno Pit Platform with yellow/black hazard border
+        ctx.fillStyle = '#090d16';
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 215, 255, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // Giant Wind-Tunnel Cooling Fan at the top of the Dyno Bay!
+        const fanX = 107;
+        const fanY = 44;
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(fanX - 58, 12, 116, 34, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        // Animated airflow wind streams blowing down onto the dyno rollers
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+        ctx.lineWidth = 2;
+        for (let w = -36; w <= 36; w += 24) {
+            const wy = 52 + ((now * 0.1 + w * 2) % 140);
+            ctx.beginPath();
+            ctx.moveTo(fanX + w, wy);
+            ctx.lineTo(fanX + w, wy + 22);
+            ctx.stroke();
+        }
+
+        // 4 Metallic 3D Cylindrical Rollers spinning in the pit
+        const spinOffset = (now * 0.05) % 14;
+        for (let r = 0; r < 2; r++) {
+            const ry = 82 + r * 88;
+            for (let pair = 0; pair < 2; pair++) {
+                const cy = ry + pair * 24;
+                const grad = ctx.createLinearGradient(0, cy, 0, cy + 18);
+                grad.addColorStop(0, '#334155');
+                grad.addColorStop(0.5, '#94a3b8');
+                grad.addColorStop(1, '#1e293b');
+                ctx.fillStyle = grad;
+                ctx.strokeStyle = '#090d16';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(26, cy, 162, 18, 6);
+                ctx.fill();
+                ctx.stroke();
+
+                // Spinning hash marks on cylinder
+                ctx.strokeStyle = 'rgba(15, 23, 42, 0.5)';
+                for (let hx = 36 + spinOffset; hx < 180; hx += 18) {
+                    ctx.beginPath();
+                    ctx.moveTo(hx, cy + 2);
+                    ctx.lineTo(hx - 4, cy + 16);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        ctx.fillStyle = qaDone ? '#10b981' : '#facc15';
+        ctx.font = 'bold 11px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText(qaDone ? 'DINAMÓMETRO: CERTIFICADO ✅' : 'RODILLOS DINAMÓMETRO EV', 107, 238);
+
+        ctx.restore();
+    }
+
+    drawRainTestArch(ctx, x, y, now) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Glass & Steel Water Test Booth
+        ctx.fillStyle = 'rgba(14, 165, 233, 0.12)';
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 175, 170, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // Floor drain grate & animated water ripples
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.roundRect(45, 75, 85, 65, 10);
+        ctx.fill();
+
+        const rippleR = (now * 0.03) % 28;
+        ctx.strokeStyle = `rgba(56, 189, 248, ${1 - rippleR / 28})`;
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(87, 107, rippleR, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Curved Chrome Overhead Spray Pipe Arch with Yellow Nozzles
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 7;
+        ctx.beginPath();
+        ctx.moveTo(22, 145);
+        ctx.lineTo(22, 42);
+        ctx.quadraticCurveTo(87, 18, 152, 42);
+        ctx.lineTo(152, 145);
+        ctx.stroke();
+
+        // Spray nozzles & animated water streams
+        for (let nx of [42, 65, 87, 110, 132]) {
+            ctx.fillStyle = '#facc15';
+            ctx.beginPath();
+            ctx.arc(nx, 36, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            const dropY = 46 + ((now * 0.14 + nx * 3) % 85);
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(nx, dropY);
+            ctx.lineTo(nx, dropY + 12);
+            ctx.stroke();
+        }
+
+        ctx.fillStyle = '#bae6fd';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ARCO DE LLUVIA IP65', 87, 158);
+
+        ctx.restore();
+    }
+
+    drawTrafficLightTower(ctx, cx, cy, qaDone) {
+        ctx.save();
+        ctx.translate(cx, cy);
+
+        // Shadow & Base Plate
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-34, -18, 68, 156, 18);
+        ctx.fill();
+        ctx.stroke();
+
+        // Inner dark housing
+        ctx.fillStyle = '#090d16';
+        ctx.beginPath();
+        ctx.roundRect(-24, -10, 48, 140, 14);
+        ctx.fill();
+
+        const lights = [
+            { y: 18, on: !qaDone, onCol: '#ef4444', offCol: '#450a0a' },
+            { y: 60, on: true, onCol: '#facc15', offCol: '#422006' },
+            { y: 102, on: qaDone, onCol: '#10b981', offCol: '#064e3b' }
+        ];
+
+        for (let l of lights) {
+            if (l.on) {
+                const glow = ctx.createRadialGradient(0, l.y, 4, 0, l.y, 26);
+                glow.addColorStop(0, l.onCol);
+                glow.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(0, l.y, 26, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.fillStyle = l.on ? l.onCol : l.offCol;
+            ctx.beginPath();
+            ctx.arc(0, l.y, 14, 0, Math.PI * 2);
+            ctx.fill();
+            // Visor hood over lamp
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(0, l.y, 15, Math.PI, 0);
+            ctx.stroke();
+        }
 
         ctx.restore();
     }
 
     // =========================================================================
-    // INDUSTRY 4.0 TECHNICIANS & COMPANION DRONE
+    // HOLOGRAPHIC SIGNAGE & INTERACTIVE WORKSTATIONS
     // =========================================================================
+    drawSignage(ctx, signage, accentColor, isNear, now) {
+        const { x, y, title } = signage;
+        const floatY = Math.sin(now * 0.004) * 3;
+        ctx.save();
+        ctx.translate(x, y);
 
+        // Metallic Floor Projector Base
+        ctx.fillStyle = '#334155';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.ellipse(0, 24, 38, 12, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Glowing Hologram Emitter Core
+        ctx.fillStyle = accentColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 22, 18, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Hologram Light Cone
+        const coneGrad = ctx.createLinearGradient(0, 22, 0, -25);
+        coneGrad.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+        coneGrad.addColorStop(1, 'rgba(56, 189, 248, 0.02)');
+        ctx.fillStyle = coneGrad;
+        ctx.beginPath();
+        ctx.moveTo(-18, 22);
+        ctx.lineTo(-70, -20 + floatY);
+        ctx.lineTo(70, -20 + floatY);
+        ctx.lineTo(18, 22);
+        ctx.closePath();
+        ctx.fill();
+
+        // Floating Curved Hologram Screen
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
+        ctx.strokeStyle = isNear ? '#facc15' : accentColor;
+        ctx.lineWidth = isNear ? 3.5 : 2.5;
+        ctx.beginPath();
+        ctx.roundRect(-74, -28 + floatY, 148, 44, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = accentColor;
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('📘 INFO QUANTUM', 0, -10 + floatY);
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(title.substring(0, 20), 0, 6 + floatY);
+
+        if (isNear) {
+            ctx.fillStyle = '#facc15';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.fillText('🔍 [E] o CLIC PARA LEER', 0, -36 + floatY);
+        }
+        ctx.restore();
+    }
+
+    drawStation(ctx, station, isCompleted, isNear, animTimer, now) {
+        const { x, y, icon, shortName } = station;
+        const pulse = Math.sin(now * 0.006) * 5;
+
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Outer glowing interactive floor pad
+        ctx.beginPath();
+        ctx.arc(0, 0, 46 + (isNear ? 6 : 0) + (isCompleted ? 0 : pulse * 0.5), 0, Math.PI * 2);
+        ctx.fillStyle = isCompleted
+            ? 'rgba(16, 185, 129, 0.25)'
+            : (isNear ? 'rgba(250, 204, 21, 0.35)' : 'rgba(56, 189, 248, 0.18)');
+        ctx.fill();
+
+        ctx.lineWidth = isNear ? 4 : 2.5;
+        ctx.strokeStyle = isCompleted ? '#10b981' : (isNear ? '#facc15' : '#38bdf8');
+        ctx.stroke();
+
+        // Illustrated Octagonal Computer Kiosk / Workstation Base
+        ctx.fillStyle = '#1e293b';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.roundRect(-28, -26, 56, 52, 14);
+        ctx.fill();
+        ctx.stroke();
+
+        // Angled glowing terminal screen inside kiosk
+        ctx.fillStyle = '#090d16';
+        ctx.strokeStyle = isCompleted ? '#10b981' : '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-20, -18, 40, 28, 7);
+        ctx.fill();
+        ctx.stroke();
+
+        // Keyboard / Control buttons on lower bevel
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(-10, 17, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#10b981';
+        ctx.arc(0, 17, 3, 0, Math.PI * 2);
+        ctx.fillStyle = '#ef4444';
+        ctx.arc(10, 17, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Icon on screen
+        ctx.font = '21px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(isCompleted ? '✅' : icon, 0, -3);
+
+        // Rounded Station Pill Label
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = 'rgba(9, 13, 22, 0.92)';
+        ctx.strokeStyle = isCompleted ? '#10b981' : '#475569';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-76, 32, 152, 24, 8);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = isCompleted ? '#6ee7b7' : '#ffffff';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillText(shortName, 0, 48);
+
+        // Interaction Prompt when nearby
+        if (isNear) {
+            ctx.fillStyle = '#facc15';
+            ctx.font = 'bold 13px sans-serif';
+            ctx.fillText(isCompleted ? '¡Misión Completada! [E] Repetir' : '⚡ Presiona [E] o Haz Clic', 0, -52);
+        }
+
+        // Celebratory expanding ring when recently completed
+        if (animTimer > 0) {
+            const prog = 1 - (animTimer / 4.0);
+            ctx.beginPath();
+            ctx.arc(0, 0, 30 + prog * 110, 0, Math.PI * 2);
+            ctx.strokeStyle = `rgba(16, 185, 129, ${1 - prog})`;
+            ctx.lineWidth = 5;
+            ctx.stroke();
+        }
+
+        ctx.restore();
+    }
+
+    // =========================================================================
+    // CHARACTERS (AMONG US CREWMATES & Q-BOT)
+    // =========================================================================
     getAvatarImage(dataUrl) {
         if (!dataUrl) return null;
         if (this.avatarCache.has(dataUrl)) {
@@ -1753,584 +2221,216 @@ class Renderer {
         return img;
     }
 
-    /**
-     * drawVectorPerson - Renders a stylized isometric human figure
-     * Completely eliminates any Among Us bean or capsule shapes:
-     * - Anatomical human proportions (slender legs, hips, waist, torso, shoulders, neck, head)
-     * - Stylized hair or yellow safety hard hat with front brim
-     * - Collared polo shirt or suit jacket with high-vis safety vest
-     * - Slender dark trousers and work shoes with clean soles
-     * - Digital diagnostic tablet with glowing cyan telemetry screen
-     * - Natural walking stride animation (alternating leg swing, knee flex, arm swing, torso bob)
-     */
-    drawVectorPerson(ctx, opts) {
-        const {
-            x = 0,
-            y = 0,
-            facing = 1,
-            shirt = '#0284c7',
-            shirtShadow = null,
-            pants = '#1e293b',
-            shoes = '#0f172a',
-            skin = '#fed7aa',
-            hair = '#1e293b',
-            helmet = null,
-            helmetBrim = '#ca8a04',
-            pose = 'tablet',
-            isMoving = false,
-            now = performance.now(),
-            avatarImg = null,
-            scale = 1.25,
-            name = null,
-            isLocal = false,
-            emote = null,
-            reflectiveStripe = true
-        } = opts;
+    drawCrewmate(ctx, player, isLocal, now) {
+        const colors = window.QuantumGame.FactoryAssets.PLAYER_COLORS;
+        const palette = colors.find(c => c.id === player.colorId) || colors[0];
+
+        const x = player.x;
+        const y = player.y;
+        const facing = player.facing || 1;
+        const bob = player.isMoving ? Math.abs(Math.sin(now * 0.015)) * 6 : 0;
+        const legSwing = player.isMoving ? Math.sin(now * 0.02) * 9 : 0;
+        const charScale = 1.45; // Larger character so the face photo is clearly visible
 
         ctx.save();
         ctx.translate(x, y);
 
-        // 1. Soft Floor Shadow on Ground
-        ctx.fillStyle = 'rgba(15, 35, 55, 0.22)';
+        // Drop shadow on floor
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
         ctx.beginPath();
-        ctx.ellipse(0, 0, 16 * scale, 6 * scale, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 32, 29, 11, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // 2. Local Player Proximity / Target Indicator
+        // Local player highlight ring
         if (isLocal) {
-            ctx.strokeStyle = '#00e5ff';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.8)';
+            ctx.lineWidth = 2.5;
             ctx.beginPath();
-            ctx.ellipse(0, 0, 22 * scale, 8 * scale, 0, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Subtle pulsing outer halo
-            const haloPulse = (Math.sin(now * 0.005) + 1) * 0.5;
-            ctx.strokeStyle = `rgba(0, 229, 255, ${0.15 + haloPulse * 0.25})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.ellipse(0, 0, (26 + haloPulse * 4) * scale, (10 + haloPulse * 2) * scale, 0, 0, Math.PI * 2);
+            ctx.ellipse(0, 32, 35, 14, 0, 0, Math.PI * 2);
             ctx.stroke();
         }
 
         ctx.save();
-        // Facing flips the character horizontally
-        ctx.scale(facing * scale, scale);
+        ctx.scale(facing * charScale, charScale);
+        ctx.translate(0, -bob);
 
-        // 3. Movement & Walking Animation Dynamics
-        const walkSpeed = 0.016;
-        const walkPhase = isMoving ? (now * walkSpeed) : 0;
-        const stride = isMoving ? Math.sin(walkPhase) * 7.5 : 0;
-        const kneeLift = isMoving ? Math.max(0, -Math.cos(walkPhase)) * 3.5 : 0;
-        const torsoBob = isMoving ? Math.abs(Math.sin(walkPhase * 2)) * 2 : (Math.sin(now * 0.003) * 0.6);
-        const armSwing = isMoving ? Math.cos(walkPhase) * 6 : 0;
-
-        // 4. Legs & Slender Trousers (Two distinct human legs with seam gap)
-        ctx.fillStyle = pants;
-        ctx.strokeStyle = '#0f172a';
-        ctx.lineWidth = 0.8;
-
-        if (pose === 'sit') {
-            // Sitting on chair: upper legs horizontal, lower legs vertical
-            // Left thigh
-            ctx.fillRect(-6, -24, 14, 6);
-            // Left calf down
-            ctx.fillRect(4, -18, 5, 16);
-            // Right thigh
-            ctx.fillRect(-4, -22, 14, 6);
-            // Right calf down
-            ctx.fillRect(7, -16, 5, 16);
-
-            // Shoes
-            ctx.fillStyle = shoes;
-            ctx.fillRect(4, -3, 8, 4);
-            ctx.fillRect(7, -1, 8, 4);
-        } else {
-            // Standing or Walking
-            // --- Back / Left Leg ---
-            ctx.save();
-            ctx.beginPath();
-            const leftHipX = -3.5;
-            const leftHipY = -27 - torsoBob;
-            const leftKneeX = -4.5 + stride * 0.5;
-            const leftKneeY = -14 - kneeLift - torsoBob * 0.5;
-            const leftFootX = -5 + stride;
-            const leftFootY = -2;
-
-            // Leg path
-            ctx.moveTo(leftHipX - 2.5, leftHipY);
-            ctx.lineTo(leftKneeX - 2.2, leftKneeY);
-            ctx.lineTo(leftFootX - 2, leftFootY);
-            ctx.lineTo(leftFootX + 2, leftFootY);
-            ctx.lineTo(leftKneeX + 2.2, leftKneeY);
-            ctx.lineTo(leftHipX + 1.5, leftHipY);
-            ctx.closePath();
-            ctx.fillStyle = pants;
-            ctx.fill();
-            ctx.stroke();
-
-            // Left shoe / work boot
-            ctx.fillStyle = shoes;
-            ctx.beginPath();
-            ctx.roundRect(leftFootX - 4, leftFootY - 1, 9, 4, 1.5);
-            ctx.fill();
-            // Sole
-            ctx.fillStyle = '#cbd5e1';
-            ctx.fillRect(leftFootX - 4, leftFootY + 2, 9, 1);
-            ctx.restore();
-
-            // --- Front / Right Leg ---
-            ctx.save();
-            ctx.beginPath();
-            const rightHipX = 3.5;
-            const rightHipY = -27 - torsoBob;
-            const rightKneeX = 4.5 - stride * 0.5;
-            const rightKneeY = -14 - torsoBob * 0.5;
-            const rightFootX = 5 - stride;
-            const rightFootY = -2;
-
-            // Leg path
-            ctx.moveTo(rightHipX - 1.5, rightHipY);
-            ctx.lineTo(rightKneeX - 2.2, rightKneeY);
-            ctx.lineTo(rightFootX - 2, rightFootY);
-            ctx.lineTo(rightFootX + 2, rightFootY);
-            ctx.lineTo(rightKneeX + 2.2, rightKneeY);
-            ctx.lineTo(rightHipX + 2.5, rightHipY);
-            ctx.closePath();
-            ctx.fillStyle = pants;
-            ctx.fill();
-            ctx.stroke();
-
-            // Right shoe / work boot
-            ctx.fillStyle = shoes;
-            ctx.beginPath();
-            ctx.roundRect(rightFootX - 4, rightFootY - 1, 9, 4, 1.5);
-            ctx.fill();
-            // Sole
-            ctx.fillStyle = '#cbd5e1';
-            ctx.fillRect(rightFootX - 4, rightFootY + 2, 9, 1);
-            ctx.restore();
-        }
-
-        // 5. Waist, Belt & Buckle
-        const waistY = -28 - torsoBob;
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(-6.5, waistY - 2, 13, 3);
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillRect(-1.5, waistY - 2, 3, 3);
-
-        // 6. Torso: Tapered Human Shape with Shoulders
-        const shoulderY = -44 - torsoBob;
+        // Oxygen / Battery Backpack (Among Us signature)
+        ctx.fillStyle = palette.shadow;
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 3;
         ctx.beginPath();
-        ctx.moveTo(-6.5, waistY - 1);
-        ctx.lineTo(-9.5, shoulderY);
-        ctx.lineTo(9.5, shoulderY);
-        ctx.lineTo(6.5, waistY - 1);
-        ctx.closePath();
-        ctx.fillStyle = shirt;
+        ctx.roundRect(-25, -16, 12, 28, 5);
         ctx.fill();
-        ctx.strokeStyle = shirtShadow || '#0b2545';
-        ctx.lineWidth = 1;
         ctx.stroke();
 
-        // Right side depth shading on torso
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+        // Legs
+        ctx.fillStyle = palette.shadow;
         ctx.beginPath();
-        ctx.moveTo(1, shoulderY);
-        ctx.lineTo(9.5, shoulderY);
-        ctx.lineTo(6.5, waistY - 1);
-        ctx.lineTo(0.5, waistY - 1);
-        ctx.closePath();
+        ctx.roundRect(-13 + legSwing * 0.5, 10, 11, 13, 4);
         ctx.fill();
-
-        // High-vis reflective safety stripe on torso
-        if (reflectiveStripe) {
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(-8.5, waistY - 9, 17, 3);
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(-8.5, waistY - 8, 17, 1);
-        }
-
-        // Collared polo / shirt neck trim
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.moveTo(-3, shoulderY);
-        ctx.lineTo(0, shoulderY + 4);
-        ctx.lineTo(3, shoulderY);
-        ctx.lineTo(0, shoulderY + 1);
-        ctx.closePath();
-        ctx.fill();
-
-        // 7. Security ID Badge Lanyard on Chest
-        ctx.strokeStyle = '#0284c7';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.moveTo(-3, shoulderY + 2);
-        ctx.lineTo(0, shoulderY + 7);
-        ctx.lineTo(3, shoulderY + 2);
         ctx.stroke();
 
-        // Miniature ID Badge on Chest
-        const badgeX = -2.5;
-        const badgeY = shoulderY + 6;
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#0f2942';
-        ctx.lineWidth = 0.8;
-        ctx.fillRect(badgeX, badgeY, 5, 7);
-        ctx.strokeRect(badgeX, badgeY, 5, 7);
+        ctx.beginPath();
+        ctx.roundRect(2 - legSwing * 0.5, 10, 11, 13, 4);
+        ctx.fill();
+        ctx.stroke();
 
-        // Show player avatar photo inside the lanyard badge if uploaded!
+        // Main Capsule Body
+        ctx.fillStyle = palette.body;
+        ctx.beginPath();
+        ctx.roundRect(-18, -28, 36, 42, 16);
+        ctx.fill();
+        ctx.stroke();
+
+        // Lower body shading
+        ctx.fillStyle = palette.shadow;
+        ctx.beginPath();
+        ctx.roundRect(-15, 3, 30, 11, 5);
+        ctx.fill();
+
+        // Large Crewmate Helmet Visor OR Custom Player Face Photo!
+        const avatarImg = player.avatar ? this.getAvatarImage(player.avatar) : null;
         if (avatarImg && avatarImg.complete && avatarImg.naturalWidth > 0) {
-            try {
-                ctx.drawImage(avatarImg, badgeX + 0.5, badgeY + 0.5, 4, 4);
-            } catch (e) {
-                ctx.fillStyle = '#0284c7';
-                ctx.fillRect(badgeX + 1, badgeY + 1, 3, 3);
-            }
+            const vx = -10;
+            const vy = -25;
+            const vw = 31;
+            const vh = 28;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.roundRect(vx, vy, vw, vh, 11);
+            ctx.clip();
+
+            // Draw face photo inside helmet window
+            ctx.drawImage(avatarImg, vx, vy, vw, vh);
+
+            // Subtle glass helmet reflection on top corner
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.22)';
+            ctx.beginPath();
+            ctx.ellipse(vx + vw - 7, vy + 5, 6, 2.8, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+
+            // Helmet visor frame border
+            ctx.strokeStyle = '#090d16';
+            ctx.lineWidth = 2.8;
+            ctx.beginPath();
+            ctx.roundRect(vx, vy, vw, vh, 11);
+            ctx.stroke();
         } else {
-            ctx.fillStyle = '#0284c7';
-            ctx.fillRect(badgeX + 1, badgeY + 1, 3, 3);
+            // Classic Crewmate Glass Visor
+            ctx.fillStyle = palette.visor;
+            ctx.beginPath();
+            ctx.roundRect(-2, -20, 23, 16, 7);
+            ctx.fill();
+            ctx.stroke();
+
+            // Visor glossy reflection
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.ellipse(12, -15, 6, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
         }
 
-        // 8. Arms, Hands & Props (Diagnostic Tablet, Laptop, Pointer, Briefcase)
-        if (pose === 'point') {
-            // Right arm pointing forward
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(8, shoulderY + 2);
-            ctx.lineTo(16, shoulderY - 2);
-            ctx.lineTo(24, shoulderY - 6);
-            ctx.stroke();
-
-            // Pointing hand & index finger
-            ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(24, shoulderY - 6, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillRect(24, shoulderY - 7.5, 5, 2);
-
-            // Left arm resting on hip
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(-8, shoulderY + 2);
-            ctx.lineTo(-12, waistY - 3);
-            ctx.lineTo(-6, waistY);
-            ctx.stroke();
-            ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(-6, waistY, 2.2, 0, Math.PI * 2);
-            ctx.fill();
-
-        } else if (pose === 'laptop') {
-            // Holding open laptop in front
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            // Left arm bent
-            ctx.beginPath();
-            ctx.moveTo(-8, shoulderY + 2);
-            ctx.lineTo(-6, waistY - 5);
-            ctx.lineTo(2, waistY - 5);
-            ctx.stroke();
-            // Right arm bent
-            ctx.beginPath();
-            ctx.moveTo(8, shoulderY + 2);
-            ctx.lineTo(8, waistY - 5);
-            ctx.lineTo(4, waistY - 5);
-            ctx.stroke();
-
-            // Open laptop
-            ctx.fillStyle = '#e2e8f0';
-            ctx.fillRect(2, waistY - 6, 12, 2); // base
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(10, waistY - 14, 2, 9); // screen back
-            ctx.fillStyle = '#38bdf8';
-            ctx.fillRect(9, waistY - 14, 1.5, 8); // glowing screen
-
-        } else if (pose === 'briefcase') {
-            // Holding briefcase at right side
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(8, shoulderY + 2);
-            ctx.lineTo(10, waistY - 2);
-            ctx.lineTo(9, waistY + 6);
-            ctx.stroke();
-
-            ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(9, waistY + 6, 2.2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Leather Briefcase
-            ctx.fillStyle = '#78350f';
-            ctx.strokeStyle = '#451a03';
-            ctx.lineWidth = 1;
-            ctx.fillRect(5, waistY + 5, 11, 8);
-            ctx.strokeRect(5, waistY + 5, 11, 8);
-            ctx.fillStyle = '#facc15';
-            ctx.fillRect(9.5, waistY + 7, 2, 2);
-
-            // Left arm swinging naturally
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(-8, shoulderY + 2);
-            ctx.lineTo(-10, waistY - 2);
-            ctx.stroke();
-
-        } else if (pose === 'sit') {
-            // Sitting arms resting on desk or keyboard
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(7, shoulderY + 2);
-            ctx.lineTo(11, waistY - 4);
-            ctx.lineTo(14, waistY - 4);
-            ctx.stroke();
-            ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(14, waistY - 4, 2.2, 0, Math.PI * 2);
-            ctx.fill();
-
-        } else {
-            // Default: 'tablet' (Holding digital diagnostic tablet, matching reference image)
-            // Left / Back Arm
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(-7.5, shoulderY + 2);
-            ctx.lineTo(-9.5, waistY - 6 - armSwing * 0.3);
-            ctx.lineTo(0, waistY - 6);
-            ctx.stroke();
-
-            ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(0, waistY - 6, 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Right / Front Arm
-            ctx.strokeStyle = shirt;
-            ctx.lineWidth = 3.5;
-            ctx.beginPath();
-            ctx.moveTo(7.5, shoulderY + 2);
-            ctx.lineTo(9.5, waistY - 5 + armSwing * 0.3);
-            ctx.lineTo(6, waistY - 5);
-            ctx.stroke();
-
-            ctx.fillStyle = skin;
-            ctx.beginPath();
-            ctx.arc(6, waistY - 5, 2, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Digital Diagnostic Tablet (Signature Industry 4.0 tool)
-            const tabX = 1;
-            const tabY = waistY - 13;
-            ctx.fillStyle = '#0f172a';
-            ctx.strokeStyle = '#334155';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.roundRect(tabX, tabY, 11, 14, 2);
-            ctx.fill();
-            ctx.stroke();
-
-            // Glowing Cyan Screen
-            ctx.fillStyle = '#00e5ff';
-            ctx.fillRect(tabX + 1.5, tabY + 1.5, 8, 11);
-
-            // Miniature Screen Telemetry Pulse Lines
-            ctx.fillStyle = '#0369a1';
-            ctx.fillRect(tabX + 2.5, tabY + 3, 6, 1.5);
-            ctx.fillRect(tabX + 2.5, tabY + 6, 4, 1.5);
-            ctx.fillRect(tabX + 2.5, tabY + 9, 5, 1.5);
-        }
-
-        // 9. Neck
-        const neckY = shoulderY - 1;
-        ctx.fillStyle = skin;
-        ctx.fillRect(-2.5, neckY - 4, 5, 5);
-
-        // 10. Head & Face
-        const headCenterY = neckY - 8;
-        ctx.fillStyle = skin;
+        // Quantum Technician Yellow Safety Hard-Hat on top
+        ctx.fillStyle = '#facc15';
+        ctx.strokeStyle = '#090d16';
+        ctx.lineWidth = 2.8;
         ctx.beginPath();
-        ctx.ellipse(0, headCenterY, 6.5, 7.5, 0, 0, Math.PI * 2);
+        ctx.arc(-1, -28, 15, Math.PI, 0);
         ctx.fill();
-
-        // Clean Stylized Eye & Ear
-        ctx.fillStyle = '#0f172a';
+        ctx.stroke();
         ctx.beginPath();
-        ctx.arc(3.2, headCenterY - 0.5, 1.1, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Ear
-        ctx.fillStyle = skin;
-        ctx.strokeStyle = '#ea580c';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.arc(-4.5, headCenterY, 1.8, 0, Math.PI * 2);
+        ctx.roundRect(-18, -29, 36, 4.5, 2);
         ctx.fill();
         ctx.stroke();
 
-        // 11. Hair or Industry Safety Helmet (Hard Hat)
-        if (helmet) {
-            // Safety Helmet (Industry 4.0 Hard Hat from reference image)
-            // Hair trim visible under helmet at back of neck
-            ctx.fillStyle = hair;
-            ctx.beginPath();
-            ctx.arc(-2, headCenterY + 2, 4.5, Math.PI * 0.5, Math.PI * 1.5);
-            ctx.fill();
+        ctx.restore();
 
-            // Rounded Helmet Dome
-            ctx.fillStyle = helmet;
-            ctx.strokeStyle = helmetBrim || '#ca8a04';
-            ctx.lineWidth = 1.2;
-            ctx.beginPath();
-            ctx.arc(0, headCenterY - 2, 7.5, Math.PI, 0);
-            ctx.fill();
-            ctx.stroke();
+        // Name Tag above character
+        ctx.font = 'bold 13px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center';
+        const nameW = ctx.measureText(player.name).width + 18;
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(-nameW / 2, -76, nameW, 22, 7);
+        ctx.fill();
+        ctx.stroke();
 
-            // Protective Front Brim Shade (over forehead)
-            ctx.beginPath();
-            ctx.roundRect(-7.5, headCenterY - 2.5, 17, 3, 1.2);
-            ctx.fill();
-            ctx.stroke();
+        ctx.fillStyle = isLocal ? '#38bdf8' : '#ffffff';
+        ctx.fillText(player.name, 0, -60);
 
-            // Helmet Top Ventilation Ridge / Crest
+        // Floating Emote / Signal Bubble
+        if (player.emote) {
             ctx.fillStyle = '#ffffff';
-            ctx.fillRect(-1.5, headCenterY - 9.5, 3, 7.5);
-
-        } else {
-            // Office Stylized Hair (for office staff / executives)
-            ctx.fillStyle = hair;
             ctx.beginPath();
-            ctx.arc(0, headCenterY - 2, 7.2, Math.PI * 0.9, Math.PI * 2.1);
-            ctx.lineTo(-4, headCenterY + 2);
-            ctx.closePath();
+            ctx.arc(0, -104, 20, 0, Math.PI * 2);
             ctx.fill();
-        }
-
-        ctx.restore(); // Undo facing scale
-
-        // 12. Modern Floating Name Tag Above Character (Cleanly above helmet)
-        if (name) {
-            ctx.font = 'bold 11px "Segoe UI", system-ui, sans-serif';
-            ctx.textAlign = 'center';
-            const nameWidth = ctx.measureText(name).width + 16;
-            // Position cleanly above helmet (top of helmet reaches approx -64 * scale)
-            const tagY = -88 * scale - (torsoBob * scale);
-
-            // Shadow
-            ctx.fillStyle = 'rgba(15, 35, 55, 0.18)';
-            ctx.beginPath();
-            ctx.roundRect(-nameWidth / 2 + 1, tagY + 2, nameWidth, 18, 5);
-            ctx.fill();
-
-            // Tag Box (White with teal border)
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = isLocal ? '#0284c7' : '#cbd5e1';
-            ctx.lineWidth = isLocal ? 2 : 1.2;
-            ctx.beginPath();
-            ctx.roundRect(-nameWidth / 2, tagY, nameWidth, 18, 5);
-            ctx.fill();
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2.5;
             ctx.stroke();
 
-            ctx.fillStyle = '#0b2545';
-            ctx.fillText(name, 0, tagY + 13);
-        }
-
-        // 13. Floating Emote Bubble
-        if (emote) {
-            const emoteY = (-88 * scale - (torsoBob * scale)) - 26;
-            ctx.fillStyle = '#ffffff';
-            ctx.strokeStyle = '#0284c7';
-            ctx.lineWidth = 1.8;
-            ctx.beginPath();
-            ctx.arc(0, emoteY, 16, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.stroke();
-
-            ctx.font = '18px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText(emote, 0, emoteY + 6);
+            ctx.font = '22px sans-serif';
+            ctx.fillText(player.emote, 0, -96);
         }
 
         ctx.restore();
     }
 
-    drawIndustryTechnician(ctx, player, isLocal, now) {
-        const colors = window.QuantumGame.FactoryAssets.PLAYER_COLORS;
-        const palette = colors.find(c => c.id === player.colorId) || colors[0];
-        const avatarImg = player.avatar ? this.getAvatarImage(player.avatar) : null;
-
-        this.drawVectorPerson(ctx, {
-            x: player.x,
-            y: player.y,
-            facing: player.facing || 1,
-            shirt: palette.body,
-            shirtShadow: palette.shadow,
-            pants: '#1e293b',
-            shoes: '#0f172a',
-            skin: '#fed7aa',
-            hair: '#1e293b',
-            helmet: '#facc15',
-            helmetBrim: '#ca8a04',
-            pose: player.isMoving ? 'walk' : 'tablet',
-            isMoving: Boolean(player.isMoving),
-            now: now,
-            avatarImg: avatarImg,
-            scale: 1.25,
-            name: player.name,
-            isLocal: isLocal,
-            emote: player.emote,
-            reflectiveStripe: true
-        });
-    }
-
-    drawQBotDrone(ctx, qbot, now) {
+    drawQBot(ctx, qbot) {
         ctx.save();
-        ctx.translate(qbot.x, qbot.y + (qbot.hoverOffset || 0));
+        ctx.translate(qbot.x, qbot.y + qbot.hoverOffset);
 
-        // Hover thruster cyan glow
-        ctx.fillStyle = 'rgba(0, 168, 204, 0.35)';
+        // Hover thruster glow
+        ctx.fillStyle = 'rgba(34, 211, 238, 0.35)';
         ctx.beginPath();
-        ctx.ellipse(0, 20, 14, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(0, 22, 14, 6, 0, 0, Math.PI * 2);
         ctx.fill();
 
-        // Sleek Drone Shell (White & Cyan)
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#0284c7';
+        // Antenna
+        ctx.strokeStyle = '#38bdf8';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.roundRect(-16, -16, 32, 26, 10);
+        ctx.moveTo(0, -18);
+        ctx.lineTo(0, -28);
+        ctx.stroke();
+        ctx.fillStyle = '#facc15';
+        ctx.beginPath();
+        ctx.arc(0, -30, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Spherical Robot Head/Body
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#0284c7';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(-16, -18, 32, 28, 10);
         ctx.fill();
         ctx.stroke();
 
-        // Digital Visor Eyes
-        ctx.fillStyle = '#0f2942';
+        // Digital Face Screen
+        ctx.fillStyle = '#0f172a';
         ctx.beginPath();
-        ctx.roundRect(-12, -12, 24, 14, 5);
+        ctx.roundRect(-12, -13, 24, 16, 5);
         ctx.fill();
 
-        ctx.fillStyle = '#00e5ff';
+        // Glowing Cyan Eyes
+        ctx.fillStyle = '#22d3ee';
         ctx.beginPath();
-        ctx.arc(-5, -5, 2.8, 0, Math.PI * 2);
-        ctx.arc(5, -5, 2.8, 0, Math.PI * 2);
+        ctx.arc(-5, -5, 3, 0, Math.PI * 2);
+        ctx.arc(5, -5, 3, 0, Math.PI * 2);
         ctx.fill();
 
         // Label
-        ctx.fillStyle = '#0284c7';
-        ctx.font = 'bold 9.5px sans-serif';
+        ctx.fillStyle = '#22d3ee';
+        ctx.font = 'bold 10px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('🤖 Q-BOT', 0, -32);
+        ctx.fillText('🤖 Q-BOT', 0, -37);
 
         ctx.restore();
     }
-
-    // =========================================================================
-    // MINIMAP
-    // =========================================================================
 
     renderMinimap(factoryMap, localPlayer, remotePlayers) {
         const mCtx = this.minimapCtx;
@@ -2340,29 +2440,20 @@ class Renderer {
         const scaleY = mh / factoryMap.height;
 
         mCtx.clearRect(0, 0, mw, mh);
-
-        // Pale corporate teal background on minimap
-        mCtx.fillStyle = '#e5edf3';
+        mCtx.fillStyle = 'rgba(15, 23, 42, 0.92)';
         mCtx.fillRect(0, 0, mw, mh);
 
-        // Elevated white platforms on minimap
+        // Zones
         for (const z of factoryMap.zones) {
-            // Shadow
-            mCtx.fillStyle = 'rgba(15, 35, 55, 0.25)';
-            mCtx.fillRect(z.x * scaleX + 1.5, z.y * scaleY + 1.5, z.width * scaleX, z.height * scaleY);
-
-            // White slab
-            mCtx.fillStyle = '#ffffff';
+            mCtx.fillStyle = z.floorColor;
             mCtx.fillRect(z.x * scaleX, z.y * scaleY, z.width * scaleX, z.height * scaleY);
-
-            // Border
-            mCtx.strokeStyle = z.accentColor || '#0284c7';
-            mCtx.lineWidth = 1;
+            mCtx.strokeStyle = z.accentColor;
+            mCtx.lineWidth = 1.5;
             mCtx.strokeRect(z.x * scaleX, z.y * scaleY, z.width * scaleX, z.height * scaleY);
         }
 
-        // Corridors / Stairs
-        mCtx.fillStyle = '#cbd5e1';
+        // Corridors
+        mCtx.fillStyle = '#475569';
         for (const c of factoryMap.corridors) {
             mCtx.fillRect(c.x * scaleX, c.y * scaleY, c.width * scaleX, c.height * scaleY);
         }
@@ -2370,24 +2461,24 @@ class Renderer {
         // Stations
         for (const s of factoryMap.stations) {
             const done = factoryMap.completedTasks.has(s.id);
-            mCtx.fillStyle = done ? '#10b981' : '#ea580c';
+            mCtx.fillStyle = done ? '#10b981' : '#facc15';
             mCtx.beginPath();
-            mCtx.arc(s.x * scaleX, s.y * scaleY, 3, 0, Math.PI * 2);
+            mCtx.arc(s.x * scaleX, s.y * scaleY, 4, 0, Math.PI * 2);
             mCtx.fill();
         }
 
         // Remote players
         for (const p of remotePlayers) {
-            mCtx.fillStyle = '#0284c7';
+            mCtx.fillStyle = '#a855f7';
             mCtx.beginPath();
-            mCtx.arc(p.x * scaleX, p.y * scaleY, 3, 0, Math.PI * 2);
+            mCtx.arc(p.x * scaleX, p.y * scaleY, 3.5, 0, Math.PI * 2);
             mCtx.fill();
         }
 
         // Local player
-        mCtx.fillStyle = '#f97316';
+        mCtx.fillStyle = '#38bdf8';
         mCtx.beginPath();
-        mCtx.arc(localPlayer.x * scaleX, localPlayer.y * scaleY, 4.5, 0, Math.PI * 2);
+        mCtx.arc(localPlayer.x * scaleX, localPlayer.y * scaleY, 5, 0, Math.PI * 2);
         mCtx.fill();
         mCtx.strokeStyle = '#ffffff';
         mCtx.lineWidth = 1.5;

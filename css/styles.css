@@ -13,8 +13,8 @@ body, html {
     height: 100%;
     overflow: hidden;
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background-color: #e5edf3;
-    color: #0b2545;
+    background-color: #090d16;
+    color: #f8fafc;
 }
 
 #game-canvas {
@@ -44,14 +44,13 @@ body, html {
 }
 
 .lobby-card {
-    background: #ffffff;
-    border: 3.5px solid #0284c7;
-    border-radius: 22px;
+    background: #1e293b;
+    border: 3px solid #38bdf8;
+    border-radius: 20px;
     max-width: 580px;
     width: 100%;
     padding: 28px;
-    box-shadow: 0 25px 70px rgba(11, 37, 69, 0.45);
-    color: #0b2545;
+    box-shadow: 0 20px 60px rgba(0, 229, 255, 0.2);
 }
 
 .lobby-header {
@@ -73,15 +72,13 @@ body, html {
 
 .lobby-header h1 {
     font-size: 28px;
-    font-weight: 900;
-    color: #0b2545;
-    text-shadow: none;
+    color: #38bdf8;
+    text-shadow: 0 2px 10px rgba(56, 189, 248, 0.4);
 }
 
 .lobby-header p {
     font-size: 14px;
-    color: #0284c7;
-    font-weight: 600;
+    color: #94a3b8;
     margin-top: 4px;
 }
 
@@ -99,7 +96,7 @@ body, html {
     display: block;
     font-size: 12px;
     font-weight: 700;
-    color: #0b2545;
+    color: #cbd5e1;
     margin-bottom: 6px;
     text-transform: uppercase;
 }
@@ -108,19 +105,15 @@ body, html {
     width: 100%;
     padding: 10px 14px;
     border-radius: 10px;
-    border: 2px solid #cbd5e1;
-    background: #f8fafc;
-    color: #0b2545;
+    border: 2px solid #475569;
+    background: #0f172a;
+    color: #ffffff;
     font-size: 14px;
-    font-weight: 600;
     outline: none;
-    transition: border-color 0.15s, background 0.15s;
 }
 
 .form-group input[type="text"]:focus {
-    border-color: #0284c7;
-    background: #ffffff;
-    box-shadow: 0 0 10px rgba(2, 132, 199, 0.2);
+    border-color: #38bdf8;
 }
 
 .color-picker {
@@ -232,13 +225,12 @@ body, html {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #f1f5f9;
+    background: rgba(15, 23, 42, 0.6);
     padding: 10px 14px;
     border-radius: 10px;
     font-size: 13px;
-    color: #1e293b;
+    color: #cbd5e1;
     margin-bottom: 18px;
-    border: 1px solid #cbd5e1;
 }
 
 .primary-action-btn {
@@ -246,18 +238,16 @@ body, html {
     padding: 14px;
     border-radius: 12px;
     border: none;
-    background: linear-gradient(135deg, #ea580c, #f97316);
-    color: #ffffff;
+    background: linear-gradient(135deg, #00e5ff, #10b981);
+    color: #090d16;
     font-size: 16px;
     font-weight: 800;
     cursor: pointer;
-    box-shadow: 0 10px 25px rgba(234, 88, 12, 0.35);
-    transition: transform 0.15s, box-shadow 0.15s;
-    letter-spacing: 0.5px;
+    transition: transform 0.15s, filter 0.15s;
 }
 
 .primary-action-btn:hover {
-    box-shadow: 0 14px 35px rgba(234, 88, 12, 0.6);
+    filter: brightness(1.1);
     transform: translateY(-2px);
 }
 
@@ -271,13 +261,11 @@ body, html {
 
 .hud-panel {
     pointer-events: auto;
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(12px);
-    border: 1.5px solid #cbd5e1;
+    background: rgba(15, 23, 42, 0.86);
+    backdrop-filter: blur(6px);
+    border: 2px solid #334155;
     border-radius: 14px;
     padding: 12px 15px;
-    box-shadow: 0 10px 30px rgba(11, 37, 69, 0.12);
-    color: #0b2545;
 }
 
 /* Top Progress & Q-BOT Narrative */
@@ -297,23 +285,22 @@ body, html {
     justify-content: space-between;
     align-items: center;
     font-size: 13px;
-    font-weight: 800;
-    color: #0a3d56;
+    font-weight: 700;
 }
 
 .progress-track {
     width: 100%;
     height: 16px;
-    background: #e2e8f0;
+    background: #090d16;
     border-radius: 99px;
-    border: 2px solid #cbd5e1;
+    border: 2px solid #475569;
     overflow: hidden;
 }
 
 #total-progress-fill {
     width: 0%;
     height: 100%;
-    background: linear-gradient(90deg, #0284c7, #10b981);
+    background: linear-gradient(90deg, #22d3ee, #10b981);
     transition: width 0.4s ease;
 }
 
@@ -322,12 +309,11 @@ body, html {
     align-items: center;
     gap: 8px;
     font-size: 12.5px;
-    color: #0369a1;
-    background: rgba(2, 132, 199, 0.08);
+    color: #bae6fd;
+    background: rgba(2, 132, 199, 0.18);
     padding: 6px 10px;
     border-radius: 8px;
-    border-left: 3px solid #0284c7;
-    font-weight: 600;
+    border-left: 3px solid #38bdf8;
 }
 
 /* Left Panel: Tasks & Badges */
@@ -344,11 +330,10 @@ body, html {
 .left-hud h3 {
     font-size: 13px;
     text-transform: uppercase;
-    color: #007a99;
+    color: #38bdf8;
     margin-bottom: 6px;
     display: flex;
     justify-content: space-between;
-    font-weight: 800;
 }
 
 #task-list-hud {
@@ -363,25 +348,21 @@ body, html {
     justify-content: space-between;
     align-items: center;
     font-size: 12.5px;
-    padding: 7px 10px;
-    background: #f8fafc;
+    padding: 6px 8px;
+    background: rgba(30, 41, 59, 0.75);
     border-radius: 8px;
     cursor: pointer;
-    border: 1px solid #e2e8f0;
-    color: #0b2545;
-    font-weight: 600;
-    transition: border-color 0.15s, background 0.15s;
+    border: 1px solid transparent;
+    transition: border-color 0.15s;
 }
 
 .task-item:hover {
-    border-color: #0284c7;
-    background: #f0f9ff;
+    border-color: #38bdf8;
 }
 
 .task-item.done {
-    color: #059669;
-    background: rgba(16, 185, 129, 0.12);
-    border-color: #a7f3d0;
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, 0.14);
 }
 
 .badges-row {
@@ -394,8 +375,8 @@ body, html {
     width: 34px;
     height: 34px;
     border-radius: 8px;
-    background: #f1f5f9;
-    border: 1.5px solid #cbd5e1;
+    background: #090d16;
+    border: 1.5px solid #334155;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -406,9 +387,9 @@ body, html {
 
 .badge-chip.unlocked {
     filter: none;
-    border-color: #f59e0b;
-    background: rgba(245, 158, 11, 0.15);
-    box-shadow: 0 0 10px rgba(245, 158, 11, 0.35);
+    border-color: #facc15;
+    background: rgba(250, 204, 21, 0.15);
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.35);
 }
 
 /* Right Panel: Minimap & Crew Roster */
@@ -422,22 +403,12 @@ body, html {
     gap: 10px;
 }
 
-.right-hud h3 {
-    font-size: 13px;
-    text-transform: uppercase;
-    color: #007a99;
-    margin-bottom: 6px;
-    font-weight: 800;
-    display: flex;
-    justify-content: space-between;
-}
-
 #minimap-canvas {
     width: 100%;
     height: 140px;
-    border-radius: 10px;
-    border: 2px solid #cbd5e1;
-    background: #e5edf3;
+    border-radius: 8px;
+    border: 2px solid #475569;
+    background: #090d16;
 }
 
 .crew-roster {
@@ -451,13 +422,11 @@ body, html {
     display: flex;
     align-items: center;
     gap: 5px;
-    background: #f8fafc;
-    padding: 4px 9px;
+    background: #0f172a;
+    padding: 3px 8px;
     border-radius: 99px;
     font-size: 11px;
-    border: 1px solid #cbd5e1;
-    color: #0b2545;
-    font-weight: 600;
+    border: 1px solid #334155;
 }
 
 .crew-dot {
@@ -493,8 +462,8 @@ body, html {
 
 .emote-btn {
     flex: 1;
-    background: #f1f5f9;
-    border: 1px solid #cbd5e1;
+    background: #1e293b;
+    border: 1px solid #475569;
     border-radius: 8px;
     padding: 5px 0;
     font-size: 16px;
@@ -504,8 +473,7 @@ body, html {
 
 .emote-btn:hover {
     transform: scale(1.12);
-    border-color: #0284c7;
-    background: #f0f9ff;
+    border-color: #38bdf8;
 }
 
 #chat-form {
@@ -515,34 +483,22 @@ body, html {
 
 #chat-input {
     flex: 1;
-    background: #f8fafc;
-    border: 1.5px solid #cbd5e1;
+    background: #090d16;
+    border: 1px solid #475569;
     border-radius: 8px;
     padding: 6px 10px;
-    color: #0b2545;
+    color: #fff;
     font-size: 12px;
-    font-weight: 600;
-    outline: none;
-}
-
-#chat-input:focus {
-    border-color: #0284c7;
-    background: #ffffff;
 }
 
 #chat-form button {
-    background: #0284c7;
+    background: #38bdf8;
     border: none;
     border-radius: 8px;
     padding: 0 12px;
     font-weight: 700;
-    color: #ffffff;
+    color: #090d16;
     cursor: pointer;
-    transition: background 0.15s;
-}
-
-#chat-form button:hover {
-    background: #0369a1;
 }
 
 /* Bottom Right: Among Us Big Action Button */
@@ -558,52 +514,48 @@ body, html {
 }
 
 .interact-big-btn {
-    width: 110px;
-    height: 110px;
+    width: 126px;
+    height: 126px;
     border-radius: 50%;
-    border: 4px solid #cbd5e1;
-    background: #ffffff;
-    color: #64748b;
+    border: 5px solid #475569;
+    background: radial-gradient(circle, #1e293b, #0f172a);
+    color: #94a3b8;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 4px;
     cursor: pointer;
-    box-shadow: 0 10px 25px rgba(15, 35, 55, 0.15);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
     transition: all 0.2s;
 }
 
 .interact-big-btn.ready {
-    border-color: #ea580c;
-    background: linear-gradient(135deg, #f97316, #ea580c);
+    border-color: #facc15;
+    background: radial-gradient(circle, #0284c7, #0f172a);
     color: #ffffff;
-    box-shadow: 0 10px 30px rgba(234, 88, 12, 0.45);
+    box-shadow: 0 0 28px rgba(250, 204, 21, 0.65);
     transform: scale(1.06);
 }
 
 .interact-big-btn strong {
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 15px;
 }
 
 .interact-big-btn small {
     font-size: 10px;
     text-align: center;
     padding: 0 6px;
-    font-weight: 600;
 }
 
 .small-util-btn {
-    background: #ffffff;
-    border: 1.5px solid #cbd5e1;
-    color: #0b2545;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1.5px solid #475569;
+    color: #e2e8f0;
     padding: 6px 12px;
     border-radius: 8px;
     font-size: 12px;
-    font-weight: 700;
     cursor: pointer;
-    box-shadow: 0 4px 10px rgba(15, 35, 55, 0.08);
 }
 
 /* ==================== MISSION MINI-GAME MODAL ==================== */
