@@ -409,8 +409,44 @@ class QuantumMotorsGame {
                 if (this.network && this.network.broadcastFactorySync) {
                     this.network.broadcastFactorySync(
                         this.factoryMap.envasadoraBroken,
-                        this.factoryMap.completedTasks
+                        this.factoryMap.completedTasks,
+                        this.getMeetingSyncState()
                     );
+                }
+            },
+            onSyncMeetingState: (meetingState) => {
+                if (!meetingState) return;
+                if (meetingState.inProgress && !this.meetingInProgress) {
+                    this.triggerEmergencyMeeting(
+                        meetingState.callerName || 'Técnico PIL',
+                        'cyan',
+                        null,
+                        meetingState.topic,
+                        false,
+                        meetingState.options
+                    );
+                    if (meetingState.timeRemaining) {
+                        this.meetingTimeRemaining = Math.max(5, meetingState.timeRemaining);
+                    }
+                    if (Array.isArray(meetingState.votes)) {
+                        meetingState.votes.forEach(([voterId, optIdx]) => {
+                            this.customVotesByPlayer.set(voterId, optIdx);
+                        });
+                        this.renderCustomMeetingVoteCards();
+                    }
+                } else if (!meetingState.inProgress && this.meetingInProgress) {
+                    this.endEmergencyMeeting(false);
+                } else if (this.meetingInProgress && Array.isArray(meetingState.votes)) {
+                    let hasNew = false;
+                    meetingState.votes.forEach(([voterId, optIdx]) => {
+                        if (!this.customVotesByPlayer.has(voterId)) {
+                            this.customVotesByPlayer.set(voterId, optIdx);
+                            hasNew = true;
+                        }
+                    });
+                    if (hasNew) {
+                        this.renderCustomMeetingVoteCards();
+                    }
                 }
             },
             onSyncCompletedTasks: (tasks) => {
@@ -1015,13 +1051,30 @@ class QuantumMotorsGame {
             interactBtn.innerHTML = `🔧 <strong>USAR [E]</strong><small>Acércate a estación</small>`;
         }
 
-        // 6. Broadcast local player position ~15 times per second
+        // 6. Broadcast local player position ~15 times per second (or periodic sync during meeting)
         this.netSyncTimer += dt;
-        if (this.netSyncTimer >= 0.065 && !this.meetingInProgress) {
-            this.netSyncTimer = 0;
-            this.network.broadcastState(this.localPlayer, {
-                envasadoraBroken: Boolean(this.factoryMap.envasadoraBroken)
-            });
+        if (!this.meetingInProgress) {
+            if (this.netSyncTimer >= 0.065) {
+                this.netSyncTimer = 0;
+                this.network.broadcastState(this.localPlayer, {
+                    envasadoraBroken: Boolean(this.factoryMap.envasadoraBroken)
+                });
+            }
+        } else {
+            // Keep peer connections alive during meeting and sync active vote state
+            if (this.netSyncTimer >= 1.5) {
+                this.netSyncTimer = 0;
+                this.network.broadcastState(this.localPlayer, {
+                    envasadoraBroken: Boolean(this.factoryMap.envasadoraBroken)
+                });
+                if (this.isMeetingModerator && this.network.broadcastFactorySync) {
+                    this.network.broadcastFactorySync(
+                        this.factoryMap.envasadoraBroken,
+                        this.factoryMap.completedTasks,
+                        this.getMeetingSyncState()
+                    );
+                }
+            }
         }
 
         // 7. Render World & Minimap
@@ -1054,14 +1107,35 @@ class QuantumMotorsGame {
         this.sound.playClick();
     }
 
+    getMeetingSyncState() {
+        if (!this.meetingInProgress || !this.meetingCustomVote) return null;
+        return {
+            inProgress: true,
+            callerName: this.meetingModeratorName || 'Técnico PIL',
+            topic: this.meetingCustomVote.topic || '¿Cómo cumplimos con el pedido?',
+            options: this.meetingCustomVote.options || ['Reparar', 'Alquilar una máquina compatible', 'Contratar producción externa'],
+            timeRemaining: this.meetingTimeRemaining,
+            isClosed: Boolean(this.meetingCustomVote.isClosed),
+            votes: Array.from(this.customVotesByPlayer.entries())
+        };
+    }
+
     triggerEmergencyMeeting(callerName, callerColor, callerAvatar, reason, isInitiator, initialOptions) {
         if (this.meetingInProgress) return;
         this.meetingInProgress = true;
 
-        // Close minigames or signage if open
+        // Close minigames, signage, alerts, and other modals if open
         if (this.missionManager) this.missionManager.closeModal();
-        document.getElementById('signage-modal').classList.add('hidden');
-        document.getElementById('call-meeting-modal').classList.add('hidden');
+        const signageModal = document.getElementById('signage-modal');
+        if (signageModal) signageModal.classList.add('hidden');
+        const callMeetingModal = document.getElementById('call-meeting-modal');
+        if (callMeetingModal) callMeetingModal.classList.add('hidden');
+        const easterEggModal = document.getElementById('easter-egg-modal');
+        if (easterEggModal) easterEggModal.classList.add('hidden');
+        const brokenModal = document.getElementById('broken-machine-modal');
+        if (brokenModal) brokenModal.classList.add('hidden');
+        const victoryModal = document.getElementById('victory-modal');
+        if (victoryModal) victoryModal.classList.add('hidden');
 
         const voteOptions = (Array.isArray(initialOptions) && initialOptions.length >= 3) ? initialOptions : [
             'Reparar',
@@ -1401,8 +1475,10 @@ class QuantumMotorsGame {
     }
 
     handleRemoteCustomVoteCast(voterId, optionIndex, voterName) {
-        if (!this.meetingInProgress) return;
-        this.castCustomMeetingVote(optionIndex, voterId, false);
+        this.customVotesByPlayer.set(voterId, optionIndex);
+        if (this.meetingInProgress) {
+            this.castCustomMeetingVote(optionIndex, voterId, false);
+        }
     }
 
     renderCustomMeetingVoteCards() {
@@ -1411,7 +1487,19 @@ class QuantumMotorsGame {
         const modNameEl = document.getElementById('meeting-moderator-display-name');
         if (!grid) return;
 
-        if (!this.meetingCustomVote) return;
+        if (!this.meetingCustomVote) {
+            this.meetingCustomVote = {
+                topic: '¿Cómo cumplimos con el pedido?',
+                options: [
+                    'Reparar',
+                    'Alquilar una máquina compatible',
+                    'Contratar producción externa'
+                ],
+                isOpen: true,
+                moderatorName: this.meetingModeratorName || 'el Convocante',
+                isClosed: false
+            };
+        }
 
         if (questionEl) questionEl.textContent = `🎯 ${this.meetingCustomVote.topic}`;
         if (modNameEl) modNameEl.textContent = this.meetingCustomVote.moderatorName || 'el Convocante';
@@ -1609,6 +1697,8 @@ class QuantumMotorsGame {
 
         const boardModal = document.getElementById('emergency-meeting-modal');
         if (boardModal) boardModal.classList.add('hidden');
+        const alertOverlay = document.getElementById('emergency-alert-overlay');
+        if (alertOverlay) alertOverlay.classList.add('hidden');
 
         // Unlock badge Comité de Inocuidad HACCP
         const isNewBadge = !this.unlockedBadges.has('badge_meeting');

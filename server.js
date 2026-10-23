@@ -65,50 +65,70 @@ server.on('upgrade', (req, socket) => {
     socket.write(responseHeaders.join('\r\n'));
     clients.add(socket);
 
-    socket.on('data', (buffer) => {
-        const msg = decodeWebSocketFrame(buffer);
-        if (!msg) return;
+    let socketBuffer = Buffer.alloc(0);
 
-        // Retransmitir a todos los demás jugadores conectados (máx 6 por sala gestionado en cliente/sala)
-        const outFrame = encodeWebSocketFrame(msg);
-        for (const client of clients) {
-            if (client !== socket && client.writable) {
-                client.write(outFrame);
+    socket.on('data', (chunk) => {
+        try {
+            socketBuffer = Buffer.concat([socketBuffer, chunk]);
+
+            while (socketBuffer.length >= 2) {
+                const secondByte = socketBuffer[1];
+                const isMasked = (secondByte & 0x80) !== 0;
+                let payloadLength = secondByte & 0x7f;
+                let headerSize = 2;
+
+                if (payloadLength === 126) {
+                    if (socketBuffer.length < 4) break;
+                    payloadLength = socketBuffer.readUInt16BE(2);
+                    headerSize = 4;
+                } else if (payloadLength === 127) {
+                    if (socketBuffer.length < 10) break;
+                    payloadLength = Number(socketBuffer.readBigUInt64BE(2));
+                    headerSize = 10;
+                }
+
+                if (isMasked) headerSize += 4;
+                const totalFrameSize = headerSize + payloadLength;
+
+                if (socketBuffer.length < totalFrameSize) {
+                    // Frame not completely received yet, wait for next data chunk
+                    break;
+                }
+
+                let maskKey = null;
+                const maskOffset = headerSize - (isMasked ? 4 : 0);
+                if (isMasked) {
+                    maskKey = socketBuffer.slice(maskOffset, maskOffset + 4);
+                }
+
+                const payload = Buffer.alloc(payloadLength);
+                const dataStart = headerSize;
+                for (let i = 0; i < payloadLength; i++) {
+                    payload[i] = isMasked ? socketBuffer[dataStart + i] ^ maskKey[i % 4] : socketBuffer[dataStart + i];
+                }
+
+                // Slice out the processed frame from buffer
+                socketBuffer = socketBuffer.slice(totalFrameSize);
+
+                const msg = payload.toString('utf8');
+                const outFrame = encodeWebSocketFrame(msg);
+
+                // Retransmit to all other connected clients
+                for (const client of clients) {
+                    if (client !== socket && client.writable) {
+                        client.write(outFrame);
+                    }
+                }
             }
+        } catch (err) {
+            console.warn('WebSocket data processing error:', err);
+            socketBuffer = Buffer.alloc(0);
         }
     });
 
     socket.on('close', () => clients.delete(socket));
     socket.on('error', () => clients.delete(socket));
 });
-
-function decodeWebSocketFrame(buffer) {
-    if (buffer.length < 2) return null;
-    const secondByte = buffer[1];
-    const isMasked = (secondByte & 0x80) !== 0;
-    let payloadLength = secondByte & 0x7f;
-    let offset = 2;
-
-    if (payloadLength === 126) {
-        payloadLength = buffer.readUInt16BE(2);
-        offset = 4;
-    } else if (payloadLength === 127) {
-        return null; // Ignorar tramas gigantes
-    }
-
-    let maskKey = null;
-    if (isMasked) {
-        maskKey = buffer.slice(offset, offset + 4);
-        offset += 4;
-    }
-
-    const payload = Buffer.alloc(payloadLength);
-    for (let i = 0; i < payloadLength && offset + i < buffer.length; i++) {
-        payload[i] = isMasked ? buffer[offset + i] ^ maskKey[i % 4] : buffer[offset + i];
-    }
-
-    return payload.toString('utf8');
-}
 
 function encodeWebSocketFrame(str) {
     const payload = Buffer.from(str, 'utf8');
@@ -119,11 +139,16 @@ function encodeWebSocketFrame(str) {
         header = Buffer.alloc(2);
         header[0] = 0x81; // Text frame
         header[1] = len;
-    } else {
+    } else if (len <= 65535) {
         header = Buffer.alloc(4);
         header[0] = 0x81;
         header[1] = 126;
         header.writeUInt16BE(len, 2);
+    } else {
+        header = Buffer.alloc(10);
+        header[0] = 0x81;
+        header[1] = 127;
+        header.writeBigUInt64BE(BigInt(len), 2);
     }
 
     return Buffer.concat([header, payload]);

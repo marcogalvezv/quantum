@@ -279,11 +279,12 @@ class NetworkManager {
         });
     }
 
-    broadcastFactorySync(envasadoraBroken, completedTasks) {
+    broadcastFactorySync(envasadoraBroken, completedTasks, meetingState = null) {
         this.sendPacket({
             type: 'sync_factory_state',
             envasadoraBroken: Boolean(envasadoraBroken),
-            completedTasks: Array.from(completedTasks || [])
+            completedTasks: Array.from(completedTasks || []),
+            meetingState: meetingState
         });
     }
 
@@ -312,7 +313,7 @@ class NetworkManager {
             type: 'emergency_meeting',
             callerName,
             callerColor,
-            callerAvatar,
+            callerAvatar: (callerAvatar && callerAvatar.length < 500) ? callerAvatar : null,
             reason,
             voteTopic,
             voteOptions
@@ -435,6 +436,9 @@ class NetworkManager {
                 }
                 if (Array.isArray(data.completedTasks) && this.callbacks.onSyncCompletedTasks) {
                     this.callbacks.onSyncCompletedTasks(data.completedTasks);
+                }
+                if (data.meetingState && this.callbacks.onSyncMeetingState) {
+                    this.callbacks.onSyncMeetingState(data.meetingState);
                 }
                 break;
             }

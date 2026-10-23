@@ -950,6 +950,10 @@ body, html {
 }
 
 /* ==================== BOARDROOM MEETING SCREEN ==================== */
+#emergency-meeting-modal {
+    z-index: 9999;
+}
+
 .boardroom-modal-card {
     background: #0f172a;
     border: 3.5px solid #f43f5e;
