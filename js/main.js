@@ -535,7 +535,12 @@ class QuantumMotorsGame {
     startGameFromLobby() {
         const nameInput = document.getElementById('player-name-input').value.trim();
         const roomInput = document.getElementById('room-code-input').value.trim() || 'PIL-2026';
-        const wsInput = document.getElementById('ws-url-input').value.trim() || 'ws://localhost:8080';
+        let defaultWs = 'ws://localhost:8080';
+        if (window.location && window.location.protocol && window.location.protocol.startsWith('http')) {
+            const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            defaultWs = `${wsProto}//${window.location.host}`;
+        }
+        const wsInput = (document.getElementById('ws-url-input') && document.getElementById('ws-url-input').value.trim()) || defaultWs;
         const fillBotsCheckbox = document.getElementById('fill-bots-checkbox');
         const fillBots = (fillBotsCheckbox && fillBotsCheckbox.checked) ? true : false;
 
